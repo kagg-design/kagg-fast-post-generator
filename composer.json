@@ -1,0 +1,48 @@
+{
+  "name": "kagg/generator",
+  "description": "KAGG Fast Post Generator",
+  "license": "GPL-2.0",
+  "keywords": [
+    "generate posts",
+    "generate pages",
+    "development",
+    "bulk generate"
+  ],
+  "homepage": "https://wordpress.org/plugins/kagg-fast-post-generator/",
+  "type": "wordpress-plugin",
+  "authors": [
+    {
+      "name": "KAGG Design",
+      "email": "info@kagg.eu",
+      "homepage": "https://kagg.eu/en/"
+    }
+  ],
+  "support": {
+    "issues": "https://wordpress.org/support/plugin/kagg-kagg-fast-post-generator"
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "config": {
+    "platform": {
+      "php": "5.6"
+    }
+  },
+  "require": {
+    "ext-json": "*"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest",
+    "squizlabs/php_codesniffer": "^3.6",
+    "phpcompatibility/php-compatibility": "^9.3",
+    "phpcompatibility/phpcompatibility-wp": "^2.1",
+    "wp-coding-standards/wpcs": "^2.3"
+  },
+  "autoload": {
+    "psr-4": {
+      "KAGG\\Generator\\": "src/php"
+    }
+  },
+  "scripts": {
+    "phpcs": "vendor/bin/phpcs --colors"
+  }
+}

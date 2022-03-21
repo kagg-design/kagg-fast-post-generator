@@ -1,0 +1,22 @@
+# A set of files and directories you probably don't want in your WordPress.org distribution
+
+# Files
+/.DS_Store
+/.distignore
+/.editorconfig
+/.gitignore
+/.phpcs.cache
+/CHANGELOG.md
+/README.md
+/Thumbs.db
+/auth.json
+/composer.json
+/composer.lock
+/package.json
+/phpcs.xml
+
+# Directories
+/.git
+/.github
+/.idea
+/.wordpress-org
