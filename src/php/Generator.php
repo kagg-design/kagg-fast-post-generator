@@ -130,19 +130,42 @@ class Generator {
 
 		$fname = str_replace( '\\', '/', $temp_filename );
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$fields = implode( ', ', $this->get_post_fields( $settings ) );
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared
 		$wpdb->query(
 			$wpdb->prepare(
 				"LOAD DATA INFILE %s INTO TABLE $wpdb->posts
                     FIELDS TERMINATED BY ','
-					( post_content, post_title, post_excerpt, post_name, post_type )",
+					( $fields )",
 				$fname
 			)
 		);
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
 		$end = microtime( true );
 
 		return round( $end - $start, 3 );
+	}
+
+	/**
+	 * Get post fields.
+	 *
+	 * @param array $settings Settings.
+	 *
+	 * @return array
+	 */
+	private function get_post_fields( $settings ) {
+		$fields = [ 'post_content', 'post_title', 'post_excerpt', 'post_name', 'post_type' ];
+
+		// Do not proceed with default column values.
+		if ( 'post' === $settings['post_type'] ) {
+			$fields = array_diff( $fields, [ 'post_type' ] );
+		}
+
+		return $fields;
 	}
 
 	/**
@@ -156,13 +179,19 @@ class Generator {
 		$content = $this->generate_random_string( 2048 );
 		$title   = substr( $content, 0, 20 );
 
-		return [
+		$post = [
 			'post_content' => $content,
 			'post_title'   => $title,
 			'post_excerpt' => substr( $content, 0, 100 ),
 			'post_name'    => strtolower( $title ),
-			'post_type'    => $settings['post_type'],
 		];
+
+		// Do not write default 'post' value.
+		if ( 'post' !== $settings['post_type'] ) {
+			$post['post_type'] = $settings['post_type'];
+		}
+
+		return $post;
 	}
 
 	/**
