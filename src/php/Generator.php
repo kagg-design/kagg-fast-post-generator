@@ -44,6 +44,8 @@ class Generator {
 		$time1 = $this->generate_posts( $count, $settings, $temp_filename );
 		$time2 = $this->write_posts( $count, $settings, $temp_filename );
 
+		unlink( $temp_filename );
+
 		wp_send_json_success(
 			sprintf(
 			// translators: 1: Step. 2: Steps. 3: Generated posts. 4: Total posts to generate. 5: Generation time. 6: DB storing time. 7: Total time.
