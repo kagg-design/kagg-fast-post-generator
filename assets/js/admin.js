@@ -17,8 +17,9 @@ jQuery( document ).ready( function( $ ) {
 			return;
 		}
 
+		// noinspection JSUnresolvedVariable
 		$.post( {
-			url: GeneratorObject.ajaxUrl,
+			url: GeneratorObject.generateAjaxUrl,
 			data: data,
 		} )
 			.done( function( response ) {
@@ -42,13 +43,14 @@ jQuery( document ).ready( function( $ ) {
 		chunkSize = parseInt( $( '#chunk_size' ).val() );
 		number = parseInt( $( '#number' ).val() );
 
+		// noinspection JSUnresolvedVariable
 		data = {
-			action: 'kagg-generate',
+			action: GeneratorObject.generateAction,
 			data: JSON.stringify( $( 'form#kagg-generator-settings' ).serializeArray() ),
 			index: index,
 			chunkSize: chunkSize,
 			number: number,
-			nonce: GeneratorObject.nonce
+			generateNonce: GeneratorObject.generateNonce
 		};
 
 		ajax( data, index, chunkSize, number );

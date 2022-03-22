@@ -65,7 +65,7 @@ class Generator {
 	 */
 	private function run_checks() {
 		// Run a security check.
-		if ( ! check_ajax_referer( Settings::ACTION, 'nonce', false ) ) {
+		if ( ! check_ajax_referer( Settings::ACTION, 'generateNonce', false ) ) {
 			wp_send_json_error( esc_html__( 'Your session expired. Please reload the page.', 'kagg-generator' ) );
 		}
 

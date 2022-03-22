@@ -428,8 +428,9 @@ class Settings {
 			self::HANDLE,
 			'GeneratorObject',
 			[
-				'ajaxUrl' => KAGG_GENERATOR_URL . '/src/php/ajax.php',
-				'nonce'   => wp_create_nonce( self::ACTION ),
+				'generateAction'  => self::ACTION,
+				'generateAjaxUrl' => KAGG_GENERATOR_URL . '/src/php/ajax.php',
+				'generateNonce'   => wp_create_nonce( self::ACTION ),
 			]
 		);
 	}
