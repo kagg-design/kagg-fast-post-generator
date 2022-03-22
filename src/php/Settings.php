@@ -440,6 +440,7 @@ class Settings {
 				'cacheFlushAction'  => self::CACHE_FLUSH_ACTION,
 				'cacheFlushAjaxUrl' => admin_url( 'admin-ajax.php' ),
 				'cacheFlushNonce'   => wp_create_nonce( self::CACHE_FLUSH_ACTION ),
+				'nothingToDo'       => esc_html__( 'Nothing to do.', 'kagg-generate' ),
 				// translators: 1: Time.
 				'totalTimeUsed'     => esc_html__( 'Total time used: %s sec.', 'kagg-generate' ),
 			]

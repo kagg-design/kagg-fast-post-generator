@@ -75,6 +75,13 @@ jQuery( document ).ready( function( $ ) {
 		chunkSize = parseInt( $( '#chunk_size' ).val() );
 		number = parseInt( $( '#number' ).val() );
 
+		if ( number <= 0 ) {
+			// noinspection JSUnresolvedVariable
+			showMessage( GeneratorObject.nothingToDo );
+
+			return;
+		}
+
 		// noinspection JSUnresolvedVariable
 		data = {
 			action: GeneratorObject.generateAction,
