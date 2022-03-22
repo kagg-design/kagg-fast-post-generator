@@ -2,7 +2,7 @@
 
 jQuery( document ).ready( function( $ ) {
 	const logSelector = '#kagg-generator-log';
-	let index, chunkSize, number, data;
+	let index, chunkSize, number, data, startTime;
 
 	function clearMessages() {
 		$( logSelector ).html( '' );
@@ -23,6 +23,7 @@ jQuery( document ).ready( function( $ ) {
 			nonce: GeneratorObject.cacheFlushNonce
 		};
 
+		// noinspection JSUnresolvedVariable
 		$.post( {
 			url: GeneratorObject.cacheFlushAjaxUrl,
 			data: data,
@@ -32,7 +33,13 @@ jQuery( document ).ready( function( $ ) {
 			} )
 			.fail( function( response ) {
 				showErrorMessage( response );
-			} );
+			} )
+			.always( function() {
+				const endTime = performance.now();
+				// noinspection JSUnresolvedVariable
+				showMessage( GeneratorObject.totalTimeUsed.replace( /%s/, ( ( endTime - startTime ) / 1000 ).toFixed( 3 ) ) );
+			} )
+		;
 	}
 
 	function ajax( data ) {
@@ -63,6 +70,7 @@ jQuery( document ).ready( function( $ ) {
 
 		clearMessages();
 
+		startTime = performance.now();
 		index = 0;
 		chunkSize = parseInt( $( '#chunk_size' ).val() );
 		number = parseInt( $( '#number' ).val() );

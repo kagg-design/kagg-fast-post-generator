@@ -46,15 +46,15 @@ class Generator {
 
 		wp_send_json_success(
 			sprintf(
-				// translators: 1: Step. 2: Steps. 3: Generated posts. 4: Total posts to generate. 5: Generation time. 6: DB storing time. 7: Total time.
-				esc_html__( 'Step %1$d/%2$d. %3$d/%4$d posts generated. Time used (%5$s + %6$s) = %7$s sec.', 'kagg-generator' ),
-				$step,
-				$steps,
-				min( $step * $chunk_size, $number ),
-				$number,
-				$time1,
-				$time2,
-				$time1 + $time2
+			// translators: 1: Step. 2: Steps. 3: Generated posts. 4: Total posts to generate. 5: Generation time. 6: DB storing time. 7: Total time.
+				esc_html__( 'Step %1$s/%2$s. %3$s/%4$s posts generated. Time used: (generate: %5$s + store: %6$s) = %7$s sec.', 'kagg-generator' ),
+				number_format( $step, 0 ),
+				number_format( $steps, 0 ),
+				number_format( min( $step * $chunk_size, $number ), 0 ),
+				number_format( $number, 0 ),
+				number_format( $time1, 3 ),
+				number_format( $time2, 3 ),
+				number_format( $time1 + $time2, 3 )
 			)
 		);
 	}
