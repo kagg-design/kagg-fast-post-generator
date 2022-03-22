@@ -12,8 +12,33 @@ jQuery( document ).ready( function( $ ) {
 		$( logSelector ).append( `<p>${message}</p>` );
 	}
 
+	function showErrorMessage( response ) {
+		showMessage( response.responseText.replace( /^(.+?)<!DOCTYPE.+$/gs, '$1' ).replace( /\n/gs, '<br />' ) );
+	}
+
+	function cacheFlush() {
+		// noinspection JSUnresolvedVariable
+		data = {
+			action: GeneratorObject.cacheFlushAction,
+			nonce: GeneratorObject.cacheFlushNonce
+		};
+
+		$.post( {
+			url: GeneratorObject.cacheFlushAjaxUrl,
+			data: data,
+		} )
+			.done( function( response ) {
+				showMessage( response.data );
+			} )
+			.fail( function( response ) {
+				showErrorMessage( response );
+			} );
+	}
+
 	function ajax( data ) {
 		if ( data.index >= data.number ) {
+			cacheFlush();
+
 			return;
 		}
 
@@ -29,9 +54,8 @@ jQuery( document ).ready( function( $ ) {
 				ajax( data );
 			} )
 			.fail( function( response ) {
-					showMessage( response.responseText.replace( /^(.+?)<!DOCTYPE.+$/gs, '$1' ).replace( /\n/gs, '<br />' ) );
-				}
-			);
+				showErrorMessage( response );
+			} );
 	}
 
 	$( '#kagg-generate-button' ).on( 'click', function( event ) {
@@ -50,7 +74,7 @@ jQuery( document ).ready( function( $ ) {
 			index: index,
 			chunkSize: chunkSize,
 			number: number,
-			generateNonce: GeneratorObject.generateNonce
+			nonce: GeneratorObject.generateNonce
 		};
 
 		ajax( data, index, chunkSize, number );

@@ -28,9 +28,14 @@ class Settings {
 	const HANDLE = 'kagg-generator-admin';
 
 	/**
-	 * The plugin action.
+	 * The plugin generate action.
 	 */
-	const ACTION = 'kagg-generate';
+	const GENERATE_ACTION = 'kagg-generator-generate';
+
+	/**
+	 * The plugin cache flush action.
+	 */
+	const CACHE_FLUSH_ACTION = 'kagg-generator-cache-flush';
 
 	/**
 	 * The name of the option to store plugin settings.
@@ -81,6 +86,7 @@ class Settings {
 		add_filter( 'pre_update_option_' . self::OPTION_KEY, [ $this, 'pre_update_option_filter' ], 10, 3 );
 		add_action( 'plugins_loaded', [ $this, 'load_textdomain' ], 100 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'admin_enqueue_scripts' ] );
+		add_action( 'wp_ajax_' . self::CACHE_FLUSH_ACTION, [ $this, 'cache_flush' ] );
 	}
 
 	/**
@@ -428,11 +434,35 @@ class Settings {
 			self::HANDLE,
 			'GeneratorObject',
 			[
-				'generateAction'  => self::ACTION,
-				'generateAjaxUrl' => KAGG_GENERATOR_URL . '/src/php/ajax.php',
-				'generateNonce'   => wp_create_nonce( self::ACTION ),
+				'generateAction'    => self::GENERATE_ACTION,
+				'generateAjaxUrl'   => KAGG_GENERATOR_URL . '/src/php/ajax.php',
+				'generateNonce'     => wp_create_nonce( self::GENERATE_ACTION ),
+				'cacheFlushAction'  => self::CACHE_FLUSH_ACTION,
+				'cacheFlushAjaxUrl' => admin_url( 'admin-ajax.php' ),
+				'cacheFlushNonce'   => wp_create_nonce( self::CACHE_FLUSH_ACTION ),
 			]
 		);
+	}
+
+	/**
+	 * Flush object cache. This action is needed if persistent object cache like Redis is active.
+	 *
+	 * @return void
+	 */
+	public function cache_flush() {
+		// Run a security check.
+		if ( ! check_ajax_referer( self::CACHE_FLUSH_ACTION, 'nonce', false ) ) {
+			wp_send_json_error( esc_html__( 'Your session has expired. Please reload the page.', 'kagg-generator' ) );
+		}
+
+		// Check for permissions.
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( esc_html__( 'You are not allowed to perform this action.', 'kagg-generator' ) );
+		}
+
+		wp_cache_flush();
+
+		wp_send_json_success( esc_html__( 'Cache flushed.', 'kagg-generator' ) );
 	}
 
 	/**

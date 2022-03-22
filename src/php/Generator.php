@@ -46,7 +46,8 @@ class Generator {
 
 		wp_send_json_success(
 			sprintf(
-				'Step %1$d/%2$d. %3$d/%4$d posts generated. Time used (%5$s + %6$s) = %7$s sec.',
+				// translators: 1: Step. 2: Steps. 3: Generated posts. 4: Total posts to generate. 5: Generation time. 6: DB storing time. 7: Total time.
+				esc_html__( 'Step %1$d/%2$d. %3$d/%4$d posts generated. Time used (%5$s + %6$s) = %7$s sec.', 'kagg-generator' ),
 				$step,
 				$steps,
 				min( $step * $chunk_size, $number ),
@@ -65,8 +66,8 @@ class Generator {
 	 */
 	private function run_checks() {
 		// Run a security check.
-		if ( ! check_ajax_referer( Settings::ACTION, 'generateNonce', false ) ) {
-			wp_send_json_error( esc_html__( 'Your session expired. Please reload the page.', 'kagg-generator' ) );
+		if ( ! check_ajax_referer( Settings::GENERATE_ACTION, 'nonce', false ) ) {
+			wp_send_json_error( esc_html__( 'Your session has expired. Please reload the page.', 'kagg-generator' ) );
 		}
 
 		// Check for permissions.
