@@ -96,7 +96,7 @@ class Generator {
 		$f = fopen( 'php://temp', 'wb+' );
 
 		for ( $i = 0; $i < $count; $i ++ ) {
-			fputcsv( $f, $this->kagg_generate_post( $settings ) );
+			fputcsv( $f, $this->generate_post( $settings ) );
 		}
 
 		rewind( $f );
@@ -149,8 +149,8 @@ class Generator {
 	 *
 	 * @return array
 	 */
-	private function kagg_generate_post( $settings ) {
-		$content = $this->kagg_generate_random_string( 2048 );
+	private function generate_post( $settings ) {
+		$content = $this->generate_random_string( 2048 );
 		$title   = substr( $content, 0, 20 );
 
 		return [
@@ -169,7 +169,7 @@ class Generator {
 	 *
 	 * @return string
 	 */
-	private function kagg_generate_random_string( $length = 10 ) {
+	private function generate_random_string( $length = 10 ) {
 		$s = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 		return substr( str_shuffle( str_repeat( $s, ceil( $length / strlen( $s ) ) ) ), 0, $length );
