@@ -42,7 +42,7 @@ class Generator {
 		$temp_filename = tempnam( sys_get_temp_dir(), 'kagg-generator-' );
 
 		$time1 = $this->generate_posts( $count, $settings, $temp_filename );
-		$time2 = $this->write_posts( $count, $settings, $temp_filename );
+		$time2 = $this->write_posts( $settings, $temp_filename );
 
 		unlink( $temp_filename );
 
@@ -118,13 +118,12 @@ class Generator {
 	/**
 	 * Write posts to the database.
 	 *
-	 * @param int    $count         Number of posts to generate.
 	 * @param array  $settings      Settings.
 	 * @param string $temp_filename Temporary filename.
 	 *
 	 * @return float
 	 */
-	private function write_posts( $count, $settings, $temp_filename ) {
+	private function write_posts( $settings, $temp_filename ) {
 		global $wpdb;
 
 		$start = microtime( true );
