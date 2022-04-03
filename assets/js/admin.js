@@ -9,7 +9,7 @@ jQuery( document ).ready( function( $ ) {
 	}
 
 	function showMessage( message ) {
-		$( logSelector ).append( `<p>${message}</p>` );
+		$( logSelector ).append( `<div>${message}</div>` );
 	}
 
 	function showErrorMessage( response ) {
@@ -43,12 +43,6 @@ jQuery( document ).ready( function( $ ) {
 	}
 
 	function ajax( data ) {
-		if ( data.index >= data.number ) {
-			cacheFlush();
-
-			return;
-		}
-
 		// noinspection JSUnresolvedVariable
 		$.post( {
 			url: GeneratorObject.generateAjaxUrl,
@@ -58,6 +52,13 @@ jQuery( document ).ready( function( $ ) {
 				showMessage( response.data );
 
 				data.index += data.chunkSize;
+
+				if ( ! response.success || data.index >= data.number ) {
+					cacheFlush();
+
+					return;
+				}
+
 				ajax( data );
 			} )
 			.fail( function( response ) {

@@ -7,6 +7,8 @@
 
 namespace KAGG\Generator;
 
+use RuntimeException;
+
 /**
  * Class Generator.
  */
@@ -19,6 +21,8 @@ class Generator {
 	 */
 	public function init() {
 		$this->run_checks();
+
+		ob_start();
 
 		$data       = json_decode(
 			html_entity_decode( filter_input( INPUT_POST, 'data', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) ),
@@ -40,9 +44,38 @@ class Generator {
 		$step          = (int) floor( $index / $chunk_size ) + 1;
 		$steps         = (int) ceil( $number / $chunk_size );
 		$temp_filename = tempnam( sys_get_temp_dir(), 'kagg-generator-' );
+		$error         = false;
 
-		$time1 = $this->generate_posts( $count, $settings, $temp_filename );
-		$time2 = $this->write_posts( $settings, $temp_filename );
+		try {
+			$start = microtime( true );
+			$this->generate_posts( $count, $settings, $temp_filename );
+			$end   = microtime( true );
+			$time1 = round( $end - $start, 3 );
+
+			$start = microtime( true );
+			$this->write_posts( $settings, $temp_filename );
+			$end   = microtime( true );
+			$time2 = round( $end - $start, 3 );
+
+			$error_message = ob_get_clean();
+		} catch ( RuntimeException $ex ) {
+			$error = true;
+
+			// We will have some messages here if WP_DEBUG_DISPLAY is on.
+			$error_message = ob_get_clean() . $ex->getMessage();
+		}
+
+		if ( $error || $error_message ) {
+			wp_send_json_error(
+				sprintf(
+				// translators: 1: Step. 2: Steps. 3: Error messages.
+					esc_html__( 'Step %1$s/%2$s. Error encountered: %3$s.', 'kagg-generator' ),
+					number_format( $step, 0 ),
+					number_format( $steps, 0 ),
+					$error_message
+				)
+			);
+		}
 
 		unlink( $temp_filename );
 
@@ -90,29 +123,53 @@ class Generator {
 	 * @param array  $settings      Settings.
 	 * @param string $temp_filename Temporary filename.
 	 *
-	 * @return float
+	 * @return void
+	 * @throws RuntimeException With error message.
 	 */
 	private function generate_posts( $count, $settings, $temp_filename ) {
-		$start = microtime( true );
-
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fopen
 		$f = fopen( 'php://temp', 'wb+' );
 
+		if ( ! $f ) {
+			throw new RuntimeException( esc_html__( 'Cannot create a temporary php://temp file.', 'kagg-generator' ) );
+		}
+
 		for ( $i = 0; $i < $count; $i ++ ) {
-			fputcsv( $f, $this->generate_post( $settings ) );
+			$result = fputcsv( $f, $this->generate_post( $settings ) );
+
+			if ( ! $result ) {
+				throw new RuntimeException( esc_html__( 'Cannot write to a temporary php://temp file.', 'kagg-generator' ) );
+			}
 		}
 
 		rewind( $f );
 
 		$file_contents = stream_get_contents( $f );
 
+		$result = chmod( $temp_filename, 0644 );
+
+		if ( ! $result ) {
+			throw new RuntimeException(
+				sprintf(
+				// translators: 1: Temp filename.
+					esc_html__( 'Cannot set permissions to the temporary file %s.', 'kagg-generator' ),
+					$temp_filename
+				)
+			);
+		}
+
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_file_put_contents
-		file_put_contents( $temp_filename, $file_contents );
-		chmod( $temp_filename, 0644 );
+		$result = file_put_contents( $temp_filename, $file_contents );
 
-		$end = microtime( true );
-
-		return round( $end - $start, 3 );
+		if ( ! $result ) {
+			throw new RuntimeException(
+				sprintf(
+				// translators: 1: Temp filename.
+					esc_html__( 'Cannot write to the temporary file %s.', 'kagg-generator' ),
+					$temp_filename
+				)
+			);
+		}
 	}
 
 	/**
@@ -121,12 +178,11 @@ class Generator {
 	 * @param array  $settings      Settings.
 	 * @param string $temp_filename Temporary filename.
 	 *
-	 * @return float
+	 * @return void
+	 * @throws RuntimeException With error message.
 	 */
 	private function write_posts( $settings, $temp_filename ) {
 		global $wpdb;
-
-		$start = microtime( true );
 
 		$fname = str_replace( '\\', '/', $temp_filename );
 
@@ -134,7 +190,7 @@ class Generator {
 
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared
-		$wpdb->query(
+		$result = $wpdb->query(
 			$wpdb->prepare(
 				"LOAD DATA INFILE %s INTO TABLE $wpdb->posts
                     FIELDS TERMINATED BY ','
@@ -145,9 +201,9 @@ class Generator {
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
-		$end = microtime( true );
-
-		return round( $end - $start, 3 );
+		if ( false === $result ) {
+			throw new RuntimeException( $wpdb->last_error );
+		}
 	}
 
 	/**
