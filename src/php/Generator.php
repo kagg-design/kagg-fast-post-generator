@@ -108,7 +108,7 @@ class Generator {
 
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_file_put_contents
 		file_put_contents( $temp_filename, $file_contents );
-		chmod( $temp_filename, 0666 );
+		chmod( $temp_filename, 0644 );
 
 		$end = microtime( true );
 
