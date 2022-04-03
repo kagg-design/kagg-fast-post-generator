@@ -124,7 +124,7 @@ class Settings {
 		$icon       = '<img class="kagg-generator-menu-image" src="' . $icon . '">';
 		$menu_title = $icon . '<span class="kagg-generator-menu-title">' . $menu_title . '</span>';
 
-		add_options_page( $page_title, $menu_title, $capability, $slug, $callback );
+		add_submenu_page( 'tools.php', $page_title, $menu_title, $capability, $slug, $callback );
 	}
 
 	/**
