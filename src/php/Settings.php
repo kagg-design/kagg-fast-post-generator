@@ -499,23 +499,46 @@ class Settings {
 
 		global $wpdb;
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->query(
+		$queries = [
+			'START TRANSACTION',
+			"CREATE TABLE {$wpdb->posts}_copy LIKE {$wpdb->posts}",
 			$wpdb->prepare(
-				"DELETE p, pm
-						FROM {$wpdb->posts} p
-							LEFT JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
-						WHERE p.guid like %s",
+				"INSERT INTO {$wpdb->posts}_copy
+				SELECT *
+					FROM {$wpdb->posts} p
+					WHERE p.guid NOT LIKE %s",
 				self::GUID . '%'
-			)
-		);
+			),
+			"DROP TABLE {$wpdb->posts}",
+			"RENAME TABLE {$wpdb->posts}_copy TO {$wpdb->posts}",
+			'COMMIT',
+		];
+
+		ob_start();
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		foreach ( $queries as $query ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			$result = $wpdb->query( $query );
+
+			if ( false === $result ) {
+				$result = $wpdb->query( 'ROLLBACK' );
+				break;
+			}
+		}
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+
+		// We will have some messages here if WP_DEBUG_DISPLAY is on.
+		$error_message = ob_get_clean();
 
 		if ( false === $result ) {
-			wp_send_json_error( esc_html__( 'Error deleting generated posts.', 'kagg-generator' ) );
-		}
-
-		if ( 0 === $result ) {
-			wp_send_json_success( esc_html__( 'No generated posts were found.', 'kagg-generator' ) );
+			wp_send_json_error(
+				sprintf(
+				// translators: 1: Error message.
+					esc_html__( 'Error deleting generated posts: %s.', 'kagg-generator' ),
+					$error_message . $wpdb->last_error
+				)
+			);
 		}
 
 		wp_send_json_success( esc_html__( 'All generated posts have been deleted.', 'kagg-generator' ) );
