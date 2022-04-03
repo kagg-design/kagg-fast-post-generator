@@ -38,9 +38,26 @@ class Settings {
 	const CACHE_FLUSH_ACTION = 'kagg-generator-cache-flush';
 
 	/**
+	 * The plugin delete action.
+	 */
+	const DELETE_ACTION = 'kagg-generator-delete';
+
+	/**
 	 * The name of the option to store plugin settings.
 	 */
 	const OPTION_KEY = 'kagg_generator_settings';
+
+	/**
+	 * The first part of the generated guid.
+	 */
+	const GUID = 'https://generator.kagg.eu/';
+
+	/**
+	 * Generator class instance.
+	 *
+	 * @var Generator
+	 */
+	private $generator;
 
 	/**
 	 * Form fields.
@@ -62,6 +79,8 @@ class Settings {
 	 * @return void
 	 */
 	public function init() {
+		$this->generator = new Generator();
+
 		$this->init_form_fields();
 		$this->init_settings();
 		$this->hooks();
@@ -87,6 +106,7 @@ class Settings {
 		add_action( 'plugins_loaded', [ $this, 'load_textdomain' ], 100 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'admin_enqueue_scripts' ] );
 		add_action( 'wp_ajax_' . self::CACHE_FLUSH_ACTION, [ $this, 'cache_flush' ] );
+		add_action( 'wp_ajax_' . self::DELETE_ACTION, [ $this, 'delete' ] );
 	}
 
 	/**
@@ -150,6 +170,10 @@ class Settings {
 
 			<?php
 			submit_button( __( 'Generate', 'kagg-generate' ), 'secondary', 'kagg-generate-button' );
+			?>
+
+			<?php
+			submit_button( __( 'Delete', 'kagg-generate' ), 'secondary', 'kagg-delete-button' );
 			?>
 
 			<div id="kagg-generator-log"></div>
@@ -434,15 +458,20 @@ class Settings {
 			self::HANDLE,
 			'GeneratorObject',
 			[
-				'generateAction'    => self::GENERATE_ACTION,
-				'generateAjaxUrl'   => KAGG_GENERATOR_URL . '/src/php/ajax.php',
-				'generateNonce'     => wp_create_nonce( self::GENERATE_ACTION ),
-				'cacheFlushAction'  => self::CACHE_FLUSH_ACTION,
-				'cacheFlushAjaxUrl' => admin_url( 'admin-ajax.php' ),
-				'cacheFlushNonce'   => wp_create_nonce( self::CACHE_FLUSH_ACTION ),
-				'nothingToDo'       => esc_html__( 'Nothing to do.', 'kagg-generate' ),
+				'generateAjaxUrl'    => KAGG_GENERATOR_URL . '/src/php/ajax.php',
+				'generateAction'     => self::GENERATE_ACTION,
+				'generateNonce'      => wp_create_nonce( self::GENERATE_ACTION ),
+				'adminAjaxUrl'       => admin_url( 'admin-ajax.php' ),
+				'cacheFlushAction'   => self::CACHE_FLUSH_ACTION,
+				'cacheFlushNonce'    => wp_create_nonce( self::CACHE_FLUSH_ACTION ),
+				'deleteAction'       => self::DELETE_ACTION,
+				'deleteNonce'        => wp_create_nonce( self::DELETE_ACTION ),
+				'nothingToDo'        => esc_html__( 'Nothing to do.', 'kagg-generate' ),
+				'deleteConfirmation' => esc_html__( 'Are you sure to delete all the generated posts?', 'kagg-generate' ),
+				'generating'         => esc_html__( 'Generating posts...', 'kagg-generate' ),
+				'deleting'           => esc_html__( 'Deleting generated posts...', 'kagg-generate' ),
 				// translators: 1: Time.
-				'totalTimeUsed'     => esc_html__( 'Total time used: %s sec.', 'kagg-generate' ),
+				'totalTimeUsed'      => esc_html__( 'Total time used: %s sec.', 'kagg-generate' ),
 			]
 		);
 	}
@@ -453,19 +482,43 @@ class Settings {
 	 * @return void
 	 */
 	public function cache_flush() {
-		// Run a security check.
-		if ( ! check_ajax_referer( self::CACHE_FLUSH_ACTION, 'nonce', false ) ) {
-			wp_send_json_error( esc_html__( 'Your session has expired. Please reload the page.', 'kagg-generator' ) );
-		}
-
-		// Check for permissions.
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( esc_html__( 'You are not allowed to perform this action.', 'kagg-generator' ) );
-		}
+		$this->generator->run_checks( self::CACHE_FLUSH_ACTION );
 
 		wp_cache_flush();
 
 		wp_send_json_success( esc_html__( 'Cache flushed.', 'kagg-generator' ) );
+	}
+
+	/**
+	 * Delete all generated posts.
+	 *
+	 * @return void
+	 */
+	public function delete() {
+		$this->generator->run_checks( self::DELETE_ACTION );
+
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$result = $wpdb->query(
+			$wpdb->prepare(
+				"DELETE p, pm
+						FROM {$wpdb->posts} p
+							LEFT JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
+						WHERE p.guid like %s",
+				self::GUID . '%'
+			)
+		);
+
+		if ( false === $result ) {
+			wp_send_json_error( esc_html__( 'Error deleting generated posts.', 'kagg-generator' ) );
+		}
+
+		if ( 0 === $result ) {
+			wp_send_json_success( esc_html__( 'No generated posts were found.', 'kagg-generator' ) );
+		}
+
+		wp_send_json_success( esc_html__( 'All generated posts have been deleted.', 'kagg-generator' ) );
 	}
 
 	/**

@@ -20,7 +20,7 @@ class Generator {
 	 * @return void
 	 */
 	public function init() {
-		$this->run_checks();
+		$this->run_checks( Settings::GENERATE_ACTION, true );
 
 		ob_start();
 
@@ -97,11 +97,14 @@ class Generator {
 	/**
 	 * Run checks.
 	 *
+	 * @param string $action     Action name.
+	 * @param bool   $check_data Action name.
+	 *
 	 * @return void
 	 */
-	private function run_checks() {
+	public function run_checks( $action, $check_data = false ) {
 		// Run a security check.
-		if ( ! check_ajax_referer( Settings::GENERATE_ACTION, 'nonce', false ) ) {
+		if ( ! check_ajax_referer( $action, 'nonce', false ) ) {
 			wp_send_json_error( esc_html__( 'Your session has expired. Please reload the page.', 'kagg-generator' ) );
 		}
 
@@ -110,7 +113,11 @@ class Generator {
 			wp_send_json_error( esc_html__( 'You are not allowed to perform this action.', 'kagg-generator' ) );
 		}
 
-		// Check for form data.
+		if ( ! $check_data ) {
+			return;
+		}
+
+		// Check for ajax data.
 		if ( empty( $_POST['data'] ) ) {
 			wp_send_json_error( esc_html__( 'Something went wrong while performing this action.', 'kagg-generator' ) );
 		}
@@ -214,7 +221,7 @@ class Generator {
 	 * @return array
 	 */
 	private function get_post_fields( $settings ) {
-		$fields = [ 'post_content', 'post_title', 'post_excerpt', 'post_name', 'post_type' ];
+		$fields = [ 'post_content', 'post_title', 'post_excerpt', 'post_name', 'guid', 'post_type' ];
 
 		// Do not proceed with default column values.
 		if ( 'post' === $settings['post_type'] ) {
@@ -240,6 +247,7 @@ class Generator {
 			'post_title'   => $title,
 			'post_excerpt' => substr( $content, 0, 100 ),
 			'post_name'    => strtolower( $title ),
+			'guid'         => Settings::GUID . $title,
 		];
 
 		// Do not write default 'post' value.

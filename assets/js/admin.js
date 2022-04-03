@@ -1,5 +1,21 @@
 /* global GeneratorObject */
 
+/**
+ * @param GeneratorObject.generateAjaxUrl
+ * @param GeneratorObject.generateAjaxUrl
+ * @param GeneratorObject.generateAction
+ * @param GeneratorObject.generateNonce
+ * @param GeneratorObject.adminAjaxUrl
+ * @param GeneratorObject.cacheFlushAction
+ * @param GeneratorObject.cacheFlushNonce
+ * @param GeneratorObject.deleteAction
+ * @param GeneratorObject.deleteNonce
+ * @param GeneratorObject.nothingToDo
+ * @param GeneratorObject.deleteConfirmation
+ * @param GeneratorObject.generating
+ * @param GeneratorObject.deleting
+ * @param GeneratorObject.totalTimeUsed
+ */
 jQuery( document ).ready( function( $ ) {
 	const logSelector = '#kagg-generator-log';
 	let index, chunkSize, number, data, startTime;
@@ -17,15 +33,13 @@ jQuery( document ).ready( function( $ ) {
 	}
 
 	function cacheFlush() {
-		// noinspection JSUnresolvedVariable
 		data = {
 			action: GeneratorObject.cacheFlushAction,
 			nonce: GeneratorObject.cacheFlushNonce
 		};
 
-		// noinspection JSUnresolvedVariable
 		$.post( {
-			url: GeneratorObject.cacheFlushAjaxUrl,
+			url: GeneratorObject.adminAjaxUrl,
 			data: data,
 		} )
 			.done( function( response ) {
@@ -36,14 +50,12 @@ jQuery( document ).ready( function( $ ) {
 			} )
 			.always( function() {
 				const endTime = performance.now();
-				// noinspection JSUnresolvedVariable
 				showMessage( GeneratorObject.totalTimeUsed.replace( /%s/, ( ( endTime - startTime ) / 1000 ).toFixed( 3 ) ) );
 			} )
 		;
 	}
 
-	function ajax( data ) {
-		// noinspection JSUnresolvedVariable
+	function generateAjax( data ) {
 		$.post( {
 			url: GeneratorObject.generateAjaxUrl,
 			data: data,
@@ -59,7 +71,7 @@ jQuery( document ).ready( function( $ ) {
 					return;
 				}
 
-				ajax( data );
+				generateAjax( data );
 			} )
 			.fail( function( response ) {
 				showErrorMessage( response );
@@ -77,13 +89,13 @@ jQuery( document ).ready( function( $ ) {
 		number = parseInt( $( '#number' ).val() );
 
 		if ( number <= 0 ) {
-			// noinspection JSUnresolvedVariable
 			showMessage( GeneratorObject.nothingToDo );
 
 			return;
 		}
 
-		// noinspection JSUnresolvedVariable
+		showMessage( GeneratorObject.generating );
+
 		data = {
 			action: GeneratorObject.generateAction,
 			data: JSON.stringify( $( 'form#kagg-generator-settings' ).serializeArray() ),
@@ -93,6 +105,39 @@ jQuery( document ).ready( function( $ ) {
 			nonce: GeneratorObject.generateNonce
 		};
 
-		ajax( data, index, chunkSize, number );
+		generateAjax( data, index, chunkSize, number );
+	} );
+
+	$( '#kagg-delete-button' ).on( 'click', function( event ) {
+		event.preventDefault();
+
+		clearMessages();
+
+		if ( ! confirm( GeneratorObject.deleteConfirmation ) ) {
+			return;
+		}
+
+		showMessage( GeneratorObject.deleting );
+
+		startTime = performance.now();
+
+		data = {
+			action: GeneratorObject.deleteAction,
+			nonce: GeneratorObject.deleteNonce
+		};
+
+		$.post( {
+			url: GeneratorObject.adminAjaxUrl,
+			data: data,
+		} )
+			.done( function( response ) {
+				showMessage( response.data );
+			} )
+			.fail( function( response ) {
+				showErrorMessage( response );
+			} )
+			.always( function() {
+				cacheFlush();
+			} );
 	} );
 } );
