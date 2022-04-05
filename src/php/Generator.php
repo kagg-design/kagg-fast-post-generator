@@ -142,7 +142,7 @@ class Generator {
 		}
 
 		for ( $i = 0; $i < $count; $i ++ ) {
-			$result = fputcsv( $f, $this->generate_post( $settings ) );
+			$result = fputcsv( $f, $this->generate_post( $settings ), '|' );
 
 			if ( ! $result ) {
 				throw new RuntimeException( esc_html__( 'Cannot write to a temporary php://temp file.', 'kagg-generator' ) );
@@ -200,7 +200,7 @@ class Generator {
 		$result = $wpdb->query(
 			$wpdb->prepare(
 				"LOAD DATA INFILE %s INTO TABLE $wpdb->posts
-                    FIELDS TERMINATED BY ','
+                    FIELDS TERMINATED BY '|' ENCLOSED BY '\"'
 					( $fields )",
 				$fname
 			)
@@ -239,14 +239,14 @@ class Generator {
 	 * @return array
 	 */
 	private function generate_post( $settings ) {
-		$content = $this->generate_random_string( 2048 );
-		$title   = substr( $content, 0, 20 );
+		$content = implode( "\r\r", Lorem::paragraphs( 12 ) );
+		$title   = substr( Lorem::sentence( 5 ), 0, -1 );
 
 		$post = [
 			'post_content' => $content,
 			'post_title'   => $title,
 			'post_excerpt' => substr( $content, 0, 100 ),
-			'post_name'    => strtolower( $title ),
+			'post_name'    => str_replace( ' ', '-', strtolower( $title ) ),
 			'guid'         => Settings::GUID . $title,
 		];
 
@@ -256,18 +256,5 @@ class Generator {
 		}
 
 		return $post;
-	}
-
-	/**
-	 * Generate random string.
-	 *
-	 * @param int $length String length.
-	 *
-	 * @return string
-	 */
-	private function generate_random_string( $length = 10 ) {
-		$s = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
-		return substr( str_shuffle( str_repeat( $s, ceil( $length / strlen( $s ) ) ) ), 0, $length );
 	}
 }
