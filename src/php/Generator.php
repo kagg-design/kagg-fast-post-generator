@@ -221,7 +221,7 @@ class Generator {
 	 * @return array
 	 */
 	private function get_post_fields( $settings ) {
-		$fields = [ 'post_content', 'post_title', 'post_excerpt', 'post_name', 'guid', 'post_type' ];
+		$fields = [ 'post_content', 'post_title', 'post_excerpt', 'post_name', 'guid', 'post_date', 'post_type' ];
 
 		// Do not proceed with default column values.
 		if ( 'post' === $settings['post_type'] ) {
@@ -248,6 +248,7 @@ class Generator {
 			'post_excerpt' => substr( $content, 0, 100 ),
 			'post_name'    => str_replace( ' ', '-', strtolower( $title ) ),
 			'guid'         => Settings::GUID . $title,
+			'post_date'    => date( 'Y-m-d H:i:s' ),
 		];
 
 		// Do not write default 'post' value.
