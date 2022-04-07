@@ -237,6 +237,7 @@ class Generator {
 	 * @param array $settings Settings.
 	 *
 	 * @return array
+	 * @noinspection NonSecureUniqidUsageInspection
 	 */
 	private function generate_post( $settings ) {
 		$content = implode( "\r\r", Lorem::paragraphs( 12 ) );
@@ -246,7 +247,7 @@ class Generator {
 			'post_content' => $content,
 			'post_title'   => $title,
 			'post_excerpt' => substr( $content, 0, 100 ),
-			'post_name'    => str_replace( ' ', '-', strtolower( $title ) ),
+			'post_name'    => str_replace( ' ', '-', strtolower( $title ) ) . '-' . uniqid(),
 			'guid'         => Settings::GUID . $title,
 		];
 
