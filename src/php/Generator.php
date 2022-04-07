@@ -15,12 +15,29 @@ use RuntimeException;
 class Generator {
 
 	/**
+	 * WordPress site date.
+	 *
+	 * @var string
+	 */
+	private $wp_date;
+
+	/**
+	 * GMT date.
+	 *
+	 * @var string
+	 */
+	private $gmt_date;
+
+	/**
 	 * Init class.
 	 *
 	 * @return void
 	 */
 	public function init() {
 		$this->run_checks( Settings::GENERATE_ACTION, true );
+
+		$this->wp_date  = wp_date( 'Y-m-d H:i:s' );
+		$this->gmt_date = gmdate( 'Y-m-d H:i:s' );
 
 		ob_start();
 
@@ -221,7 +238,18 @@ class Generator {
 	 * @return array
 	 */
 	private function get_post_fields( $settings ) {
-		$fields = [ 'post_content', 'post_title', 'post_excerpt', 'post_name', 'guid', 'post_date', 'post_type' ];
+		$fields = [
+			'post_date',
+			'post_date_gmt',
+			'post_content',
+			'post_title',
+			'post_excerpt',
+			'post_name',
+			'post_modified',
+			'post_modified_gmt',
+			'guid',
+			'post_type',
+		];
 
 		// Do not proceed with default column values.
 		if ( 'post' === $settings['post_type'] ) {
@@ -244,12 +272,15 @@ class Generator {
 		$title   = substr( Lorem::sentence( 5 ), 0, -1 );
 
 		$post = [
-			'post_content' => $content,
-			'post_title'   => $title,
-			'post_excerpt' => substr( $content, 0, 100 ),
-			'post_name'    => str_replace( ' ', '-', strtolower( $title ) ) . '-' . uniqid(),
-			'guid'         => Settings::GUID . $title,
-			'post_date'    => date( 'Y-m-d H:i:s' ),
+			'post_date'         => $this->wp_date,
+			'post_date_gmt'     => $this->gmt_date,
+			'post_content'      => $content,
+			'post_title'        => $title,
+			'post_excerpt'      => substr( $content, 0, 100 ),
+			'post_name'         => str_replace( ' ', '-', strtolower( $title ) ) . '-' . uniqid(),
+			'post_modified'     => $this->wp_date,
+			'post_modified_gmt' => $this->gmt_date,
+			'guid'              => Settings::GUID . $title,
 		];
 
 		// Do not write default 'post' value.
