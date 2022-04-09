@@ -124,7 +124,7 @@ class Settings {
 	public function add_settings_link( $links, $file ) {
 		$action_links = [
 			'settings' =>
-				'<a href="' . admin_url( 'options-general.php?page=' . self::PAGE ) .
+				'<a href="' . admin_url( 'tools.php?page=' . self::PAGE ) .
 				'" aria-label="' .
 				esc_attr__( 'View KAGG Fast Post Generator settings', 'kagg-generator' ) .
 				'">' .
