@@ -37,6 +37,9 @@ Yes, you can!
 
 == Changelog ==
 
+= 1.1.0 =
+* Added writing of all post fields initially created by WP Core for a post.
+
 = 1.0.0 =
 
 * Initial release
