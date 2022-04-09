@@ -62,7 +62,7 @@ class Generator {
 		];
 
 		// Do not write default 'post' value.
-		if ( 'post' !== $settings['post_type'] ) {
+		if ( 'post' === $settings['post_type'] ) {
 			unset( $this->post_stub['post_type'] );
 		}
 
@@ -260,7 +260,7 @@ class Generator {
 
 		// Do not proceed with default column values.
 		if ( 'post' === $settings['post_type'] ) {
-			unset( $fields['post_type'] );
+			$fields = array_diff( $fields, [ 'post_type' ] );
 		}
 
 		return $fields;
