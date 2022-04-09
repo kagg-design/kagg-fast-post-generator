@@ -421,7 +421,7 @@ class Lorem {
 	 * @example array($paragraph1, $paragraph2, $paragraph3)
 	 */
 	public static function paragraphs( $nb = 3, $as_text = false ) {
-		$paragraphs = array();
+		$paragraphs = [];
 
 		for ( $i = 0; $i < $nb; $i ++ ) {
 			$paragraphs [] = static::paragraph();

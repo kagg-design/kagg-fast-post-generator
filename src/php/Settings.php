@@ -5,6 +5,9 @@
  * @package kagg/generator
  */
 
+// phpcs:ignore Generic.Commenting.DocComment.MissingShort
+/** @noinspection PhpUnnecessaryCurlyVarSyntaxInspection */
+
 namespace KAGG\Generator;
 
 /**
@@ -493,6 +496,7 @@ class Settings {
 	 * Delete all generated posts.
 	 *
 	 * @return void
+	 * @noinspection SqlResolve
 	 */
 	public function delete() {
 		$this->generator->run_checks( self::DELETE_ACTION );

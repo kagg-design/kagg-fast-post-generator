@@ -78,9 +78,12 @@ class Generator {
 			unset( $this->post_stub['post_type'] );
 		}
 
+		$time1 = 0;
+		$time2 = 0;
+
 		try {
 			$start = microtime( true );
-			$this->generate_posts( $count, $settings, $temp_filename );
+			$this->generate_posts( $count, $temp_filename );
 			$end   = microtime( true );
 			$time1 = round( $end - $start, 3 );
 
@@ -97,6 +100,8 @@ class Generator {
 			$error_message = ob_get_clean() . $ex->getMessage();
 		}
 
+		unlink( $temp_filename );
+
 		if ( $error || $error_message ) {
 			wp_send_json_error(
 				sprintf(
@@ -108,8 +113,6 @@ class Generator {
 				)
 			);
 		}
-
-		unlink( $temp_filename );
 
 		wp_send_json_success(
 			sprintf(
@@ -159,13 +162,12 @@ class Generator {
 	 * Generate posts.
 	 *
 	 * @param int    $count         Number of posts to generate.
-	 * @param array  $settings      Settings.
 	 * @param string $temp_filename Temporary filename.
 	 *
 	 * @return void
 	 * @throws RuntimeException With error message.
 	 */
-	private function generate_posts( $count, $settings, $temp_filename ) {
+	private function generate_posts( $count, $temp_filename ) {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fopen
 		$f = fopen( 'php://temp', 'wb+' );
 
@@ -174,7 +176,7 @@ class Generator {
 		}
 
 		for ( $i = 0; $i < $count; $i ++ ) {
-			$result = fputcsv( $f, $this->generate_post( $settings ), '|' );
+			$result = fputcsv( $f, $this->generate_post(), '|' );
 
 			if ( ! $result ) {
 				throw new RuntimeException( esc_html__( 'Cannot write to a temporary php://temp file.', 'kagg-generator' ) );
@@ -279,12 +281,10 @@ class Generator {
 	/**
 	 * Generate post.
 	 *
-	 * @param array $settings Settings.
-	 *
 	 * @return array
 	 * @noinspection NonSecureUniqidUsageInspection
 	 */
-	private function generate_post( $settings ) {
+	private function generate_post() {
 		$content = implode( "\r\r", Lorem::paragraphs( 12 ) );
 		$title   = substr( Lorem::sentence( 5 ), 0, - 1 );
 		$name    = str_replace( ' ', '-', strtolower( $title ) ) . '-' . uniqid();
