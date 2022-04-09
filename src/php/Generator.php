@@ -15,6 +15,13 @@ use RuntimeException;
 class Generator {
 
 	/**
+	 * Post author.
+	 *
+	 * @var int
+	 */
+	private $author;
+
+	/**
 	 * WordPress site date.
 	 *
 	 * @var string
@@ -36,6 +43,8 @@ class Generator {
 	public function init() {
 		$this->run_checks( Settings::GENERATE_ACTION, true );
 
+		$user           = wp_get_current_user();
+		$this->author   = $user ? $user->ID : 0;
 		$this->wp_date  = wp_date( 'Y-m-d H:i:s' );
 		$this->gmt_date = gmdate( 'Y-m-d H:i:s' );
 
@@ -239,6 +248,7 @@ class Generator {
 	 */
 	private function get_post_fields( $settings ) {
 		$fields = [
+			'post_author',
 			'post_date',
 			'post_date_gmt',
 			'post_content',
@@ -272,6 +282,7 @@ class Generator {
 		$title   = substr( Lorem::sentence( 5 ), 0, -1 );
 
 		$post = [
+			'post_author'       => $this->author,
 			'post_date'         => $this->wp_date,
 			'post_date_gmt'     => $this->gmt_date,
 			'post_content'      => $content,
