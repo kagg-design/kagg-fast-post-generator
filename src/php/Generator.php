@@ -15,25 +15,11 @@ use RuntimeException;
 class Generator {
 
 	/**
-	 * Post author.
+	 * Constant part of the post.
 	 *
-	 * @var int
+	 * @var array
 	 */
-	private $author;
-
-	/**
-	 * WordPress site date.
-	 *
-	 * @var string
-	 */
-	private $wp_date;
-
-	/**
-	 * GMT date.
-	 *
-	 * @var string
-	 */
-	private $gmt_date;
+	private $post_stub;
 
 	/**
 	 * Init class.
@@ -42,11 +28,6 @@ class Generator {
 	 */
 	public function init() {
 		$this->run_checks( Settings::GENERATE_ACTION, true );
-
-		$user           = wp_get_current_user();
-		$this->author   = $user ? $user->ID : 0;
-		$this->wp_date  = wp_date( 'Y-m-d H:i:s' );
-		$this->gmt_date = gmdate( 'Y-m-d H:i:s' );
 
 		ob_start();
 
@@ -71,6 +52,31 @@ class Generator {
 		$steps         = (int) ceil( $number / $chunk_size );
 		$temp_filename = tempnam( sys_get_temp_dir(), 'kagg-generator-' );
 		$error         = false;
+
+		$user     = wp_get_current_user();
+		$wp_date  = wp_date( 'Y-m-d H:i:s' );
+		$gmt_date = gmdate( 'Y-m-d H:i:s' );
+
+		// We have to init all post fields here in the same order as provided in get_post_fields().
+		// Otherwise, csv file won't be created properly.
+		$this->post_stub = [
+			'post_author'       => $user ? $user->ID : 0,
+			'post_date'         => $wp_date,
+			'post_date_gmt'     => $gmt_date,
+			'post_content'      => '',
+			'post_title'        => '',
+			'post_excerpt'      => '',
+			'post_name'         => '',
+			'post_modified'     => $wp_date,
+			'post_modified_gmt' => $gmt_date,
+			'guid'              => '',
+			'post_type'         => $settings['post_type'],
+		];
+
+		// Do not write default 'post' value.
+		if ( 'post' !== $settings['post_type'] ) {
+			unset( $this->post_stub['post_type'] );
+		}
 
 		try {
 			$start = microtime( true );
@@ -247,6 +253,7 @@ class Generator {
 	 * @return array
 	 */
 	private function get_post_fields( $settings ) {
+		// Here we list the fields in the same order as in wp_posts table.
 		$fields = [
 			'post_author',
 			'post_date',
@@ -263,7 +270,7 @@ class Generator {
 
 		// Do not proceed with default column values.
 		if ( 'post' === $settings['post_type'] ) {
-			$fields = array_diff( $fields, [ 'post_type' ] );
+			unset( $fields['post_type'] );
 		}
 
 		return $fields;
@@ -279,25 +286,15 @@ class Generator {
 	 */
 	private function generate_post( $settings ) {
 		$content = implode( "\r\r", Lorem::paragraphs( 12 ) );
-		$title   = substr( Lorem::sentence( 5 ), 0, -1 );
+		$title   = substr( Lorem::sentence( 5 ), 0, - 1 );
+		$name    = str_replace( ' ', '-', strtolower( $title ) ) . '-' . uniqid();
 
-		$post = [
-			'post_author'       => $this->author,
-			'post_date'         => $this->wp_date,
-			'post_date_gmt'     => $this->gmt_date,
-			'post_content'      => $content,
-			'post_title'        => $title,
-			'post_excerpt'      => substr( $content, 0, 100 ),
-			'post_name'         => str_replace( ' ', '-', strtolower( $title ) ) . '-' . uniqid(),
-			'post_modified'     => $this->wp_date,
-			'post_modified_gmt' => $this->gmt_date,
-			'guid'              => Settings::GUID . $title,
-		];
-
-		// Do not write default 'post' value.
-		if ( 'post' !== $settings['post_type'] ) {
-			$post['post_type'] = $settings['post_type'];
-		}
+		$post                 = $this->post_stub;
+		$post['post_content'] = $content;
+		$post['post_title']   = $title;
+		$post['post_excerpt'] = substr( $content, 0, 100 );
+		$post['post_name']    = $name;
+		$post['guid']         = Settings::GUID . $name;
 
 		return $post;
 	}
