@@ -5,6 +5,9 @@
  * @package kagg/generator
  */
 
+/**
+ * Set short WordPress init.
+ */
 const SHORTINIT = true;
 
 // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
