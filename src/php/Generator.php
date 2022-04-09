@@ -26,24 +26,12 @@ class Generator {
 	 *
 	 * @return void
 	 */
-	public function init() {
+	public function run() {
 		$this->run_checks( Settings::GENERATE_ACTION, true );
 
 		ob_start();
 
-		$data       = json_decode(
-			html_entity_decode( filter_input( INPUT_POST, 'data', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) ),
-			false
-		);
-		$settings   = [];
-		$option_key = Settings::OPTION_KEY;
-
-		foreach ( $data as $datum ) {
-			if ( preg_match( "/$option_key\[(.+)]/", $datum->name, $m ) ) {
-				$settings[ $m[1] ] = $datum->value;
-			}
-		}
-
+		$settings      = $this->get_settings();
 		$index         = filter_input( INPUT_POST, 'index', FILTER_VALIDATE_INT );
 		$chunk_size    = (int) $settings['chunk_size'];
 		$number        = (int) $settings['number'];
@@ -297,5 +285,27 @@ class Generator {
 		$post['guid']         = Settings::GUID . $name;
 
 		return $post;
+	}
+
+	/**
+	 * Get settings from input and option.
+	 *
+	 * @return array
+	 */
+	private function get_settings() {
+		$data       = json_decode(
+			html_entity_decode( filter_input( INPUT_POST, 'data', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) ),
+			false
+		);
+		$settings   = [];
+		$option_key = Settings::OPTION_KEY;
+
+		foreach ( $data as $datum ) {
+			if ( preg_match( "/$option_key\[(.+)]/", $datum->name, $m ) ) {
+				$settings[ $m[1] ] = $datum->value;
+			}
+		}
+
+		return $settings;
 	}
 }

@@ -451,28 +451,10 @@ class Lorem {
 
 		$text = [];
 		while ( empty( $text ) ) {
-			$size = 0;
-
-			// Until $max_num_chars is reached.
-			while ( $size < $max_num_chars ) {
-				$word   = ( $size ? ' ' : '' ) . static::$type();
-				$text[] = $word;
-
-				$size += strlen( $word );
-			}
-
-			array_pop( $text );
+			$text = self::get_text( $max_num_chars, $type, $text );
 		}
 
-		if ( 'word' === $type ) {
-			// Capitalize first letter.
-			$text[0] = ucwords( $text[0] );
-
-			// End the sentence with full stop.
-			$text[ count( $text ) - 1 ] .= '.';
-		}
-
-		return implode( '', $text );
+		return self::text_array_to_string( $type, $text );
 	}
 
 	/**
@@ -503,5 +485,50 @@ class Lorem {
 		}
 
 		return $keys;
+	}
+
+	/**
+	 * Get text.
+	 *
+	 * @param int    $max_num_chars Max number of characters.
+	 * @param string $type Text type.
+	 * @param array  $text Text.
+	 *
+	 * @return array
+	 */
+	private static function get_text( $max_num_chars, $type, $text ) {
+		$size = 0;
+
+		// Until $max_num_chars is reached.
+		while ( $size < $max_num_chars ) {
+			$word   = ( $size ? ' ' : '' ) . static::$type();
+			$text[] = $word;
+
+			$size += strlen( $word );
+		}
+
+		array_pop( $text );
+
+		return $text;
+	}
+
+	/**
+	 * Convert text array to string.
+	 *
+	 * @param string $type Text element type.
+	 * @param array  $text Text.
+	 *
+	 * @return string
+	 */
+	private static function text_array_to_string( $type, array $text ) {
+		if ( 'word' === $type ) {
+			// Capitalize first letter.
+			$text[0] = strtoupper( $text[0] );
+
+			// End the sentence with full stop.
+			$text[ count( $text ) - 1 ] .= '.';
+		}
+
+		return implode( '', $text );
 	}
 }

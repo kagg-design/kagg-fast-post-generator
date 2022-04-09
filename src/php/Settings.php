@@ -252,6 +252,7 @@ class Settings {
 		}
 	}
 
+	// phpcs:disable Generic.Metrics.CyclomaticComplexity.MaxExceeded, Generic.Metrics.NestingLevel.MaxExceeded
 	/**
 	 * Output settings field.
 	 *
@@ -399,6 +400,7 @@ class Settings {
 			printf( '<p class="description">%s</p>', esc_html( $supplemental ) );
 		}
 	}
+	// phpcs:enable Generic.Metrics.CyclomaticComplexity.MaxExceeded, Generic.Metrics.NestingLevel.MaxExceeded
 
 	/**
 	 * Filter plugin option update.
