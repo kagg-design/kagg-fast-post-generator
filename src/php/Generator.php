@@ -15,7 +15,7 @@ use RuntimeException;
 class Generator {
 
 	/**
-	 * Name of the local_infile mysql variable.
+	 * Name of the local_infile MySQL variable.
 	 */
 	const LOCAL_INFILE = 'local_infile';
 
@@ -27,7 +27,7 @@ class Generator {
 	private $post_stub;
 
 	/**
-	 * Value of the local_infile mysql variable.
+	 * Value of the local_infile MySQL variable.
 	 *
 	 * @var string
 	 */

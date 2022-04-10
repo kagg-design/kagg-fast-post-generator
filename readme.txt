@@ -37,6 +37,9 @@ Yes, you can!
 
 == Changelog ==
 
+= 1.2.0 =
+* Added ability to work on Linux servers.
+
 = 1.1.0 =
 * Added writing of all post fields initially created by WP Core for a post.
 
