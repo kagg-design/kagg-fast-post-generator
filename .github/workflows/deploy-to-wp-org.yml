@@ -43,7 +43,6 @@ jobs:
           SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
 
       - name: Upload release asset
-        if: always()
         uses: softprops/action-gh-release@v1
         with:
           files: ${{github.workspace}}/${{ github.event.repository.name }}.zip
