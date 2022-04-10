@@ -222,18 +222,6 @@ class Generator {
 				)
 			);
 		}
-
-		$result = chmod( $temp_filename, 0777 );
-
-		if ( ! $result ) {
-			throw new RuntimeException(
-				sprintf(
-				// translators: 1: Temp filename.
-					esc_html__( 'Cannot set permissions to the temporary file %s.', 'kagg-generator' ),
-					$temp_filename
-				)
-			);
-		}
 	}
 
 	/**
