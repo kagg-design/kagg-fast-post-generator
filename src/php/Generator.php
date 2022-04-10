@@ -15,11 +15,37 @@ use RuntimeException;
 class Generator {
 
 	/**
+	 * Name of the local_infile mysql variable.
+	 */
+	const LOCAL_INFILE = 'local_infile';
+
+	/**
 	 * Constant part of the post.
 	 *
 	 * @var array
 	 */
 	private $post_stub;
+
+	/**
+	 * Value of the local_infile mysql variable.
+	 *
+	 * @var string
+	 */
+	private $local_infile_value;
+
+	/**
+	 * Use LOCAL in the MySQL statement LOAD DATA [LOCAL] INFILE.
+	 *
+	 * @var bool
+	 */
+	private $use_local_infile;
+
+	/**
+	 * Class constructor.
+	 */
+	public function __construct() {
+		$this->use_local_infile = PHP_OS !== 'WINNT';
+	}
 
 	/**
 	 * Init class.
@@ -175,18 +201,6 @@ class Generator {
 
 		$file_contents = stream_get_contents( $f );
 
-		$result = chmod( $temp_filename, 0644 );
-
-		if ( ! $result ) {
-			throw new RuntimeException(
-				sprintf(
-				// translators: 1: Temp filename.
-					esc_html__( 'Cannot set permissions to the temporary file %s.', 'kagg-generator' ),
-					$temp_filename
-				)
-			);
-		}
-
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_file_put_contents
 		$result = file_put_contents( $temp_filename, $file_contents );
 
@@ -195,6 +209,18 @@ class Generator {
 				sprintf(
 				// translators: 1: Temp filename.
 					esc_html__( 'Cannot write to the temporary file %s.', 'kagg-generator' ),
+					$temp_filename
+				)
+			);
+		}
+
+		$result = chmod( $temp_filename, 0777 );
+
+		if ( ! $result ) {
+			throw new RuntimeException(
+				sprintf(
+				// translators: 1: Temp filename.
+					esc_html__( 'Cannot set permissions to the temporary file %s.', 'kagg-generator' ),
 					$temp_filename
 				)
 			);
@@ -217,11 +243,15 @@ class Generator {
 
 		$fields = implode( ', ', $this->get_post_fields( $settings ) );
 
+		$this->set_local_infile();
+
+		$local = $this->use_local_infile ? 'LOCAL' : '';
+
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared
 		$result = $wpdb->query(
 			$wpdb->prepare(
-				"LOAD DATA INFILE %s INTO TABLE $wpdb->posts
+				"LOAD DATA $local INFILE %s INTO TABLE $wpdb->posts
                     FIELDS TERMINATED BY '|' ENCLOSED BY '\"'
 					( $fields )",
 				$fname
@@ -232,6 +262,72 @@ class Generator {
 
 		if ( false === $result ) {
 			throw new RuntimeException( $wpdb->last_error );
+		}
+
+		$this->revert_local_infile();
+	}
+
+	/**
+	 * Set local_infile variable to 'ON' if needed.
+	 *
+	 * @return void
+	 * @throws RuntimeException With error message.
+	 */
+	private function set_local_infile() {
+		global $wpdb;
+
+		if ( ! $this->use_local_infile ) {
+			return;
+		}
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$result = $wpdb->get_row(
+			$wpdb->prepare( 'SHOW VARIABLES LIKE %s', self::LOCAL_INFILE ),
+			ARRAY_A
+		);
+
+		if ( false === $result ) {
+			throw new RuntimeException( $wpdb->last_error );
+		}
+
+		$this->local_infile_value = isset( $result['Value'] ) ? $result['Value'] : '';
+
+		if ( 'ON' !== $this->local_infile_value ) {
+			$result = $wpdb->query( "SET GLOBAL local_infile = 'ON'" );
+
+			if ( false === $result ) {
+				throw new RuntimeException( $wpdb->last_error );
+			}
+		}
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	}
+
+	/**
+	 * Revert local variable if needed.
+	 *
+	 * @return void
+	 * @throws RuntimeException With error message.
+	 */
+	private function revert_local_infile() {
+		global $wpdb;
+
+		if ( ! $this->use_local_infile ) {
+			return;
+		}
+
+		if ( 'ON' !== $this->local_infile_value ) {
+			// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$result = $wpdb->query(
+				$wpdb->prepare(
+					'SET GLOBAL local_infile = %s',
+					$this->local_infile_value
+				)
+			);
+			// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+
+			if ( false === $result ) {
+				throw new RuntimeException( $wpdb->last_error );
+			}
 		}
 	}
 
