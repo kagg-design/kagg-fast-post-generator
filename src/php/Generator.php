@@ -44,7 +44,16 @@ class Generator {
 	 * Class constructor.
 	 */
 	public function __construct() {
-		$this->use_local_infile = PHP_OS !== 'WINNT';
+		$this->use_local_infile = $this->use_local_infile();
+	}
+
+	/**
+	 * Determine if we should use LOCAL in the MySQL statement LOAD DATA [LOCAL] INFILE.
+	 *
+	 * @return bool
+	 */
+	public function use_local_infile() {
+		return PHP_OS !== 'WINNT';
 	}
 
 	/**
