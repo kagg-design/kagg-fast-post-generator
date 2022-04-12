@@ -41,19 +41,25 @@ class Generator {
 	private $use_local_infile;
 
 	/**
-	 * Class constructor.
-	 */
-	public function __construct() {
-		$this->use_local_infile = $this->use_local_infile();
-	}
-
-	/**
 	 * Determine if we should use LOCAL in the MySQL statement LOAD DATA [LOCAL] INFILE.
 	 *
 	 * @return bool
+	 * @throws RuntimeException With error message.
 	 */
 	public function use_local_infile() {
-		return PHP_OS !== 'WINNT';
+		global $wpdb;
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$result = $wpdb->get_row(
+			$wpdb->prepare( 'SHOW VARIABLES LIKE %s', 'secure_file_priv' ),
+			ARRAY_A
+		);
+
+		if ( false === $result ) {
+			throw new RuntimeException( $wpdb->last_error );
+		}
+
+		return ! empty( $result['Value'] );
 	}
 
 	/**
@@ -66,15 +72,16 @@ class Generator {
 
 		ob_start();
 
-		$settings      = $this->get_settings();
-		$index         = filter_input( INPUT_POST, 'index', FILTER_VALIDATE_INT );
-		$chunk_size    = (int) $settings['chunk_size'];
-		$number        = (int) $settings['number'];
-		$count         = min( $number - $index, $chunk_size );
-		$step          = (int) floor( $index / $chunk_size ) + 1;
-		$steps         = (int) ceil( $number / $chunk_size );
-		$temp_filename = tempnam( sys_get_temp_dir(), 'kagg-generator-' );
-		$error         = false;
+		$this->use_local_infile = $this->use_local_infile();
+		$settings               = $this->get_settings();
+		$index                  = filter_input( INPUT_POST, 'index', FILTER_VALIDATE_INT );
+		$chunk_size             = (int) $settings['chunk_size'];
+		$number                 = (int) $settings['number'];
+		$count                  = min( $number - $index, $chunk_size );
+		$step                   = (int) floor( $index / $chunk_size ) + 1;
+		$steps                  = (int) ceil( $number / $chunk_size );
+		$temp_filename          = tempnam( sys_get_temp_dir(), 'kagg-generator-' );
+		$error                  = false;
 
 		$user     = wp_get_current_user();
 		$wp_date  = wp_date( 'Y-m-d H:i:s' );
