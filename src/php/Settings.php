@@ -110,6 +110,7 @@ class Settings {
 		add_action( 'admin_enqueue_scripts', [ $this, 'admin_enqueue_scripts' ] );
 		add_action( 'wp_ajax_' . self::CACHE_FLUSH_ACTION, [ $this, 'cache_flush' ] );
 		add_action( 'wp_ajax_' . self::DELETE_ACTION, [ $this, 'delete' ] );
+		add_action( 'wp_ajax_' . self::GENERATE_ACTION, [ $this, 'generate' ] );
 	}
 
 	/**
@@ -463,7 +464,7 @@ class Settings {
 			self::HANDLE,
 			'GeneratorObject',
 			[
-				'generateAjaxUrl'    => KAGG_GENERATOR_URL . '/src/php/ajax.php',
+				'generateAjaxUrl'    => admin_url( 'admin-ajax.php' ),
 				'generateAction'     => self::GENERATE_ACTION,
 				'generateNonce'      => wp_create_nonce( self::GENERATE_ACTION ),
 				'adminAjaxUrl'       => admin_url( 'admin-ajax.php' ),
@@ -548,6 +549,15 @@ class Settings {
 		}
 
 		wp_send_json_success( esc_html__( 'All generated posts have been deleted.', 'kagg-generator' ) );
+	}
+
+	/**
+	 * Generate posts.
+	 *
+	 * @return void
+	 */
+	public function generate() {
+		$this->generator->run();
 	}
 
 	/**
