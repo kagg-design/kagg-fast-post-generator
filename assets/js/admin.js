@@ -28,6 +28,10 @@ jQuery( document ).ready( function( $ ) {
 		$( logSelector ).append( `<div>${message}</div>` );
 	}
 
+	function showSuccessMessage( response ) {
+		showMessage( typeof response.data !== 'undefined' ? response.data: response );
+	}
+
 	function showErrorMessage( response ) {
 		showMessage( response.responseText.replace( /^(.+?)<!DOCTYPE.+$/gs, '$1' ).replace( /\n/gs, '<br />' ) );
 	}
@@ -43,7 +47,7 @@ jQuery( document ).ready( function( $ ) {
 			data: data,
 		} )
 			.done( function( response ) {
-				showMessage( response.data );
+				showSuccessMessage( response );
 			} )
 			.fail( function( response ) {
 				showErrorMessage( response );
@@ -61,7 +65,7 @@ jQuery( document ).ready( function( $ ) {
 			data: data,
 		} )
 			.done( function( response ) {
-				showMessage( response.data );
+				showSuccessMessage( response );
 
 				data.index += data.chunkSize;
 
@@ -131,7 +135,7 @@ jQuery( document ).ready( function( $ ) {
 			data: data,
 		} )
 			.done( function( response ) {
-				showMessage( response.data );
+				showSuccessMessage( response );
 			} )
 			.fail( function( response ) {
 				showErrorMessage( response );

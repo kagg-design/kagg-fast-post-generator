@@ -11,10 +11,9 @@
 const SHORTINIT = true;
 
 // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-$root = isset( $_SERVER['DOCUMENT_ROOT'] ) ? filter_var( $_SERVER['DOCUMENT_ROOT'], FILTER_SANITIZE_STRING ) : '';
+$root = isset( $_SERVER['SCRIPT_FILENAME'] ) ? filter_var( $_SERVER['SCRIPT_FILENAME'], FILTER_SANITIZE_STRING ) : '';
+$root = dirname( dirname( dirname( dirname( dirname( dirname( $root ) ) ) ) ) );
 
-// Some servers return document root with trailing slash.
-$root = rtrim( $root, '/\\' );
 require $root . '/wp-load.php';
 
 // Components needed for i18n to work properly.
