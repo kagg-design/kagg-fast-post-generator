@@ -72,9 +72,17 @@ class Generator {
 
 		ob_start();
 
+		// Nonce is checked by check_ajax_referer() in run_checks().
+		// phpcs:disable WordPress.Security.NonceVerification.Missing
+		$index = isset( $_POST['index'] ) ? (int) sanitize_text_field( wp_unslash( $_POST['index'] ) ) : 0;
+		$data  = json_decode(
+			isset( $_POST['data'] ) ? sanitize_text_field( wp_unslash( $_POST['data'] ) ) : '',
+			false
+		);
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		$settings               = $this->get_settings( $data );
 		$this->use_local_infile = $this->use_local_infile();
-		$settings               = $this->get_settings();
-		$index                  = filter_input( INPUT_POST, 'index', FILTER_VALIDATE_INT );
 		$chunk_size             = (int) $settings['chunk_size'];
 		$number                 = (int) $settings['number'];
 		$count                  = min( $number - $index, $chunk_size );
@@ -83,30 +91,7 @@ class Generator {
 		$temp_filename          = tempnam( sys_get_temp_dir(), 'kagg-generator-' );
 		$error                  = false;
 
-		$user     = wp_get_current_user();
-		$wp_date  = wp_date( 'Y-m-d H:i:s' );
-		$gmt_date = gmdate( 'Y-m-d H:i:s' );
-
-		// We have to init all post fields here in the same order as provided in get_post_fields().
-		// Otherwise, csv file won't be created properly.
-		$this->post_stub = [
-			'post_author'       => $user ? $user->ID : 0,
-			'post_date'         => $wp_date,
-			'post_date_gmt'     => $gmt_date,
-			'post_content'      => '',
-			'post_title'        => '',
-			'post_excerpt'      => '',
-			'post_name'         => '',
-			'post_modified'     => $wp_date,
-			'post_modified_gmt' => $gmt_date,
-			'guid'              => '',
-			'post_type'         => $settings['post_type'],
-		];
-
-		// Do not write default 'post' value.
-		if ( 'post' === $settings['post_type'] ) {
-			unset( $this->post_stub['post_type'] );
-		}
+		$this->prepare_post_stub( $settings['post_type'] );
 
 		$time1 = 0;
 		$time2 = 0;
@@ -390,13 +375,11 @@ class Generator {
 	/**
 	 * Get settings from input and option.
 	 *
+	 * @param array $data Form data.
+	 *
 	 * @return array
 	 */
-	private function get_settings() {
-		$data       = json_decode(
-			html_entity_decode( filter_input( INPUT_POST, 'data', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) ),
-			false
-		);
+	private function get_settings( $data ) {
 		$settings   = [];
 		$option_key = Settings::OPTION_KEY;
 
@@ -407,5 +390,39 @@ class Generator {
 		}
 
 		return $settings;
+	}
+
+	/**
+	 * Prepare post stub.
+	 *
+	 * @param string $post_type Post type.
+	 *
+	 * @return void
+	 */
+	private function prepare_post_stub( $post_type ) {
+		$user     = wp_get_current_user();
+		$wp_date  = wp_date( 'Y-m-d H:i:s' );
+		$gmt_date = gmdate( 'Y-m-d H:i:s' );
+
+		// We have to init all post fields here in the same order as provided in get_post_fields().
+		// Otherwise, csv file won't be created properly.
+		$this->post_stub = [
+			'post_author'       => $user ? $user->ID : 0,
+			'post_date'         => $wp_date,
+			'post_date_gmt'     => $gmt_date,
+			'post_content'      => '',
+			'post_title'        => '',
+			'post_excerpt'      => '',
+			'post_name'         => '',
+			'post_modified'     => $wp_date,
+			'post_modified_gmt' => $gmt_date,
+			'guid'              => '',
+			'post_type'         => $post_type,
+		];
+
+		// Do not write default 'post' value.
+		if ( 'post' === $post_type ) {
+			unset( $this->post_stub['post_type'] );
+		}
 	}
 }
