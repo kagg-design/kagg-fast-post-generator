@@ -3,7 +3,7 @@ Contributors: kaggdesign
 Tags: generate posts, generate pages, development, bulk generate
 Requires at least: 5.0
 Tested up to: 6.0
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -37,7 +37,7 @@ Yes, you can!
 
 == Changelog ==
 
-= 1.3.0 =
+= 1.3.1 =
 * Tested with WordPress 6.0
 
 = 1.2.0 =
