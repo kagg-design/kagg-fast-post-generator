@@ -29,6 +29,8 @@ The Fast Post Generator plugin is able to generate millions of posts/pages in mi
 1. Upload `kagg-fast-post-generator` folder to the `/wp-content/plugins/` directory.
 2. Activate the plugin through the 'Plugins' menu in WordPress.
 
+== Frequently Asked Questions ==
+
 = Can I contribute? =
 
 Yes, you can!
