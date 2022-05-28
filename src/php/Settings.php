@@ -505,9 +505,11 @@ class Settings {
 	 * @noinspection SqlResolve
 	 */
 	public function delete() {
-		$registered_items = $this->generator->get_registered_items();
+		$this->generator->run_checks( self::DELETE_ACTION );
 
-		$db_locations = [];
+		$registered_items = $this->generator->get_registered_items();
+		$db_locations     = [];
+		$result           = false;
 
 		foreach ( $registered_items as $item_type => $item_classname ) {
 
@@ -523,12 +525,16 @@ class Settings {
 				continue;
 			}
 
-			$this->delete_items( $item_handler );
+			$result = $this->delete_items( $item_handler ) || $result;
 
 			$db_locations[] = $db_location;
 		}
 
-		wp_send_json_success( esc_html__( 'All generated items have been deleted.', 'kagg-generator' ) );
+		if ( $result ) {
+			wp_send_json_success( esc_html__( 'All generated items have been deleted.', 'kagg-generator' ) );
+		}
+
+		wp_send_json_success( esc_html__( 'Nothing to delete.', 'kagg-generator' ) );
 	}
 
 	/**
@@ -536,28 +542,40 @@ class Settings {
 	 *
 	 * @param Item $item_handler Item handler.
 	 *
-	 * @return void
+	 * @return bool
 	 * @noinspection SqlResolve
 	 */
 	public function delete_items( $item_handler ) {
-		$this->generator->run_checks( self::DELETE_ACTION );
-
 		global $wpdb;
 
 		$table        = $item_handler->get_table();
 		$marker_field = $item_handler->get_marker_field();
-		$queries      = [
+		$marker       = self::MARKER . '%';
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$result = $wpdb->query(
+			$wpdb->prepare(
+				"SELECT $marker_field FROM $table WHERE $marker_field LIKE %s LIMIT 1",
+				$marker
+			)
+		);
+
+		if ( ! $result ) {
+			// Do not mess with tables when no items to delete.
+			return false;
+		}
+
+		$queries = [
 			'START TRANSACTION',
 			"CREATE TABLE {$table}_copy LIKE $table",
-			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$wpdb->prepare(
 				"INSERT INTO {$table}_copy
 				SELECT *
 					FROM $table p
 					WHERE p.$marker_field NOT LIKE %s",
-				self::MARKER . '%'
+				$marker
 			),
-			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			"DROP TABLE $table",
 			"RENAME TABLE {$table}_copy TO $table",
 			'COMMIT',
@@ -565,9 +583,7 @@ class Settings {
 
 		ob_start();
 
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		foreach ( $queries as $query ) {
-			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 			$result = $wpdb->query( $query );
 
 			if ( false === $result ) {
@@ -575,6 +591,7 @@ class Settings {
 				break;
 			}
 		}
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
 		// We will have some messages here if WP_DEBUG_DISPLAY is on.
@@ -590,6 +607,8 @@ class Settings {
 				)
 			);
 		}
+
+		return true;
 	}
 
 	/**
