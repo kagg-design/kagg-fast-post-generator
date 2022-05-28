@@ -5,8 +5,9 @@
  * @package kagg/generator
  */
 
-namespace KAGG\Generator;
+namespace KAGG\Generator\Generator;
 
+use KAGG\Generator\Settings;
 use RuntimeException;
 
 /**
@@ -18,13 +19,6 @@ class Generator {
 	 * Name of the local_infile MySQL variable.
 	 */
 	const LOCAL_INFILE = 'local_infile';
-
-	/**
-	 * Constant part of the post.
-	 *
-	 * @var array
-	 */
-	private $post_stub;
 
 	/**
 	 * Value of the local_infile MySQL variable.
@@ -39,6 +33,33 @@ class Generator {
 	 * @var bool
 	 */
 	private $use_local_infile;
+
+	/**
+	 * Registered item types and theirs handler class names.
+	 *
+	 * @var string[] Item handlers.
+	 */
+	private $registered_items;
+
+	/**
+	 * Class constructor.
+	 */
+	public function __construct() {
+		$this->registered_items = [
+			'post'    => Post::class,
+			'page'    => Page::class,
+			'comment' => Comment::class,
+		];
+	}
+
+	/**
+	 * Get item handlers.
+	 *
+	 * @return string[]
+	 */
+	public function get_registered_items() {
+		return $this->registered_items;
+	}
 
 	/**
 	 * Determine if we should use LOCAL in the MySQL statement LOAD DATA [LOCAL] INFILE.
@@ -90,20 +111,27 @@ class Generator {
 		$steps                  = (int) ceil( $number / $chunk_size );
 		$temp_filename          = tempnam( sys_get_temp_dir(), 'kagg-generator-' );
 		$error                  = false;
+		$item_type              = $settings['post_type'];
+		$item_classname         = $this->registered_items[ $item_type ];
 
-		$this->prepare_post_stub( $settings['post_type'] );
+		/**
+		 * Item handler instance.
+		 *
+		 * @var Item $item_handler
+		 */
+		$item_handler = new $item_classname( $item_type );
 
 		$time1 = 0;
 		$time2 = 0;
 
 		try {
 			$start = microtime( true );
-			$this->generate_posts( $count, $temp_filename );
+			$this->generate_items( $item_handler, $count, $temp_filename );
 			$end   = microtime( true );
 			$time1 = round( $end - $start, 3 );
 
 			$start = microtime( true );
-			$this->write_posts( $settings, $temp_filename );
+			$this->write_items( $item_handler, $temp_filename );
 			$end   = microtime( true );
 			$time2 = round( $end - $start, 3 );
 
@@ -131,8 +159,8 @@ class Generator {
 
 		wp_send_json_success(
 			sprintf(
-			// translators: 1: Step. 2: Steps. 3: Generated posts. 4: Total posts to generate. 5: Generation time. 6: DB storing time. 7: Total time.
-				esc_html__( 'Step %1$s/%2$s. %3$s/%4$s posts generated. Time used: (generate: %5$s + store: %6$s) = %7$s sec.', 'kagg-generator' ),
+			// translators: 1: Step. 2: Steps. 3: Generated items. 4: Total items to generate. 5: Generation time. 6: DB storing time. 7: Total time.
+				esc_html__( 'Step %1$s/%2$s. %3$s/%4$s items generated. Time used: (generate: %5$s + store: %6$s) = %7$s sec.', 'kagg-generator' ),
 				number_format( $step, 0 ),
 				number_format( $steps, 0 ),
 				number_format( min( $step * $chunk_size, $number ), 0 ),
@@ -174,15 +202,16 @@ class Generator {
 	}
 
 	/**
-	 * Generate posts.
+	 * Generate items.
 	 *
-	 * @param int    $count         Number of posts to generate.
+	 * @param Item   $item_handler  Item handler class instance.
+	 * @param int    $count         Number of items to generate.
 	 * @param string $temp_filename Temporary filename.
 	 *
 	 * @return void
 	 * @throws RuntimeException With error message.
 	 */
-	private function generate_posts( $count, $temp_filename ) {
+	private function generate_items( $item_handler, $count, $temp_filename ) {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fopen
 		$f = fopen( 'php://temp', 'wb+' );
 
@@ -191,7 +220,7 @@ class Generator {
 		}
 
 		for ( $i = 0; $i < $count; $i ++ ) {
-			$result = fputcsv( $f, $this->generate_post(), '|' );
+			$result = fputcsv( $f, $item_handler->generate_item(), '|' );
 
 			if ( ! $result ) {
 				throw new RuntimeException( esc_html__( 'Cannot write to a temporary php://temp file.', 'kagg-generator' ) );
@@ -217,20 +246,20 @@ class Generator {
 	}
 
 	/**
-	 * Write posts to the database.
+	 * Write items to the database.
 	 *
-	 * @param array  $settings      Settings.
+	 * @param Item   $item_handler  Item handler class instance.
 	 * @param string $temp_filename Temporary filename.
 	 *
 	 * @return void
 	 * @throws RuntimeException With error message.
 	 */
-	private function write_posts( $settings, $temp_filename ) {
+	private function write_items( $item_handler, $temp_filename ) {
 		global $wpdb;
 
-		$fname = str_replace( '\\', '/', $temp_filename );
+		$filename = str_replace( '\\', '/', $temp_filename );
 
-		$fields = implode( ', ', $this->get_post_fields( $settings ) );
+		$fields = implode( ', ', $item_handler->get_item_fields() );
 
 		$this->set_local_infile();
 
@@ -240,10 +269,10 @@ class Generator {
 		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared
 		$result = $wpdb->query(
 			$wpdb->prepare(
-				"LOAD DATA $local INFILE %s INTO TABLE $wpdb->posts
+				"LOAD DATA $local INFILE %s INTO TABLE {$item_handler->get_table()}
                     FIELDS TERMINATED BY '|' ENCLOSED BY '\"'
 					( $fields )",
-				$fname
+				$filename
 			)
 		);
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared
@@ -321,58 +350,6 @@ class Generator {
 	}
 
 	/**
-	 * Get post fields.
-	 *
-	 * @param array $settings Settings.
-	 *
-	 * @return array
-	 */
-	private function get_post_fields( $settings ) {
-		// Here we list the fields in the same order as in wp_posts table.
-		$fields = [
-			'post_author',
-			'post_date',
-			'post_date_gmt',
-			'post_content',
-			'post_title',
-			'post_excerpt',
-			'post_name',
-			'post_modified',
-			'post_modified_gmt',
-			'guid',
-			'post_type',
-		];
-
-		// Do not proceed with default column values.
-		if ( 'post' === $settings['post_type'] ) {
-			$fields = array_diff( $fields, [ 'post_type' ] );
-		}
-
-		return $fields;
-	}
-
-	/**
-	 * Generate post.
-	 *
-	 * @return array
-	 * @noinspection NonSecureUniqidUsageInspection
-	 */
-	private function generate_post() {
-		$content = implode( "\r\r", Lorem::paragraphs( 12 ) );
-		$title   = substr( Lorem::sentence( 5 ), 0, - 1 );
-		$name    = str_replace( ' ', '-', strtolower( $title ) ) . '-' . uniqid();
-
-		$post                 = $this->post_stub;
-		$post['post_content'] = $content;
-		$post['post_title']   = $title;
-		$post['post_excerpt'] = substr( $content, 0, 100 );
-		$post['post_name']    = $name;
-		$post['guid']         = Settings::GUID . $name;
-
-		return $post;
-	}
-
-	/**
 	 * Get settings from input and option.
 	 *
 	 * @param array $data Form data.
@@ -390,39 +367,5 @@ class Generator {
 		}
 
 		return $settings;
-	}
-
-	/**
-	 * Prepare post stub.
-	 *
-	 * @param string $post_type Post type.
-	 *
-	 * @return void
-	 */
-	private function prepare_post_stub( $post_type ) {
-		$user     = wp_get_current_user();
-		$wp_date  = wp_date( 'Y-m-d H:i:s' );
-		$gmt_date = gmdate( 'Y-m-d H:i:s' );
-
-		// We have to init all post fields here in the same order as provided in get_post_fields().
-		// Otherwise, csv file won't be created properly.
-		$this->post_stub = [
-			'post_author'       => $user ? $user->ID : 0,
-			'post_date'         => $wp_date,
-			'post_date_gmt'     => $gmt_date,
-			'post_content'      => '',
-			'post_title'        => '',
-			'post_excerpt'      => '',
-			'post_name'         => '',
-			'post_modified'     => $wp_date,
-			'post_modified_gmt' => $gmt_date,
-			'guid'              => '',
-			'post_type'         => $post_type,
-		];
-
-		// Do not write default 'post' value.
-		if ( 'post' === $post_type ) {
-			unset( $this->post_stub['post_type'] );
-		}
 	}
 }

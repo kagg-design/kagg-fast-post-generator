@@ -10,6 +10,9 @@
 
 namespace KAGG\Generator;
 
+use KAGG\Generator\Generator\Generator;
+use KAGG\Generator\Generator\Item;
+
 /**
  * Class Settings.
  */
@@ -51,9 +54,9 @@ class Settings {
 	const OPTION_KEY = 'kagg_generator_settings';
 
 	/**
-	 * The first part of the generated guid.
+	 * The first part of the generated marker for added items.
 	 */
-	const GUID = 'https://generator.kagg.eu/';
+	const MARKER = 'https://generator.kagg.eu/';
 
 	/**
 	 * Generator class instance.
@@ -473,9 +476,9 @@ class Settings {
 				'deleteAction'       => self::DELETE_ACTION,
 				'deleteNonce'        => wp_create_nonce( self::DELETE_ACTION ),
 				'nothingToDo'        => esc_html__( 'Nothing to do.', 'kagg-generate' ),
-				'deleteConfirmation' => esc_html__( 'Are you sure to delete all the generated posts?', 'kagg-generate' ),
-				'generating'         => esc_html__( 'Generating posts...', 'kagg-generate' ),
-				'deleting'           => esc_html__( 'Deleting generated posts...', 'kagg-generate' ),
+				'deleteConfirmation' => esc_html__( 'Are you sure to delete all the generated items?', 'kagg-generate' ),
+				'generating'         => esc_html__( 'Generating items...', 'kagg-generate' ),
+				'deleting'           => esc_html__( 'Deleting generated items...', 'kagg-generate' ),
 				// translators: 1: Time.
 				'totalTimeUsed'      => esc_html__( 'Total time used: %s sec.', 'kagg-generate' ),
 			]
@@ -496,28 +499,67 @@ class Settings {
 	}
 
 	/**
-	 * Delete all generated posts.
+	 * Delete all generated items.
 	 *
 	 * @return void
 	 * @noinspection SqlResolve
 	 */
 	public function delete() {
+		$registered_items = $this->generator->get_registered_items();
+
+		$db_locations = [];
+
+		foreach ( $registered_items as $item_type => $item_classname ) {
+
+			/**
+			 * Item handler.
+			 *
+			 * @var Item $item_handler
+			 */
+			$item_handler = new $item_classname( $item_type );
+			$db_location  = $item_handler->get_table() . '|' . $item_handler->get_marker_field();
+
+			if ( in_array( $db_location, $db_locations, true ) ) {
+				continue;
+			}
+
+			$this->delete_items( $item_handler );
+
+			$db_locations[] = $db_location;
+		}
+
+		wp_send_json_success( esc_html__( 'All generated items have been deleted.', 'kagg-generator' ) );
+	}
+
+	/**
+	 * Delete all generated items.
+	 *
+	 * @param Item $item_handler Item handler.
+	 *
+	 * @return void
+	 * @noinspection SqlResolve
+	 */
+	public function delete_items( $item_handler ) {
 		$this->generator->run_checks( self::DELETE_ACTION );
 
 		global $wpdb;
 
-		$queries = [
+		$table        = $item_handler->get_table();
+		$marker_field = $item_handler->get_marker_field();
+		$queries      = [
 			'START TRANSACTION',
-			"CREATE TABLE {$wpdb->posts}_copy LIKE {$wpdb->posts}",
+			"CREATE TABLE {$table}_copy LIKE $table",
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$wpdb->prepare(
-				"INSERT INTO {$wpdb->posts}_copy
+				"INSERT INTO {$table}_copy
 				SELECT *
-					FROM {$wpdb->posts} p
-					WHERE p.guid NOT LIKE %s",
-				self::GUID . '%'
+					FROM $table p
+					WHERE p.$marker_field NOT LIKE %s",
+				self::MARKER . '%'
 			),
-			"DROP TABLE {$wpdb->posts}",
-			"RENAME TABLE {$wpdb->posts}_copy TO {$wpdb->posts}",
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			"DROP TABLE $table",
+			"RENAME TABLE {$table}_copy TO $table",
 			'COMMIT',
 		];
 
@@ -542,17 +584,16 @@ class Settings {
 			wp_send_json_error(
 				sprintf(
 				// translators: 1: Error message.
-					esc_html__( 'Error deleting generated posts: %s.', 'kagg-generator' ),
+					esc_html__( 'Error deleting generated items of type %1$s: %2$s.', 'kagg-generator' ),
+					$item_handler->get_type(),
 					$error_message . $wpdb->last_error
 				)
 			);
 		}
-
-		wp_send_json_success( esc_html__( 'All generated posts have been deleted.', 'kagg-generator' ) );
 	}
 
 	/**
-	 * Generate posts.
+	 * Generate items.
 	 *
 	 * @return void
 	 */
@@ -566,12 +607,13 @@ class Settings {
 	private function init_form_fields() {
 		$this->form_fields = [
 			'post_type'  => [
-				'label'        => __( 'Post type', 'kagg-generator' ),
+				'label'        => __( 'Item type', 'kagg-generator' ),
 				'section'      => 'first_section',
-				'type'         => 'radio',
+				'type'         => 'select',
 				'options'      => [
-					'post' => __( 'Post', 'kagg-generator' ),
-					'page' => __( 'Page', 'kagg-generator' ),
+					'post'    => __( 'Post', 'kagg-generator' ),
+					'page'    => __( 'Page', 'kagg-generator' ),
+					'comment' => __( 'Comment', 'kagg-generator' ),
 				],
 				'placeholder'  => '',
 				'helper'       => '',
@@ -579,7 +621,7 @@ class Settings {
 				'default'      => 'post',
 			],
 			'number'     => [
-				'label'        => __( 'Number of posts to generate', 'kagg-generator' ),
+				'label'        => __( 'Number of items to generate', 'kagg-generator' ),
 				'section'      => 'first_section',
 				'type'         => 'number',
 				'placeholder'  => '',
@@ -593,7 +635,7 @@ class Settings {
 				'type'         => 'number',
 				'placeholder'  => 'place',
 				'helper'       => '',
-				'supplemental' => __( 'How many posts to generate in one ajax request.', 'kagg-generator' ),
+				'supplemental' => __( 'How many items to generate in one ajax request.', 'kagg-generator' ),
 				'default'      => 50 * 1000,
 			],
 		];
