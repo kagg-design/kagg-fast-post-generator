@@ -141,7 +141,7 @@ class Comment extends Item {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$ids = $wpdb->get_col(
 			$wpdb->prepare(
-				"SELECT ID FROM {$wpdb->posts} ORDER BY RAND() LIMIT %d",
+				"SELECT ID FROM {$wpdb->posts} WHERE post_type = 'post' ORDER BY RAND() LIMIT %d",
 				self::RANDOM_POSTS_COUNT
 			)
 		);
