@@ -36,7 +36,7 @@ class Post extends Item {
 
 		// We have to init all post fields here in the same order as provided in get_post_fields().
 		// Otherwise, csv file won't be created properly.
-		$this->item_stub = [
+		$this->stub = [
 			'post_author'       => $user_id,
 			'post_date'         => $wp_date,
 			'post_date_gmt'     => $gmt_date,
@@ -62,7 +62,7 @@ class Post extends Item {
 		$title   = substr( Lorem::sentence( 5 ), 0, - 1 );
 		$name    = str_replace( ' ', '-', strtolower( $title ) ) . '-' . uniqid();
 
-		$post                 = $this->item_stub;
+		$post                 = $this->stub;
 		$post['post_content'] = $content;
 		$post['post_title']   = $title;
 		$post['post_excerpt'] = substr( $content, 0, 100 );

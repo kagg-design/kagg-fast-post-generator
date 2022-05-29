@@ -53,7 +53,7 @@ class Comment extends Item {
 
 		// Here we have to list the fields in the same order as in wp_comments table.
 		// Otherwise, csv file won't be created properly.
-		$this->item_stub = [
+		$this->stub = [
 			'comment_post_ID'      => 0,
 			'comment_author'       => $user_name,
 			'comment_author_email' => $user_email,
@@ -80,7 +80,7 @@ class Comment extends Item {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
 		$content = implode( "\r\r", Lorem::sentences( mt_rand( 1, 30 ) ) );
 
-		$comment                    = $this->item_stub;
+		$comment                    = $this->stub;
 		$comment['comment_content'] = $content;
 
 		return $comment;

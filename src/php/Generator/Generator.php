@@ -119,7 +119,7 @@ class Generator {
 		 *
 		 * @var Item $item_handler
 		 */
-		$item_handler = new $item_classname( $item_type );
+		$item_handler = new $item_classname();
 
 		$time1 = 0;
 		$time2 = 0;
@@ -259,7 +259,7 @@ class Generator {
 
 		$filename = str_replace( '\\', '/', $temp_filename );
 
-		$fields = implode( ', ', $item_handler->get_item_fields() );
+		$fields = implode( ', ', $item_handler->get_fields() );
 
 		$this->set_local_infile();
 

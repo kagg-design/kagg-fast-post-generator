@@ -511,14 +511,14 @@ class Settings {
 		$db_locations     = [];
 		$result           = false;
 
-		foreach ( $registered_items as $item_type => $item_classname ) {
+		foreach ( $registered_items as $item_classname ) {
 
 			/**
 			 * Item handler.
 			 *
 			 * @var Item $item_handler
 			 */
-			$item_handler = new $item_classname( $item_type );
+			$item_handler = new $item_classname();
 			$db_location  = $item_handler->get_table() . '|' . $item_handler->get_marker_field();
 
 			if ( in_array( $db_location, $db_locations, true ) ) {

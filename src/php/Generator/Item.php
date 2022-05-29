@@ -38,18 +38,15 @@ abstract class Item {
 	 *
 	 * @var array
 	 */
-	protected $item_stub = [];
+	protected $stub = [];
 
 	/**
 	 * Class constructor.
-	 *
-	 * @param string $item_type Post type.
 	 */
-	public function __construct( $item_type = 'post' ) {
+	public function __construct() {
 		global $wpdb;
 
-		$this->item_type = $this->item_type ?: $item_type;
-		$this->table     = $wpdb->prefix . $this->table;
+		$this->table = $wpdb->prefix . $this->table;
 
 		$this->prepare_stub();
 	}
@@ -86,8 +83,8 @@ abstract class Item {
 	 *
 	 * @return array
 	 */
-	public function get_item_fields() {
-		return array_keys( $this->item_stub );
+	public function get_fields() {
+		return array_keys( $this->stub );
 	}
 
 	/**
