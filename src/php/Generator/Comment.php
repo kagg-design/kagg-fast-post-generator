@@ -8,12 +8,15 @@
 namespace KAGG\Generator\Generator;
 
 use KAGG\Generator\Lorem;
+use KAGG\Generator\Randomizer;
 use KAGG\Generator\Settings;
 
 /**
  * Class Comment.
  */
 class Comment extends Item {
+
+	const RANDOM_POSTS_COUNT = 1000;
 
 	/**
 	 * Item type.
@@ -35,6 +38,35 @@ class Comment extends Item {
 	 * @var string
 	 */
 	protected $marker_field = 'comment_author_url';
+
+	/**
+	 * Randomizer class instance.
+	 *
+	 * @var Randomizer
+	 */
+	private $randomizer;
+
+	/**
+	 * Class constructor.
+	 */
+	public function __construct() {
+		global $wpdb;
+
+		parent::__construct();
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$ids = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT ID FROM {$wpdb->posts} ORDER BY RAND() LIMIT %d",
+				self::RANDOM_POSTS_COUNT
+			)
+		);
+
+		// If no posts, generate comments as not attached to any post.
+		$ids = $ids ?: [ '0' ];
+
+		$this->randomizer = new Randomizer( $ids );
+	}
 
 	/**
 	 * Prepare post stub.
@@ -81,6 +113,7 @@ class Comment extends Item {
 		$content = implode( "\r\r", Lorem::sentences( mt_rand( 1, 30 ) ) );
 
 		$comment                    = $this->stub;
+		$comment['comment_post_ID'] = $this->randomizer->get( 1 )[0];
 		$comment['comment_content'] = $content;
 
 		return $comment;
