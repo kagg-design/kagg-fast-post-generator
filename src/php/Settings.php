@@ -44,6 +44,11 @@ class Settings {
 	const CACHE_FLUSH_ACTION = 'kagg-generator-cache-flush';
 
 	/**
+	 * The plugin update comment counts action.
+	 */
+	const UPDATE_COMMENT_COUNTS_ACTION = 'kagg-generator-update-comment-counts';
+
+	/**
 	 * The plugin delete action.
 	 */
 	const DELETE_ACTION = 'kagg-generator-delete';
@@ -111,6 +116,7 @@ class Settings {
 		add_filter( 'pre_update_option_' . self::OPTION_KEY, [ $this, 'pre_update_option_filter' ], 10, 3 );
 		add_action( 'plugins_loaded', [ $this, 'load_textdomain' ], 100 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'admin_enqueue_scripts' ] );
+		add_action( 'wp_ajax_' . self::UPDATE_COMMENT_COUNTS_ACTION, [ $this, 'update_comment_counts' ] );
 		add_action( 'wp_ajax_' . self::CACHE_FLUSH_ACTION, [ $this, 'cache_flush' ] );
 		add_action( 'wp_ajax_' . self::DELETE_ACTION, [ $this, 'delete' ] );
 		add_action( 'wp_ajax_' . self::GENERATE_ACTION, [ $this, 'generate' ] );
@@ -467,22 +473,49 @@ class Settings {
 			self::HANDLE,
 			'GeneratorObject',
 			[
-				'generateAjaxUrl'    => admin_url( 'admin-ajax.php' ),
-				'generateAction'     => self::GENERATE_ACTION,
-				'generateNonce'      => wp_create_nonce( self::GENERATE_ACTION ),
-				'adminAjaxUrl'       => admin_url( 'admin-ajax.php' ),
-				'cacheFlushAction'   => self::CACHE_FLUSH_ACTION,
-				'cacheFlushNonce'    => wp_create_nonce( self::CACHE_FLUSH_ACTION ),
-				'deleteAction'       => self::DELETE_ACTION,
-				'deleteNonce'        => wp_create_nonce( self::DELETE_ACTION ),
-				'nothingToDo'        => esc_html__( 'Nothing to do.', 'kagg-generate' ),
-				'deleteConfirmation' => esc_html__( 'Are you sure to delete all the generated items?', 'kagg-generate' ),
-				'generating'         => esc_html__( 'Generating items...', 'kagg-generate' ),
-				'deleting'           => esc_html__( 'Deleting generated items...', 'kagg-generate' ),
+				'generateAjaxUrl'           => admin_url( 'admin-ajax.php' ),
+				'generateAction'            => self::GENERATE_ACTION,
+				'generateNonce'             => wp_create_nonce( self::GENERATE_ACTION ),
+				'adminAjaxUrl'              => admin_url( 'admin-ajax.php' ),
+				'updateCommentCountsAction' => self::UPDATE_COMMENT_COUNTS_ACTION,
+				'updateCommentCountsNonce'  => wp_create_nonce( self::UPDATE_COMMENT_COUNTS_ACTION ),
+				'cacheFlushAction'          => self::CACHE_FLUSH_ACTION,
+				'cacheFlushNonce'           => wp_create_nonce( self::CACHE_FLUSH_ACTION ),
+				'deleteAction'              => self::DELETE_ACTION,
+				'deleteNonce'               => wp_create_nonce( self::DELETE_ACTION ),
+				'nothingToDo'               => esc_html__( 'Nothing to do.', 'kagg-generate' ),
+				'deleteConfirmation'        => esc_html__( 'Are you sure to delete all the generated items?', 'kagg-generate' ),
+				'generating'                => esc_html__( 'Generating items...', 'kagg-generate' ),
+				'deleting'                  => esc_html__( 'Deleting generated items...', 'kagg-generate' ),
+				'updatingCommentCounts'     => esc_html__( 'Updating comment counts...', 'kagg-generate' ),
 				// translators: 1: Time.
-				'totalTimeUsed'      => esc_html__( 'Total time used: %s sec.', 'kagg-generate' ),
+				'totalTimeUsed'             => esc_html__( 'Total time used: %s sec.', 'kagg-generate' ),
 			]
 		);
+	}
+
+	/**
+	 * Update comment counts after generation of comments.
+	 *
+	 * @return void
+	 */
+	public function update_comment_counts() {
+		global $wpdb;
+
+		$this->generator->run_checks( self::UPDATE_COMMENT_COUNTS_ACTION );
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query(
+			"UPDATE $wpdb->posts AS p INNER JOIN
+					(SELECT comment_post_ID, COUNT(*) AS comment_count
+						FROM $wpdb->comments
+						GROUP BY comment_post_ID) AS t
+					ON p.ID = t.comment_post_ID
+					SET p.comment_count = t.comment_count
+					WHERE p.id = t.comment_post_ID;"
+		);
+
+		wp_send_json_success( esc_html__( 'Comment counts updated.', 'kagg-generator' ) );
 	}
 
 	/**

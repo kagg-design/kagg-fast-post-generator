@@ -6,6 +6,8 @@
  * @param GeneratorObject.generateAction
  * @param GeneratorObject.generateNonce
  * @param GeneratorObject.adminAjaxUrl
+ * @param GeneratorObject.updateCommentCountsAction
+ * @param GeneratorObject.updateCommentCountsNonce
  * @param GeneratorObject.cacheFlushAction
  * @param GeneratorObject.cacheFlushNonce
  * @param GeneratorObject.deleteAction
@@ -14,6 +16,7 @@
  * @param GeneratorObject.deleteConfirmation
  * @param GeneratorObject.generating
  * @param GeneratorObject.deleting
+ * @param GeneratorObject.updatingCommentCounts
  * @param GeneratorObject.totalTimeUsed
  */
 jQuery( document ).ready( function( $ ) {
@@ -36,6 +39,29 @@ jQuery( document ).ready( function( $ ) {
 		showMessage( response.responseText.replace( /^(.+?)<!DOCTYPE.+$/gs, '$1' ).replace( /\n/gs, '<br />' ) );
 	}
 
+	function updateCommentCounts() {
+		showMessage( GeneratorObject.updatingCommentCounts );
+
+		data = {
+			action: GeneratorObject.updateCommentCountsAction,
+			nonce: GeneratorObject.updateCommentCountsNonce
+		};
+
+		$.post( {
+			url: GeneratorObject.adminAjaxUrl,
+			data: data,
+		} )
+			.done( function( response ) {
+				showSuccessMessage( response );
+			} )
+			.fail( function( response ) {
+				showErrorMessage( response );
+			} )
+			.always( function() {
+				cacheFlush();
+			});
+	}
+
 	function cacheFlush() {
 		data = {
 			action: GeneratorObject.cacheFlushAction,
@@ -55,8 +81,7 @@ jQuery( document ).ready( function( $ ) {
 			.always( function() {
 				const endTime = performance.now();
 				showMessage( GeneratorObject.totalTimeUsed.replace( /%s/, ( ( endTime - startTime ) / 1000 ).toFixed( 3 ) ) );
-			} )
-		;
+			} );
 	}
 
 	function generateAjax( data ) {
@@ -70,7 +95,11 @@ jQuery( document ).ready( function( $ ) {
 				data.index += data.chunkSize;
 
 				if ( ! response.success || data.index >= data.number ) {
-					cacheFlush();
+					if( 'comment' === $( 'select[name="kagg_generator_settings[post_type]"]' ).val() ) {
+						updateCommentCounts();
+					} else {
+						cacheFlush();
+					}
 
 					return;
 				}
@@ -109,7 +138,7 @@ jQuery( document ).ready( function( $ ) {
 			nonce: GeneratorObject.generateNonce
 		};
 
-		generateAjax( data, index, chunkSize, number );
+		generateAjax( data );
 	} );
 
 	$( '#kagg-delete-button' ).on( 'click', function( event ) {
