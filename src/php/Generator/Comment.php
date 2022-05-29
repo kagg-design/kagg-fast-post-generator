@@ -19,8 +19,9 @@ class Comment extends Item {
 	const RANDOM_POSTS_COUNT = 1000;
 	const RANDOM_USERS_COUNT = 1000;
 	const RANDOM_IPS_COUNT   = 1000;
-	const MAX_TIME_SHIFT     = 7 * DAY_IN_SECONDS;
+	const MAX_TIME_SHIFT     = HOUR_IN_SECONDS;
 	const ZERO_MYSQL_TIME    = '0000-00-00 00:00:00';
+	const MYSQL_TIME_FORMAT  = 'Y-m-d H:i:s';
 
 	/**
 	 * Item type.
@@ -87,8 +88,8 @@ class Comment extends Item {
 		$user_email = $user ? $user->user_email : '';
 		$user_login = $user ? $user->user_login : '';
 
-		$wp_date  = wp_date( 'Y-m-d H:i:s' );
-		$gmt_date = gmdate( 'Y-m-d H:i:s' );
+		$wp_date  = wp_date( self::MYSQL_TIME_FORMAT );
+		$gmt_date = gmdate( self::MYSQL_TIME_FORMAT );
 
 		// Here we have to list the fields in the same order as in wp_comments table.
 		// Otherwise, csv file won't be created properly.
@@ -121,6 +122,7 @@ class Comment extends Item {
 
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
 		$time_shift = mt_rand( 0, self::MAX_TIME_SHIFT );
+		$post       = $this->add_time_shift( $post, $time_shift );
 
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
 		$content = implode( "\r\r", Lorem::sentences( mt_rand( 1, 30 ) ) );
@@ -130,8 +132,8 @@ class Comment extends Item {
 		$comment['comment_author']       = $user->display_name;
 		$comment['comment_author_email'] = $user->user_email;
 		$comment['comment_author_IP']    = $this->ip_randomizer->get()[0];
-		$comment['comment_date']         = $this->add_time_shift( $post->post_date, $time_shift );
-		$comment['comment_date_gmt']     = $this->add_time_shift( $post->post_date_gmt, $time_shift );
+		$comment['comment_date']         = $post->post_date;
+		$comment['comment_date_gmt']     = $post->post_date_gmt;
 		$comment['comment_content']      = $content;
 		$comment['user_id']              = $user->ID;
 
@@ -139,19 +141,29 @@ class Comment extends Item {
 	}
 
 	/**
-	 * Add time shift to a date.
+	 * Add random time shift to post dates.
 	 *
-	 * @param string $date       Date.
+	 * @param object $post       Comment.
 	 * @param int    $time_shift Time shift.
 	 *
-	 * @return string
+	 * @return object
 	 */
-	private function add_time_shift( $date, $time_shift ) {
-		if ( self::ZERO_MYSQL_TIME === $date ) {
-			return $date;
+	private function add_time_shift( $post, $time_shift ) {
+		$date     = self::ZERO_MYSQL_TIME === $post->post_date ? 0 : strtotime( $post->post_date ) + $time_shift;
+		$date_gmt = self::ZERO_MYSQL_TIME === $post->post_date_gmt ? 0 : strtotime( $post->post_date_gmt ) + $time_shift;
+		$max_date = max( $date, $date_gmt );
+		$now      = time();
+
+		if ( $max_date > $now ) {
+			$in_future = $max_date - $now;
+			$date      = max( $date - $in_future, 0 );
+			$date_gmt  = max( $date_gmt - $in_future, 0 );
 		}
 
-		return gmdate( 'Y-m-d H:i:s', strtotime( $date ) + $time_shift );
+		$post->post_date     = 0 === $date ? self::ZERO_MYSQL_TIME : gmdate( self::MYSQL_TIME_FORMAT, $date );
+		$post->post_date_gmt = 0 === $date_gmt ? self::ZERO_MYSQL_TIME : gmdate( self::MYSQL_TIME_FORMAT, $date_gmt );
+
+		return $post;
 	}
 
 	/**
@@ -165,7 +177,7 @@ class Comment extends Item {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$posts = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT ID, post_date, post_date_gmt FROM {$wpdb->posts} WHERE post_type = 'post' ORDER BY RAND() LIMIT %d",
+				"SELECT ID, post_date, post_date_gmt FROM $wpdb->posts WHERE post_type = 'post' ORDER BY RAND() LIMIT %d",
 				self::RANDOM_POSTS_COUNT
 			)
 		);
@@ -191,7 +203,7 @@ class Comment extends Item {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		return $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT ID, user_email, display_name FROM {$wpdb->users} ORDER BY RAND() LIMIT %d",
+				"SELECT ID, user_email, display_name FROM $wpdb->users ORDER BY RAND() LIMIT %d",
 				self::RANDOM_USERS_COUNT
 			)
 		);
