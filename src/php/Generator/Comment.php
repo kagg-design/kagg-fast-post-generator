@@ -17,6 +17,7 @@ use KAGG\Generator\Settings;
 class Comment extends Item {
 
 	const RANDOM_POSTS_COUNT = 1000;
+	const RANDOM_IPS_COUNT   = 1000;
 
 	/**
 	 * Item type.
@@ -40,32 +41,27 @@ class Comment extends Item {
 	protected $marker_field = 'comment_author_url';
 
 	/**
-	 * Randomizer class instance.
+	 * Randomizer class instance for post_id.
 	 *
 	 * @var Randomizer
 	 */
-	private $randomizer;
+	private $post_id_randomizer;
+
+	/**
+	 * Randomizer class instance for IPs.
+	 *
+	 * @var Randomizer
+	 */
+	private $ip_randomizer;
 
 	/**
 	 * Class constructor.
 	 */
 	public function __construct() {
-		global $wpdb;
-
 		parent::__construct();
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$ids = $wpdb->get_col(
-			$wpdb->prepare(
-				"SELECT ID FROM {$wpdb->posts} ORDER BY RAND() LIMIT %d",
-				self::RANDOM_POSTS_COUNT
-			)
-		);
-
-		// If no posts, generate comments as not attached to any post.
-		$ids = $ids ?: [ '0' ];
-
-		$this->randomizer = new Randomizer( $ids );
+		$this->post_id_randomizer = new Randomizer( $this->prepare_post_ids() );
+		$this->ip_randomizer      = new Randomizer( $this->prepare_ips() );
 	}
 
 	/**
@@ -112,10 +108,47 @@ class Comment extends Item {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
 		$content = implode( "\r\r", Lorem::sentences( mt_rand( 1, 30 ) ) );
 
-		$comment                    = $this->stub;
-		$comment['comment_post_ID'] = $this->randomizer->get( 1 )[0];
-		$comment['comment_content'] = $content;
+		$comment                      = $this->stub;
+		$comment['comment_post_ID']   = $this->post_id_randomizer->get( 1 )[0];
+		$comment['comment_author_IP'] = $this->ip_randomizer->get( 1 )[0];
+		$comment['comment_content']   = $content;
 
 		return $comment;
+	}
+
+	/**
+	 * Prepare post ids.
+	 *
+	 * @return string[]
+	 */
+	private function prepare_post_ids() {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$ids = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT ID FROM {$wpdb->posts} ORDER BY RAND() LIMIT %d",
+				self::RANDOM_POSTS_COUNT
+			)
+		);
+
+		// If no posts, generate comments as not attached to any post.
+		return $ids ?: [ '0' ];
+	}
+
+	/**
+	 * Prepare IPs.
+	 *
+	 * @return string[]
+	 */
+	private function prepare_ips() {
+		$ips = [ '127.0.0.1' ];
+
+		for ( $i = 1; $i < self::RANDOM_IPS_COUNT; $i ++ ) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
+			$ips[ $i ] = mt_rand( 0, 255 ) . '.' . mt_rand( 0, 255 ) . '.' . mt_rand( 0, 255 ) . '.' . mt_rand( 0, 255 );
+		}
+
+		return $ips;
 	}
 }
