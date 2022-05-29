@@ -19,6 +19,8 @@ class Comment extends Item {
 	const RANDOM_POSTS_COUNT = 1000;
 	const RANDOM_USERS_COUNT = 1000;
 	const RANDOM_IPS_COUNT   = 1000;
+	const MAX_TIME_SHIFT     = 7 * DAY_IN_SECONDS;
+	const ZERO_MYSQL_TIME    = '0000-00-00 00:00:00';
 
 	/**
 	 * Item type.
@@ -68,7 +70,7 @@ class Comment extends Item {
 	public function __construct() {
 		parent::__construct();
 
-		$this->post_id_randomizer = new Randomizer( $this->prepare_post_ids() );
+		$this->post_id_randomizer = new Randomizer( $this->prepare_posts() );
 		$this->user_randomizer    = new Randomizer( $this->prepare_users() );
 		$this->ip_randomizer      = new Randomizer( $this->prepare_ips() );
 	}
@@ -115,15 +117,21 @@ class Comment extends Item {
 	 */
 	public function generate() {
 		$user = $this->user_randomizer->get()[0];
+		$post = $this->post_id_randomizer->get()[0];
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
+		$time_shift = mt_rand( 0, self::MAX_TIME_SHIFT );
 
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
 		$content = implode( "\r\r", Lorem::sentences( mt_rand( 1, 30 ) ) );
 
 		$comment                         = $this->stub;
-		$comment['comment_post_ID']      = $this->post_id_randomizer->get()[0];
+		$comment['comment_post_ID']      = $post->ID;
 		$comment['comment_author']       = $user->display_name;
 		$comment['comment_author_email'] = $user->user_email;
 		$comment['comment_author_IP']    = $this->ip_randomizer->get()[0];
+		$comment['comment_date']         = $this->add_time_shift( $post->post_date, $time_shift );
+		$comment['comment_date_gmt']     = $this->add_time_shift( $post->post_date_gmt, $time_shift );
 		$comment['comment_content']      = $content;
 		$comment['user_id']              = $user->ID;
 
@@ -131,23 +139,45 @@ class Comment extends Item {
 	}
 
 	/**
+	 * Add time shift to a date.
+	 *
+	 * @param string $date       Date.
+	 * @param int    $time_shift Time shift.
+	 *
+	 * @return string
+	 */
+	private function add_time_shift( $date, $time_shift ) {
+		if ( self::ZERO_MYSQL_TIME === $date ) {
+			return $date;
+		}
+
+		return gmdate( 'Y-m-d H:i:s', strtotime( $date ) + $time_shift );
+	}
+
+	/**
 	 * Prepare post ids.
 	 *
 	 * @return string[]
 	 */
-	private function prepare_post_ids() {
+	private function prepare_posts() {
 		global $wpdb;
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$ids = $wpdb->get_col(
+		$posts = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT ID FROM {$wpdb->posts} WHERE post_type = 'post' ORDER BY RAND() LIMIT %d",
+				"SELECT ID, post_date, post_date_gmt FROM {$wpdb->posts} WHERE post_type = 'post' ORDER BY RAND() LIMIT %d",
 				self::RANDOM_POSTS_COUNT
 			)
 		);
 
 		// If no posts, generate comments as not attached to any post.
-		return $ids ?: [ '0' ];
+		return $posts ?: [
+			(object) [
+				'ID'            => '0',
+				'post_date'     => self::ZERO_MYSQL_TIME,
+				'post_date_gmt' => self::ZERO_MYSQL_TIME,
+			],
+		];
 	}
 
 	/**
