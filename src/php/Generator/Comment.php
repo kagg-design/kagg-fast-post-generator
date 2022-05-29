@@ -72,12 +72,13 @@ class Comment extends Item {
 	}
 
 	/**
-	 * Generate post.
+	 * Generate comment.
 	 *
 	 * @return array
 	 */
-	public function generate_item() {
-		$content = implode( "\r\r", Lorem::paragraphs( 12 ) );
+	public function generate() {
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
+		$content = implode( "\r\r", Lorem::sentences( mt_rand( 1, 30 ) ) );
 
 		$comment                    = $this->item_stub;
 		$comment['comment_content'] = $content;

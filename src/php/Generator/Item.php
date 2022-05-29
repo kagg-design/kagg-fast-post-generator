@@ -102,5 +102,5 @@ abstract class Item {
 	 *
 	 * @return array
 	 */
-	abstract public function generate_item();
+	abstract public function generate();
 }

@@ -220,7 +220,7 @@ class Generator {
 		}
 
 		for ( $i = 0; $i < $count; $i ++ ) {
-			$result = fputcsv( $f, $item_handler->generate_item(), '|' );
+			$result = fputcsv( $f, $item_handler->generate(), '|' );
 
 			if ( ! $result ) {
 				throw new RuntimeException( esc_html__( 'Cannot write to a temporary php://temp file.', 'kagg-generator' ) );
