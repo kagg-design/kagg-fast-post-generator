@@ -61,7 +61,7 @@ class Randomizer {
 	 *
 	 * @return array
 	 */
-	public function get( $quantity ) {
+	public function get( $quantity = 1 ) {
 		$quantity = min( $quantity, $this->count );
 
 		if ( ( $this->index + $quantity ) > $this->count ) {

@@ -17,6 +17,7 @@ use KAGG\Generator\Settings;
 class Comment extends Item {
 
 	const RANDOM_POSTS_COUNT = 1000;
+	const RANDOM_USERS_COUNT = 1000;
 	const RANDOM_IPS_COUNT   = 1000;
 
 	/**
@@ -41,11 +42,18 @@ class Comment extends Item {
 	protected $marker_field = 'comment_author_url';
 
 	/**
-	 * Randomizer class instance for post_id.
+	 * Randomizer class instance for post_ids.
 	 *
 	 * @var Randomizer
 	 */
 	private $post_id_randomizer;
+
+	/**
+	 * Randomizer class instance for users.
+	 *
+	 * @var Randomizer
+	 */
+	private $user_randomizer;
 
 	/**
 	 * Randomizer class instance for IPs.
@@ -61,6 +69,7 @@ class Comment extends Item {
 		parent::__construct();
 
 		$this->post_id_randomizer = new Randomizer( $this->prepare_post_ids() );
+		$this->user_randomizer    = new Randomizer( $this->prepare_users() );
 		$this->ip_randomizer      = new Randomizer( $this->prepare_ips() );
 	}
 
@@ -105,13 +114,18 @@ class Comment extends Item {
 	 * @return array
 	 */
 	public function generate() {
+		$user = $this->user_randomizer->get()[0];
+
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
 		$content = implode( "\r\r", Lorem::sentences( mt_rand( 1, 30 ) ) );
 
-		$comment                      = $this->stub;
-		$comment['comment_post_ID']   = $this->post_id_randomizer->get( 1 )[0];
-		$comment['comment_author_IP'] = $this->ip_randomizer->get( 1 )[0];
-		$comment['comment_content']   = $content;
+		$comment                         = $this->stub;
+		$comment['comment_post_ID']      = $this->post_id_randomizer->get()[0];
+		$comment['comment_author']       = $user->display_name;
+		$comment['comment_author_email'] = $user->user_email;
+		$comment['comment_author_IP']    = $this->ip_randomizer->get()[0];
+		$comment['comment_content']      = $content;
+		$comment['user_id']              = $user->ID;
 
 		return $comment;
 	}
@@ -134,6 +148,23 @@ class Comment extends Item {
 
 		// If no posts, generate comments as not attached to any post.
 		return $ids ?: [ '0' ];
+	}
+
+	/**
+	 * Prepare users.
+	 *
+	 * @return array[]
+	 */
+	private function prepare_users() {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		return $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT ID, user_email, display_name FROM {$wpdb->users} ORDER BY RAND() LIMIT %d",
+				self::RANDOM_USERS_COUNT
+			)
+		);
 	}
 
 	/**
