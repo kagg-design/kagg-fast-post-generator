@@ -170,7 +170,7 @@ jQuery( document ).ready( function( $ ) {
 				showErrorMessage( response );
 			} )
 			.always( function() {
-				cacheFlush();
+				updateCommentCounts();
 			} );
 	} );
 } );

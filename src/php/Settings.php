@@ -506,13 +506,13 @@ class Settings {
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->query(
-			"UPDATE $wpdb->posts AS p INNER JOIN
+			"UPDATE $wpdb->posts AS p LEFT JOIN
 					(SELECT comment_post_ID, COUNT(*) AS comment_count
 						FROM $wpdb->comments
 						GROUP BY comment_post_ID) AS t
 					ON p.ID = t.comment_post_ID
-					SET p.comment_count = t.comment_count
-					WHERE p.id = t.comment_post_ID;"
+					SET p.comment_count = COALESCE(t.comment_count, 0)
+					WHERE p.comment_count != COALESCE( t.comment_count, 0 )"
 		);
 
 		wp_send_json_success( esc_html__( 'Comment counts updated.', 'kagg-generator' ) );
