@@ -263,6 +263,7 @@ class Comment extends Item {
 	private function prepare_comments()	{
 		global $wpdb;
 
+		// Only use parent comments from the current chunk posts.
 		$posts    = $this->post_id_randomizer->get( self::RANDOM_POSTS_COUNT );
 		$post_ids = array_map(
 			function( $item ) {
