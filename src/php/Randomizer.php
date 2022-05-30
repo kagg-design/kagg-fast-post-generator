@@ -66,7 +66,7 @@ class Randomizer {
 
 		if ( ( $this->index + $quantity ) > $this->count ) {
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
-			$this->index = mt_rand( 0, $this->count - $quantity );
+			$this->index = mt_rand( 0, max( $this->count - $quantity, 0 ) );
 		}
 
 		$result    = [];
