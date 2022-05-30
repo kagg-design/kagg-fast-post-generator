@@ -177,7 +177,11 @@ class Comment extends Item {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$posts = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT ID, post_date, post_date_gmt FROM $wpdb->posts WHERE post_type = 'post' ORDER BY RAND() LIMIT %d",
+				"SELECT p.ID, post_date, post_date_gmt
+						FROM wp_posts AS p
+         				INNER JOIN
+     					(SELECT ID FROM wp_posts WHERE post_type = 'post' ORDER BY RAND() LIMIT %d) AS t
+                        ON p.ID = t.ID;",
 				self::RANDOM_POSTS_COUNT
 			)
 		);
