@@ -22,6 +22,7 @@ class Comment extends Item {
 	const MAX_TIME_SHIFT     = HOUR_IN_SECONDS;
 	const ZERO_MYSQL_TIME    = '0000-00-00 00:00:00';
 	const MYSQL_TIME_FORMAT  = 'Y-m-d H:i:s';
+	const NESTED_PERCENTAGE  = 50;
 
 	/**
 	 * Item type.
@@ -66,6 +67,13 @@ class Comment extends Item {
 	private $ip_randomizer;
 
 	/**
+	 * Randomizer class instance for comments.
+	 *
+	 * @var Randomizer
+	 */
+	private $comment_randomizer;
+
+	/**
 	 * Class constructor.
 	 */
 	public function __construct() {
@@ -74,6 +82,7 @@ class Comment extends Item {
 		$this->post_id_randomizer = new Randomizer( $this->prepare_posts() );
 		$this->user_randomizer    = new Randomizer( $this->prepare_users() );
 		$this->ip_randomizer      = new Randomizer( $this->prepare_ips() );
+		$this->comment_randomizer = new Randomizer( $this->prepare_comments() );
 	}
 
 	/**
@@ -118,7 +127,23 @@ class Comment extends Item {
 	 */
 	public function generate() {
 		$user = $this->user_randomizer->get()[0];
-		$post = $this->post_id_randomizer->get()[0];
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
+		if ( mt_rand( 0, 100 ) <= self::NESTED_PERCENTAGE ) {
+			// This is child comment.
+			$parent    = $this->comment_randomizer->get()[0];
+			$parent_id = $parent->comment_ID;
+
+			// Post from parent comment.
+			$post = new \stdClass();
+			$post->ID = $parent->comment_post_ID;
+			$post->post_date = $parent->comment_date;
+			$post->post_date_gmt = $parent->comment_date_gmt;
+		} else {
+			// This is top-level comment.
+			$parent_id = 0;
+			$post      = $this->post_id_randomizer->get()[0];
+		}
 
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
 		$time_shift = mt_rand( 0, self::MAX_TIME_SHIFT );
@@ -135,6 +160,7 @@ class Comment extends Item {
 		$comment['comment_date']         = $post->post_date;
 		$comment['comment_date_gmt']     = $post->post_date_gmt;
 		$comment['comment_content']      = $content;
+		$comment['comment_parent']       = $parent_id;
 		$comment['user_id']              = $user->ID;
 
 		return $comment;
@@ -227,5 +253,33 @@ class Comment extends Item {
 		}
 
 		return $ips;
+	}
+
+	/**
+	 * Prepare comments
+	 *
+	 * @return stdClass[]
+	 */
+	private function prepare_comments()	{
+		global $wpdb;
+
+		$posts    = $this->post_id_randomizer->get( self::RANDOM_POSTS_COUNT );
+		$post_ids = array_map(
+			function( $item ) {
+				return $item->ID;
+			},
+			$posts
+		);
+
+		$post_id_placeholders = implode( ', ', array_fill( 0, count( $post_ids ), '%d' ) );
+
+		return $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT comment_ID, comment_post_ID, comment_date, comment_date_gmt
+					FROM $wpdb->comments
+					WHERE comment_post_ID IN ( $post_id_placeholders )",
+				$post_ids
+			)
+		);
 	}
 }
