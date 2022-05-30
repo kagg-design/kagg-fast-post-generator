@@ -178,9 +178,9 @@ class Comment extends Item {
 		$posts = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT p.ID, post_date, post_date_gmt
-						FROM wp_posts AS p
+						FROM $wpdb->posts AS p
          				INNER JOIN
-     					(SELECT ID FROM wp_posts WHERE post_type = 'post' ORDER BY RAND() LIMIT %d) AS t
+						(SELECT ID FROM $wpdb->posts WHERE post_type = 'post' ORDER BY RAND() LIMIT %d) AS t
                         ON p.ID = t.ID;",
 				self::RANDOM_POSTS_COUNT
 			)
