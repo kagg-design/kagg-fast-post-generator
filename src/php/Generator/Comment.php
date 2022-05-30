@@ -135,9 +135,9 @@ class Comment extends Item {
 			$parent_id = $parent->comment_ID;
 
 			// Post from parent comment.
-			$post = new \stdClass();
-			$post->ID = $parent->comment_post_ID;
-			$post->post_date = $parent->comment_date;
+			$post                = new \stdClass();
+			$post->ID            = $parent->comment_post_ID;
+			$post->post_date     = $parent->comment_date;
 			$post->post_date_gmt = $parent->comment_date_gmt;
 		} else {
 			// This is top-level comment.
@@ -260,7 +260,7 @@ class Comment extends Item {
 	 *
 	 * @return stdClass[]
 	 */
-	private function prepare_comments()	{
+	private function prepare_comments() {
 		global $wpdb;
 
 		// Only use parent comments from the current chunk posts.
@@ -272,13 +272,12 @@ class Comment extends Item {
 			$posts
 		);
 
-		$post_id_placeholders = implode( ', ', array_fill( 0, count( $post_ids ), '%d' ) );
-
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		return $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT comment_ID, comment_post_ID, comment_date, comment_date_gmt
 					FROM $wpdb->comments
-					WHERE comment_post_ID IN ( $post_id_placeholders )",
+					WHERE comment_post_ID IN ( " . implode( ', ', array_fill( 0, count( $post_ids ), '%d' ) ) . ' )',
 				$post_ids
 			)
 		);
