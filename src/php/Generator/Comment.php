@@ -24,6 +24,16 @@ class Comment extends Item {
 	const MYSQL_TIME_FORMAT  = 'Y-m-d H:i:s';
 
 	/**
+	 * Max nesting level number, starting from 0.
+	 */
+	const MAX_COMMENT_NESTING_LEVEL = 2;
+
+	/**
+	 * Percent of nested comments comparing to previous level. Must be from 0 to 100.
+	 */
+	const NESTING_PERCENTAGE = 50;
+
+	/**
 	 * Item type.
 	 *
 	 * @var string
@@ -66,15 +76,25 @@ class Comment extends Item {
 	private $ip_randomizer;
 
 	/**
-	 * Class constructor.
+	 * Current comment id.
+	 *
+	 * @var int
 	 */
-	public function __construct() {
-		parent::__construct();
+	private $comment_ID;
 
-		$this->post_id_randomizer = new Randomizer( $this->prepare_posts() );
-		$this->user_randomizer    = new Randomizer( $this->prepare_users() );
-		$this->ip_randomizer      = new Randomizer( $this->prepare_ips() );
-	}
+	/**
+	 * Post comments stub.
+	 *
+	 * @var array
+	 */
+	private $post_comments_stub;
+
+	/**
+	 * Nesting level probabilities.
+	 *
+	 * @var array|int
+	 */
+	private $nesting_probabilities;
 
 	/**
 	 * Prepare post stub.
@@ -117,12 +137,19 @@ class Comment extends Item {
 	 * @return array
 	 */
 	public function generate() {
+		static $prepared = false;
+
+		if ( ! $prepared ) {
+			$this->prepare_generate();
+			$prepared = true;
+		}
+
 		$user = $this->user_randomizer->get()[0];
 		$post = $this->post_id_randomizer->get()[0];
 
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
-		$time_shift = mt_rand( 0, self::MAX_TIME_SHIFT );
-		$post       = $this->add_time_shift( $post, $time_shift );
+		$this->add_time_shift( $post );
+
+		$parent = $this->add_comment_to_post( $post );
 
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
 		$content = implode( "\r\r", Lorem::sentences( mt_rand( 1, 30 ) ) );
@@ -135,20 +162,110 @@ class Comment extends Item {
 		$comment['comment_date']         = $post->post_date;
 		$comment['comment_date_gmt']     = $post->post_date_gmt;
 		$comment['comment_content']      = $content;
+		$comment['comment_parent']       = $parent;
 		$comment['user_id']              = $user->ID;
 
 		return $comment;
 	}
 
 	/**
+	 * Prepare generate process.
+	 */
+	private function prepare_generate() {
+		global $wpdb;
+
+		$this->post_id_randomizer = new Randomizer( $this->prepare_posts() );
+		$this->user_randomizer    = new Randomizer( $this->prepare_users() );
+		$this->ip_randomizer      = new Randomizer( $this->prepare_ips() );
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$this->comment_ID = (int) $wpdb->get_var(
+			"SELECT comment_ID FROM $wpdb->comments ORDER BY comment_ID DESC LIMIT 1"
+		);
+
+		$this->post_comments_stub    = [];
+		$this->nesting_probabilities = [];
+		$nesting_percentage          = self::NESTING_PERCENTAGE / 100;
+
+		// Sum of geometric progression.
+		$nesting_sum =
+			( $nesting_percentage ** ( self::MAX_COMMENT_NESTING_LEVEL + 1 ) - 1 ) /
+			( $nesting_percentage - 1 );
+
+		for ( $i = 0; $i <= self::MAX_COMMENT_NESTING_LEVEL; $i ++ ) {
+			$this->post_comments_stub[ $i ]    = [];
+			$this->nesting_probabilities[ $i ] = (int) round( ( $nesting_percentage ** $i / $nesting_sum ) * 100 );
+		}
+	}
+
+	/**
+	 * Add comment to post and return comment parent.
+	 *
+	 * @param object $post Post.
+	 *
+	 * @return int
+	 */
+	private function add_comment_to_post( $post ) {
+		if ( ! isset( $post->comments ) ) {
+			$post->comments = $this->post_comments_stub;
+		}
+
+		$level  = $this->get_comment_level();
+		$parent = 0;
+
+		do {
+			if ( 0 === $level ) {
+				break;
+			}
+
+			$count = count( $post->comments[ $level - 1 ] );
+
+			if ( $count ) {
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
+				$parent = $post->comments[ $level - 1 ][ mt_rand( 0, $count - 1 ) ];
+				break;
+			}
+
+			$level --;
+		} while ( $level >= 0 );
+		// phpcs:enable WordPress.WP.AlternativeFunctions.rand_mt_rand
+
+		$post->comments[ $level ][] = ++ $this->comment_ID;
+
+		return $parent;
+	}
+
+	/**
+	 * Get comment level.
+	 *
+	 * @return int|string
+	 */
+	private function get_comment_level() {
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
+		$rand = mt_rand( 0, 100 );
+
+		$level = 0;
+
+		foreach ( $this->nesting_probabilities as $level => $nesting_probability ) {
+			if ( $rand > $nesting_probability ) {
+				break;
+			}
+		}
+
+		return $level;
+	}
+
+	/**
 	 * Add random time shift to post dates.
 	 *
 	 * @param object $post       Comment.
-	 * @param int    $time_shift Time shift.
 	 *
-	 * @return object
+	 * @return void
 	 */
-	private function add_time_shift( $post, $time_shift ) {
+	private function add_time_shift( $post ) {
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
+		$time_shift = mt_rand( 0, self::MAX_TIME_SHIFT );
+
 		$date     = self::ZERO_MYSQL_TIME === $post->post_date ? 0 : strtotime( $post->post_date ) + $time_shift;
 		$date_gmt = self::ZERO_MYSQL_TIME === $post->post_date_gmt ? 0 : strtotime( $post->post_date_gmt ) + $time_shift;
 		$max_date = max( $date, $date_gmt );
@@ -162,8 +279,6 @@ class Comment extends Item {
 
 		$post->post_date     = 0 === $date ? self::ZERO_MYSQL_TIME : gmdate( self::MYSQL_TIME_FORMAT, $date );
 		$post->post_date_gmt = 0 === $date_gmt ? self::ZERO_MYSQL_TIME : gmdate( self::MYSQL_TIME_FORMAT, $date_gmt );
-
-		return $post;
 	}
 
 	/**
