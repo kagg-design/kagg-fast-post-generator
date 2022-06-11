@@ -16,12 +16,15 @@ use KAGG\Generator\Settings;
  */
 class Comment extends Item {
 
+	/**
+	 * Maximum random posts count. Newly generated comments in a chunk will be distributed among them.
+	 */
 	const RANDOM_POSTS_COUNT = 1000;
-	const RANDOM_USERS_COUNT = 1000;
-	const RANDOM_IPS_COUNT   = 1000;
-	const MAX_TIME_SHIFT     = HOUR_IN_SECONDS;
-	const ZERO_MYSQL_TIME    = '0000-00-00 00:00:00';
-	const MYSQL_TIME_FORMAT  = 'Y-m-d H:i:s';
+
+	/**
+	 * Maximum random IP count. Newly generated comments will have a random IP from this set.
+	 */
+	const RANDOM_IPS_COUNT = 1000;
 
 	/**
 	 * Max nesting level number, starting from 0.
@@ -251,32 +254,6 @@ class Comment extends Item {
 	}
 
 	/**
-	 * Add random time shift to post dates.
-	 *
-	 * @param object $post       Comment.
-	 *
-	 * @return void
-	 */
-	private function add_time_shift( $post ) {
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
-		$time_shift = mt_rand( 0, self::MAX_TIME_SHIFT );
-
-		$date     = self::ZERO_MYSQL_TIME === $post->post_date ? 0 : strtotime( $post->post_date ) + $time_shift;
-		$date_gmt = self::ZERO_MYSQL_TIME === $post->post_date_gmt ? 0 : strtotime( $post->post_date_gmt ) + $time_shift;
-		$max_date = max( $date, $date_gmt );
-		$now      = time();
-
-		if ( $max_date > $now ) {
-			$in_future = $max_date - $now;
-			$date      = max( $date - $in_future, 0 );
-			$date_gmt  = max( $date_gmt - $in_future, 0 );
-		}
-
-		$post->post_date     = 0 === $date ? self::ZERO_MYSQL_TIME : gmdate( self::MYSQL_TIME_FORMAT, $date );
-		$post->post_date_gmt = 0 === $date_gmt ? self::ZERO_MYSQL_TIME : gmdate( self::MYSQL_TIME_FORMAT, $date_gmt );
-	}
-
-	/**
 	 * Prepare post ids.
 	 *
 	 * @return string[]
@@ -304,23 +281,6 @@ class Comment extends Item {
 				'post_date_gmt' => self::ZERO_MYSQL_TIME,
 			],
 		];
-	}
-
-	/**
-	 * Prepare users.
-	 *
-	 * @return array[]
-	 */
-	private function prepare_users() {
-		global $wpdb;
-
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		return $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT ID, user_email, display_name FROM $wpdb->users ORDER BY RAND() LIMIT %d",
-				self::RANDOM_USERS_COUNT
-			)
-		);
 	}
 
 	/**
