@@ -49,6 +49,7 @@ abstract class Item {
 		$this->table = $wpdb->prefix . $this->table;
 
 		$this->prepare_stub();
+		$this->prepare_generate();
 	}
 
 	/**
@@ -92,12 +93,19 @@ abstract class Item {
 	 *
 	 * @return void
 	 */
-	abstract public function prepare_stub();
+	abstract protected function prepare_stub();
+
+	/**
+	 * Prepare generate process.
+	 *
+	 * @return void
+	 */
+	protected function prepare_generate() {}
 
 	/**
 	 * Generate item.
 	 *
 	 * @return array
 	 */
-	abstract public function generate();
+	abstract protected function generate();
 }

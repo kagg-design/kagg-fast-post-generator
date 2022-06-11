@@ -101,7 +101,7 @@ class Comment extends Item {
 	 *
 	 * @return void
 	 */
-	public function prepare_stub() {
+	protected function prepare_stub() {
 		$user       = wp_get_current_user();
 		$user_id    = $user ? $user->ID : 0;
 		$user_name  = $user ? $user->display_name : '';
@@ -132,46 +132,11 @@ class Comment extends Item {
 	}
 
 	/**
-	 * Generate comment.
-	 *
-	 * @return array
-	 */
-	public function generate() {
-		static $prepared = false;
-
-		if ( ! $prepared ) {
-			$this->prepare_generate();
-			$prepared = true;
-		}
-
-		$user = $this->user_randomizer->get()[0];
-		$post = $this->post_id_randomizer->get()[0];
-
-		$this->add_time_shift( $post );
-
-		$parent = $this->add_comment_to_post( $post );
-
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
-		$content = implode( "\r\r", Lorem::sentences( mt_rand( 1, 30 ) ) );
-
-		$comment                         = $this->stub;
-		$comment['comment_post_ID']      = $post->ID;
-		$comment['comment_author']       = $user->display_name;
-		$comment['comment_author_email'] = $user->user_email;
-		$comment['comment_author_IP']    = $this->ip_randomizer->get()[0];
-		$comment['comment_date']         = $post->post_date;
-		$comment['comment_date_gmt']     = $post->post_date_gmt;
-		$comment['comment_content']      = $content;
-		$comment['comment_parent']       = $parent;
-		$comment['user_id']              = $user->ID;
-
-		return $comment;
-	}
-
-	/**
 	 * Prepare generate process.
+	 *
+	 * @return void
 	 */
-	private function prepare_generate() {
+	protected function prepare_generate() {
 		global $wpdb;
 
 		$this->post_id_randomizer = new Randomizer( $this->prepare_posts() );
@@ -196,6 +161,36 @@ class Comment extends Item {
 			$this->post_comments_stub[ $i ]    = [];
 			$this->nesting_probabilities[ $i ] = (int) round( ( $nesting_percentage ** $i / $nesting_sum ) * 100 );
 		}
+	}
+
+	/**
+	 * Generate comment.
+	 *
+	 * @return array
+	 */
+	public function generate() {
+		$user = $this->user_randomizer->get()[0];
+		$post = $this->post_id_randomizer->get()[0];
+
+		$this->add_time_shift( $post );
+
+		$parent = $this->add_comment_to_post( $post );
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
+		$content = implode( "\r\r", Lorem::sentences( mt_rand( 1, 30 ) ) );
+
+		$comment                         = $this->stub;
+		$comment['comment_post_ID']      = $post->ID;
+		$comment['comment_author']       = $user->display_name;
+		$comment['comment_author_email'] = $user->user_email;
+		$comment['comment_author_IP']    = $this->ip_randomizer->get()[0];
+		$comment['comment_date']         = $post->post_date;
+		$comment['comment_date_gmt']     = $post->post_date_gmt;
+		$comment['comment_content']      = $content;
+		$comment['comment_parent']       = $parent;
+		$comment['user_id']              = $user->ID;
+
+		return $comment;
 	}
 
 	/**

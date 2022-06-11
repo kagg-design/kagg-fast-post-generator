@@ -27,7 +27,7 @@ class Post extends Item {
 	 *
 	 * @return void
 	 */
-	public function prepare_stub() {
+	protected function prepare_stub() {
 		$user    = wp_get_current_user();
 		$user_id = $user ? $user->ID : 0;
 
