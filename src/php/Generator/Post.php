@@ -52,8 +52,9 @@ class Post extends Item {
 		$user    = wp_get_current_user();
 		$user_id = $user ? $user->ID : 0;
 
-		$wp_date  = wp_date( 'Y-m-d H:i:s' );
-		$gmt_date = gmdate( 'Y-m-d H:i:s' );
+		$now      = time();
+		$wp_date  = wp_date( 'Y-m-d H:i:s', $now );
+		$gmt_date = gmdate( 'Y-m-d H:i:s', $now );
 
 		// We have to init all post fields here in the same order as provided in get_post_fields().
 		// Otherwise, csv file won't be created properly.
