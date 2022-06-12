@@ -10,6 +10,9 @@
 
 namespace KAGG\Generator;
 
+use KAGG\Generator\Generator\Generator;
+use KAGG\Generator\Generator\Item;
+
 /**
  * Class Settings.
  */
@@ -41,6 +44,11 @@ class Settings {
 	const CACHE_FLUSH_ACTION = 'kagg-generator-cache-flush';
 
 	/**
+	 * The plugin update comment counts action.
+	 */
+	const UPDATE_COMMENT_COUNTS_ACTION = 'kagg-generator-update-comment-counts';
+
+	/**
 	 * The plugin delete action.
 	 */
 	const DELETE_ACTION = 'kagg-generator-delete';
@@ -51,9 +59,9 @@ class Settings {
 	const OPTION_KEY = 'kagg_generator_settings';
 
 	/**
-	 * The first part of the generated guid.
+	 * The first part of the generated marker for added items.
 	 */
-	const GUID = 'https://generator.kagg.eu/';
+	const MARKER = 'https://generator.kagg.eu/';
 
 	/**
 	 * Generator class instance.
@@ -108,6 +116,7 @@ class Settings {
 		add_filter( 'pre_update_option_' . self::OPTION_KEY, [ $this, 'pre_update_option_filter' ], 10, 3 );
 		add_action( 'plugins_loaded', [ $this, 'load_textdomain' ], 100 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'admin_enqueue_scripts' ] );
+		add_action( 'wp_ajax_' . self::UPDATE_COMMENT_COUNTS_ACTION, [ $this, 'update_comment_counts' ] );
 		add_action( 'wp_ajax_' . self::CACHE_FLUSH_ACTION, [ $this, 'cache_flush' ] );
 		add_action( 'wp_ajax_' . self::DELETE_ACTION, [ $this, 'delete' ] );
 	}
@@ -463,22 +472,49 @@ class Settings {
 			self::HANDLE,
 			'GeneratorObject',
 			[
-				'generateAjaxUrl'    => KAGG_GENERATOR_URL . '/src/php/ajax.php',
-				'generateAction'     => self::GENERATE_ACTION,
-				'generateNonce'      => wp_create_nonce( self::GENERATE_ACTION ),
-				'adminAjaxUrl'       => admin_url( 'admin-ajax.php' ),
-				'cacheFlushAction'   => self::CACHE_FLUSH_ACTION,
-				'cacheFlushNonce'    => wp_create_nonce( self::CACHE_FLUSH_ACTION ),
-				'deleteAction'       => self::DELETE_ACTION,
-				'deleteNonce'        => wp_create_nonce( self::DELETE_ACTION ),
-				'nothingToDo'        => esc_html__( 'Nothing to do.', 'kagg-generate' ),
-				'deleteConfirmation' => esc_html__( 'Are you sure to delete all the generated posts?', 'kagg-generate' ),
-				'generating'         => esc_html__( 'Generating posts...', 'kagg-generate' ),
-				'deleting'           => esc_html__( 'Deleting generated posts...', 'kagg-generate' ),
+				'generateAjaxUrl'           => KAGG_GENERATOR_URL . '/src/php/ajax.php',
+				'generateAction'            => self::GENERATE_ACTION,
+				'generateNonce'             => wp_create_nonce( self::GENERATE_ACTION ),
+				'adminAjaxUrl'              => admin_url( 'admin-ajax.php' ),
+				'updateCommentCountsAction' => self::UPDATE_COMMENT_COUNTS_ACTION,
+				'updateCommentCountsNonce'  => wp_create_nonce( self::UPDATE_COMMENT_COUNTS_ACTION ),
+				'cacheFlushAction'          => self::CACHE_FLUSH_ACTION,
+				'cacheFlushNonce'           => wp_create_nonce( self::CACHE_FLUSH_ACTION ),
+				'deleteAction'              => self::DELETE_ACTION,
+				'deleteNonce'               => wp_create_nonce( self::DELETE_ACTION ),
+				'nothingToDo'               => esc_html__( 'Nothing to do.', 'kagg-generate' ),
+				'deleteConfirmation'        => esc_html__( 'Are you sure to delete all the generated items?', 'kagg-generate' ),
+				'generating'                => esc_html__( 'Generating items...', 'kagg-generate' ),
+				'deleting'                  => esc_html__( 'Deleting generated items...', 'kagg-generate' ),
+				'updatingCommentCounts'     => esc_html__( 'Updating comment counts...', 'kagg-generate' ),
 				// translators: 1: Time.
-				'totalTimeUsed'      => esc_html__( 'Total time used: %s sec.', 'kagg-generate' ),
+				'totalTimeUsed'             => esc_html__( 'Total time used: %s sec.', 'kagg-generate' ),
 			]
 		);
+	}
+
+	/**
+	 * Update comment counts after generation of comments.
+	 *
+	 * @return void
+	 */
+	public function update_comment_counts() {
+		global $wpdb;
+
+		$this->generator->run_checks( self::UPDATE_COMMENT_COUNTS_ACTION );
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query(
+			"UPDATE $wpdb->posts AS p LEFT JOIN
+					(SELECT comment_post_ID, COUNT(*) AS comment_count
+						FROM $wpdb->comments
+						GROUP BY comment_post_ID) AS t
+					ON p.ID = t.comment_post_ID
+					SET p.comment_count = COALESCE(t.comment_count, 0)
+					WHERE p.comment_count != COALESCE( t.comment_count, 0 )"
+		);
+
+		wp_send_json_success( esc_html__( 'Comment counts updated.', 'kagg-generator' ) );
 	}
 
 	/**
@@ -495,7 +531,7 @@ class Settings {
 	}
 
 	/**
-	 * Delete all generated posts.
+	 * Delete all generated items.
 	 *
 	 * @return void
 	 * @noinspection SqlResolve
@@ -503,28 +539,83 @@ class Settings {
 	public function delete() {
 		$this->generator->run_checks( self::DELETE_ACTION );
 
+		$registered_items = $this->generator->get_registered_items();
+		$db_locations     = [];
+		$result           = false;
+
+		foreach ( $registered_items as $item_classname ) {
+
+			/**
+			 * Item handler.
+			 *
+			 * @var Item $item_handler
+			 */
+			$item_handler = new $item_classname();
+			$db_location  = $item_handler->get_table() . '|' . $item_handler->get_marker_field();
+
+			if ( in_array( $db_location, $db_locations, true ) ) {
+				continue;
+			}
+
+			$result = $this->delete_items( $item_handler ) || $result;
+
+			$db_locations[] = $db_location;
+		}
+
+		if ( $result ) {
+			wp_send_json_success( esc_html__( 'All generated items have been deleted.', 'kagg-generator' ) );
+		}
+
+		wp_send_json_success( esc_html__( 'Nothing to delete.', 'kagg-generator' ) );
+	}
+
+	/**
+	 * Delete all generated items.
+	 *
+	 * @param Item $item_handler Item handler.
+	 *
+	 * @return bool
+	 * @noinspection SqlResolve
+	 */
+	public function delete_items( $item_handler ) {
 		global $wpdb;
+
+		$table        = $item_handler->get_table();
+		$marker_field = $item_handler->get_marker_field();
+		$marker       = self::MARKER . '%';
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$result = $wpdb->query(
+			$wpdb->prepare(
+				"SELECT $marker_field FROM $table WHERE $marker_field LIKE %s LIMIT 1",
+				$marker
+			)
+		);
+
+		if ( ! $result ) {
+			// Do not mess with tables when no items to delete.
+			return false;
+		}
 
 		$queries = [
 			'START TRANSACTION',
-			"CREATE TABLE {$wpdb->posts}_copy LIKE {$wpdb->posts}",
+			"CREATE TABLE {$table}_copy LIKE $table",
 			$wpdb->prepare(
-				"INSERT INTO {$wpdb->posts}_copy
+				"INSERT INTO {$table}_copy
 				SELECT *
-					FROM {$wpdb->posts} p
-					WHERE p.guid NOT LIKE %s",
-				self::GUID . '%'
+					FROM $table p
+					WHERE p.$marker_field NOT LIKE %s",
+				$marker
 			),
-			"DROP TABLE {$wpdb->posts}",
-			"RENAME TABLE {$wpdb->posts}_copy TO {$wpdb->posts}",
+			"DROP TABLE $table",
+			"RENAME TABLE {$table}_copy TO $table",
 			'COMMIT',
 		];
 
 		ob_start();
 
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		foreach ( $queries as $query ) {
-			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 			$result = $wpdb->query( $query );
 
 			if ( false === $result ) {
@@ -532,6 +623,7 @@ class Settings {
 				break;
 			}
 		}
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
 		// We will have some messages here if WP_DEBUG_DISPLAY is on.
@@ -541,13 +633,23 @@ class Settings {
 			wp_send_json_error(
 				sprintf(
 				// translators: 1: Error message.
-					esc_html__( 'Error deleting generated posts: %s.', 'kagg-generator' ),
+					esc_html__( 'Error deleting generated items of type %1$s: %2$s.', 'kagg-generator' ),
+					$item_handler->get_type(),
 					$error_message . $wpdb->last_error
 				)
 			);
 		}
 
-		wp_send_json_success( esc_html__( 'All generated posts have been deleted.', 'kagg-generator' ) );
+		return true;
+	}
+
+	/**
+	 * Generate items.
+	 *
+	 * @return void
+	 */
+	public function generate() {
+		$this->generator->run();
 	}
 
 	/**
@@ -556,12 +658,13 @@ class Settings {
 	private function init_form_fields() {
 		$this->form_fields = [
 			'post_type'  => [
-				'label'        => __( 'Post type', 'kagg-generator' ),
+				'label'        => __( 'Item type', 'kagg-generator' ),
 				'section'      => 'first_section',
-				'type'         => 'radio',
+				'type'         => 'select',
 				'options'      => [
-					'post' => __( 'Post', 'kagg-generator' ),
-					'page' => __( 'Page', 'kagg-generator' ),
+					'post'    => __( 'Post', 'kagg-generator' ),
+					'page'    => __( 'Page', 'kagg-generator' ),
+					'comment' => __( 'Comment', 'kagg-generator' ),
 				],
 				'placeholder'  => '',
 				'helper'       => '',
@@ -569,7 +672,7 @@ class Settings {
 				'default'      => 'post',
 			],
 			'number'     => [
-				'label'        => __( 'Number of posts to generate', 'kagg-generator' ),
+				'label'        => __( 'Number of items to generate', 'kagg-generator' ),
 				'section'      => 'first_section',
 				'type'         => 'number',
 				'placeholder'  => '',
@@ -583,7 +686,7 @@ class Settings {
 				'type'         => 'number',
 				'placeholder'  => 'place',
 				'helper'       => '',
-				'supplemental' => __( 'How many posts to generate in one ajax request.', 'kagg-generator' ),
+				'supplemental' => __( 'How many items to generate in one ajax request.', 'kagg-generator' ),
 				'default'      => 50 * 1000,
 			],
 		];

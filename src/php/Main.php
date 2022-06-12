@@ -7,6 +7,8 @@
 
 namespace KAGG\Generator;
 
+use KAGG\Generator\Generator\Generator;
+
 /**
  * Class Main.
  */
@@ -43,12 +45,6 @@ class Main {
 	 * @return void
 	 */
 	private function requirements() {
-		// Show notice on plugin activation only.
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		if ( ! isset( $_GET['activate'] ) ) {
-			return;
-		}
-
 		if ( ! ( new Generator() )->use_local_infile() ) {
 			return;
 		}
@@ -57,6 +53,7 @@ class Main {
 			return;
 		}
 
+		// Show notice.
 		$this->admin_notices->add_notice(
 			__( 'To work properly on your server, the KAGG Fast Post Generator plugin needs `mysqli.allow_local_infile = On` set in the php.ini file.', 'kagg-generator' ) .
 			'<br>' .
