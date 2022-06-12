@@ -81,11 +81,11 @@ class Post extends Item {
 	protected function prepare_generate() {
 		$this->user_randomizer = new Randomizer( $this->prepare_users() );
 
-		$now                    = time() - self::INITIAL_TIME_SHIFT;
+		$initial_timestamp      = time() - self::INITIAL_TIME_SHIFT;
 		$this->post_time_keeper = new stdClass();
 
-		$this->post_time_keeper->post_date     = wp_date( self::MYSQL_TIME_FORMAT, $now );
-		$this->post_time_keeper->post_date_gmt = gmdate( self::MYSQL_TIME_FORMAT, $now );
+		$this->post_time_keeper->post_date     = wp_date( self::MYSQL_TIME_FORMAT, $initial_timestamp );
+		$this->post_time_keeper->post_date_gmt = gmdate( self::MYSQL_TIME_FORMAT, $initial_timestamp );
 	}
 
 	/**
