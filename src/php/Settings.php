@@ -119,6 +119,7 @@ class Settings {
 		add_action( 'wp_ajax_' . self::UPDATE_COMMENT_COUNTS_ACTION, [ $this, 'update_comment_counts' ] );
 		add_action( 'wp_ajax_' . self::CACHE_FLUSH_ACTION, [ $this, 'cache_flush' ] );
 		add_action( 'wp_ajax_' . self::DELETE_ACTION, [ $this, 'delete' ] );
+		add_action( 'wp_ajax_' . self::GENERATE_ACTION, [ $this, 'generate' ] );
 	}
 
 	/**
@@ -468,11 +469,17 @@ class Settings {
 			true
 		);
 
+		$generate_ajax_url = admin_url( 'admin-ajax.php' );
+
+		if ( defined( 'KAGG_GENERATOR_SHORTINIT' ) && KAGG_GENERATOR_SHORTINIT ) {
+			$generate_ajax_url = KAGG_GENERATOR_URL . '/src/php/ajax.php';
+		}
+
 		wp_localize_script(
 			self::HANDLE,
 			'GeneratorObject',
 			[
-				'generateAjaxUrl'           => KAGG_GENERATOR_URL . '/src/php/ajax.php',
+				'generateAjaxUrl'           => $generate_ajax_url,
 				'generateAction'            => self::GENERATE_ACTION,
 				'generateNonce'             => wp_create_nonce( self::GENERATE_ACTION ),
 				'adminAjaxUrl'              => admin_url( 'admin-ajax.php' ),

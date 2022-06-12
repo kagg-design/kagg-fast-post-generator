@@ -39,4 +39,4 @@ require $root . '/wp-includes/pluggable.php';
 // Load generator class.
 require '../../vendor/autoload.php';
 
-( new KAGG\Generator\Generator() )->run();
+( new \KAGG\Generator\Generator\Generator() )->run();
