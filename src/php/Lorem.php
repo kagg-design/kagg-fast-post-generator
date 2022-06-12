@@ -1016,6 +1016,8 @@ class Lorem {
 	];
 
 	/**
+	 * Get name list.
+	 *
 	 * @return array
 	 */
 	public static function get_name_list() {
