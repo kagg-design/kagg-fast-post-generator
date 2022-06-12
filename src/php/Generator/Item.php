@@ -18,6 +18,11 @@ abstract class Item {
 	const RANDOM_USERS_COUNT = 1000;
 
 	/**
+	 * Initial time shift, back in time.
+	 */
+	const INITIAL_TIME_SHIFT = YEAR_IN_SECONDS;
+
+	/**
 	 * Standard max time shift between generated items. May be adjusted in child classes.
 	 */
 	const MAX_TIME_SHIFT = HOUR_IN_SECONDS;
@@ -115,7 +120,7 @@ abstract class Item {
 	 *
 	 * @return void
 	 */
-	protected function add_time_shift( $post ) {
+	protected function add_time_shift_to_post( $post ) {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
 		$time_shift = mt_rand( 0, self::MAX_TIME_SHIFT );
 

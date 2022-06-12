@@ -18,11 +18,6 @@ use stdClass;
 class Post extends Item {
 
 	/**
-	 * Initial time shift, back in time.
-	 */
-	const INITIAL_TIME_SHIFT = YEAR_IN_SECONDS;
-
-	/**
 	 * Item type.
 	 *
 	 * @var string
@@ -100,11 +95,11 @@ class Post extends Item {
 		$name    = str_replace( ' ', '-', strtolower( $title ) ) . '-' . uniqid();
 		$user    = $this->user_randomizer->get()[0];
 
-		$this->add_time_shift( $this->post_time_keeper );
+		$this->add_time_shift_to_post( $this->post_time_keeper );
 
 		$post_modified = $this->post_time_keeper;
 
-		$this->add_time_shift( $post_modified );
+		$this->add_time_shift_to_post( $post_modified );
 
 		$post                      = $this->stub;
 		$post['post_author']       = $user->ID;

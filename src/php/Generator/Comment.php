@@ -176,7 +176,7 @@ class Comment extends Item {
 		$user = $this->user_randomizer->get()[0];
 		$post = $this->post_id_randomizer->get()[0];
 
-		$this->add_time_shift( $post );
+		$this->add_time_shift_to_post( $post );
 
 		$parent = $this->add_comment_to_post( $post );
 

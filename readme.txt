@@ -42,6 +42,7 @@ Yes, you can!
 * = 1.4.0 =
 * Added generation of comments, with hierarchy.
 * Improved posts generation, now with random date and author.
+* Added generation of users.
 
 = 1.3.1 =
 * Tested with WordPress 6.0.

@@ -672,6 +672,7 @@ class Settings {
 					'post'    => __( 'Post', 'kagg-generator' ),
 					'page'    => __( 'Page', 'kagg-generator' ),
 					'comment' => __( 'Comment', 'kagg-generator' ),
+					'user'    => __( 'User', 'kagg-generator' ),
 				],
 				'placeholder'  => '',
 				'helper'       => '',

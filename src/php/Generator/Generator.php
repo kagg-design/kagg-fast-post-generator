@@ -49,6 +49,7 @@ class Generator {
 			'post'    => Post::class,
 			'page'    => Page::class,
 			'comment' => Comment::class,
+			'user'    => User::class,
 		];
 	}
 
