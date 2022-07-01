@@ -12,20 +12,16 @@ The Fast Post Generator plugin is able to generate millions of posts/pages in mi
 
 * Plugin generates posts/pages with random content.
 
-## Installation
+## Download
+
+You can download and activate the plugin from [wp.org](https://wordpress.org/plugins/kagg-fast-post-generator/).
+
+## Install from GitHub
 
 ```
 git clone https://github.com/kagg-design/kagg-fast-post-generator.git
 cd kagg-fast-post-generator
 composer install --no-dev
-```
-
-## Development
-
-```
-git clone https://github.com/kagg-design/kagg-fast-post-generator.git
-cd kagg-fast-post-generator
-composer install
 ```
 
 ## License
