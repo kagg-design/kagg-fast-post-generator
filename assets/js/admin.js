@@ -2,7 +2,6 @@
 
 /**
  * @param GeneratorObject.generateAjaxUrl
- * @param GeneratorObject.generateAjaxUrl
  * @param GeneratorObject.generateAction
  * @param GeneratorObject.generateNonce
  * @param GeneratorObject.adminAjaxUrl
@@ -10,6 +9,8 @@
  * @param GeneratorObject.updateCommentCountsNonce
  * @param GeneratorObject.cacheFlushAction
  * @param GeneratorObject.cacheFlushNonce
+ * @param GeneratorObject.downloadCSVAction
+ * @param GeneratorObject.downloadCSVNonce
  * @param GeneratorObject.deleteAction
  * @param GeneratorObject.deleteNonce
  * @param GeneratorObject.nothingToDo
@@ -21,7 +22,8 @@
  */
 jQuery( document ).ready( function( $ ) {
 	const logSelector = '#kagg-generator-log';
-	let index, chunkSize, number, data, startTime;
+	const formSelector = '#kagg-generator-settings';
+	let action, index, chunkSize, number, data, startTime;
 
 	function clearMessages() {
 		$( logSelector ).html( '' );
@@ -81,7 +83,30 @@ jQuery( document ).ready( function( $ ) {
 			.always( function() {
 				const endTime = performance.now();
 				showMessage( GeneratorObject.totalTimeUsed.replace( /%s/, ( ( endTime - startTime ) / 1000 ).toFixed( 3 ) ) );
+				maybeDownloadCSV();
 			} );
+	}
+
+	function maybeDownloadCSV() {
+		if ( action !== GeneratorObject.generateAction || ! $( formSelector + ' #csv_1' ).is( ':checked' ) ) {
+			return;
+		}
+
+		let $form = $( '#downloadForm' );
+
+		if ( $form.length === 0 ) {
+			$form = $( '<form>' ).attr( {
+				id: 'downloadForm',
+				method: 'POST',
+				action: GeneratorObject.adminAjaxUrl,
+			} ).hide();
+			$( 'body' ).append( $form );
+		}
+
+		$form.append('<input name="action" value="' + GeneratorObject.downloadCSVAction + '" type="hidden"/>');
+		$form.append('<input name="nonce" value="' + GeneratorObject.downloadCSVNonce + '" type="hidden"/>');
+		$form.append('<input name="data" value=\'' + JSON.stringify( $( formSelector ).serializeArray() ) + '\' type="hidden"/>');
+		$form.submit();
 	}
 
 	function generateAjax( data ) {
@@ -117,6 +142,7 @@ jQuery( document ).ready( function( $ ) {
 		clearMessages();
 
 		startTime = performance.now();
+		action = GeneratorObject.generateAction;
 		index = 0;
 		chunkSize = parseInt( $( '#chunk_size' ).val() );
 		number = parseInt( $( '#number' ).val() );
@@ -131,11 +157,11 @@ jQuery( document ).ready( function( $ ) {
 
 		data = {
 			action: GeneratorObject.generateAction,
-			data: JSON.stringify( $( 'form#kagg-generator-settings' ).serializeArray() ),
+			nonce: GeneratorObject.generateNonce,
+			data: JSON.stringify( $( formSelector ).serializeArray() ),
 			index: index,
 			chunkSize: chunkSize,
-			number: number,
-			nonce: GeneratorObject.generateNonce
+			number: number
 		};
 
 		generateAjax( data );
@@ -153,6 +179,7 @@ jQuery( document ).ready( function( $ ) {
 		showMessage( GeneratorObject.deleting );
 
 		startTime = performance.now();
+		action = GeneratorObject.deleteAction;
 
 		data = {
 			action: GeneratorObject.deleteAction,

@@ -42,6 +42,13 @@ class Generator {
 	private $registered_items;
 
 	/**
+	 * Whether to download CSV file.
+	 *
+	 * @var bool
+	 */
+	private $download_csv;
+
+	/**
 	 * Class constructor.
 	 */
 	public function __construct() {
@@ -103,14 +110,16 @@ class Generator {
 		);
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
+		$generation_id          = $this->get_input( $data, Settings::GENERATION_ID );
 		$settings               = $this->get_settings( $data );
 		$this->use_local_infile = $this->use_local_infile();
-		$chunk_size             = (int) $settings['chunk_size'];
 		$number                 = (int) $settings['number'];
+		$chunk_size             = (int) $settings['chunk_size'];
+		$this->download_csv     = isset( $settings['csv'] );
 		$count                  = min( $number - $index, $chunk_size );
 		$step                   = (int) floor( $index / $chunk_size ) + 1;
 		$steps                  = (int) ceil( $number / $chunk_size );
-		$temp_filename          = tempnam( sys_get_temp_dir(), 'kagg-generator-' );
+		$temp_filename          = tempnam( sys_get_temp_dir(), Settings::PREFIX );
 		$error                  = false;
 		$item_type              = $settings['post_type'];
 		$item_classname         = $this->registered_items[ $item_type ];
@@ -144,7 +153,15 @@ class Generator {
 			$error_message = ob_get_clean() . $ex->getMessage();
 		}
 
-		unlink( $temp_filename );
+		if ( $this->download_csv ) {
+			$user_id          = get_current_user_id();
+			$temp_filenames   = array_filter( (array) get_user_meta( $user_id, $generation_id, true ) );
+			$temp_filenames[] = str_replace( '\\', '/', $temp_filename );
+
+			update_user_meta( $user_id, $generation_id, $temp_filenames );
+		} else {
+			unlink( $temp_filename );
+		}
 
 		if ( $error || $error_message ) {
 			wp_send_json_error(
@@ -171,6 +188,43 @@ class Generator {
 				number_format( $time1 + $time2, 3 )
 			)
 		);
+	}
+
+	/**
+	 * Download CSV file.
+	 *
+	 * @return void
+	 */
+	public function download_csv() {
+		$this->run_checks( Settings::DOWNLOAD_CSV_ACTION );
+
+		// Nonce is checked by check_ajax_referer() in run_checks().
+		// phpcs:disable WordPress.Security.NonceVerification.Missing
+		$data = json_decode(
+			isset( $_POST['data'] ) ? sanitize_text_field( wp_unslash( $_POST['data'] ) ) : '',
+			false
+		);
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		$generation_id  = $this->get_input( $data, Settings::GENERATION_ID );
+		$user_id        = get_current_user_id();
+		$temp_filenames = array_filter( (array) get_user_meta( $user_id, $generation_id, true ) );
+
+		if ( ! $temp_filenames ) {
+			exit();
+		}
+
+		$this->http_headers();
+
+		foreach ( $temp_filenames as $temp_filename ) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_readfile
+			readfile( $temp_filename );
+			unlink( $temp_filename );
+		}
+
+		delete_user_meta( $user_id, $generation_id );
+
+		exit();
 	}
 
 	/**
@@ -257,6 +311,10 @@ class Generator {
 	 */
 	private function write_items( $item_handler, $temp_filename ) {
 		global $wpdb;
+
+		if ( $this->download_csv ) {
+			return;
+		}
 
 		$filename = str_replace( '\\', '/', $temp_filename );
 
@@ -351,6 +409,25 @@ class Generator {
 	}
 
 	/**
+	 * Get input value.
+	 *
+	 * @param array  $data Form data.
+	 * @param string $name Input name.
+	 *
+	 * @return string
+	 * @noinspection PhpSameParameterValueInspection
+	 */
+	private function get_input( $data, $name ) {
+		foreach ( $data as $datum ) {
+			if ( $datum->name === $name ) {
+				return $datum->value;
+			}
+		}
+
+		return '';
+	}
+
+	/**
 	 * Get settings from input and option.
 	 *
 	 * @param array $data Form data.
@@ -368,5 +445,19 @@ class Generator {
 		}
 
 		return $settings;
+	}
+
+	/**
+	 * Send HTTP headers for .csv file download.
+	 */
+	private function http_headers() {
+
+		$file_name = 'kagg-generator.csv';
+
+		nocache_headers();
+		header( 'Content-Description: File Transfer' );
+		header( 'Content-Type: text/csv' );
+		header( 'Content-Disposition: attachment; filename=' . $file_name );
+		header( 'Content-Transfer-Encoding: binary' );
 	}
 }
