@@ -83,12 +83,12 @@ jQuery( document ).ready( function( $ ) {
 			.always( function() {
 				const endTime = performance.now();
 				showMessage( GeneratorObject.totalTimeUsed.replace( /%s/, ( ( endTime - startTime ) / 1000 ).toFixed( 3 ) ) );
-				maybeDownloadCSV();
+				maybeDownloadSQL();
 			} );
 	}
 
-	function maybeDownloadCSV() {
-		if ( action !== GeneratorObject.generateAction || ! $( formSelector + ' #csv_1' ).is( ':checked' ) ) {
+	function maybeDownloadSQL() {
+		if ( action !== GeneratorObject.generateAction || ! $( formSelector + ' #sql_1' ).is( ':checked' ) ) {
 			return;
 		}
 
