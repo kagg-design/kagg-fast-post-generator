@@ -452,7 +452,7 @@ class Generator {
 	 */
 	private function http_headers() {
 
-		$file_name = 'kagg-generator.csv';
+		$file_name = 'kagg-generator.sql';
 
 		nocache_headers();
 		header( 'Content-Description: File Transfer' );
