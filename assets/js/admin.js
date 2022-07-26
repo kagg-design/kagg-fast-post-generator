@@ -9,8 +9,8 @@
  * @param GeneratorObject.updateCommentCountsNonce
  * @param GeneratorObject.cacheFlushAction
  * @param GeneratorObject.cacheFlushNonce
- * @param GeneratorObject.downloadCSVAction
- * @param GeneratorObject.downloadCSVNonce
+ * @param GeneratorObject.downloadSQLAction
+ * @param GeneratorObject.downloadSQLNonce
  * @param GeneratorObject.deleteAction
  * @param GeneratorObject.deleteNonce
  * @param GeneratorObject.nothingToDo
@@ -103,8 +103,8 @@ jQuery( document ).ready( function( $ ) {
 			$( 'body' ).append( $form );
 		}
 
-		$form.append('<input name="action" value="' + GeneratorObject.downloadCSVAction + '" type="hidden"/>');
-		$form.append('<input name="nonce" value="' + GeneratorObject.downloadCSVNonce + '" type="hidden"/>');
+		$form.append('<input name="action" value="' + GeneratorObject.downloadSQLAction + '" type="hidden"/>');
+		$form.append('<input name="nonce" value="' + GeneratorObject.downloadSQLNonce + '" type="hidden"/>');
 		$form.append('<input name="data" value=\'' + JSON.stringify( $( formSelector ).serializeArray() ) + '\' type="hidden"/>');
 		$form.submit();
 	}

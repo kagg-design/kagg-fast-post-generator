@@ -44,9 +44,9 @@ class Settings {
 	const CACHE_FLUSH_ACTION = 'kagg-generator-cache-flush';
 
 	/**
-	 * The plugin download CSV action.
+	 * The plugin download SQL file action.
 	 */
-	const DOWNLOAD_CSV_ACTION = 'kagg-generator-download-csv';
+	const DOWNLOAD_SQL_ACTION = 'kagg-generator-download-sql';
 
 	/**
 	 * The plugin update comment counts action.
@@ -129,7 +129,7 @@ class Settings {
 		add_action( 'admin_enqueue_scripts', [ $this, 'admin_enqueue_scripts' ] );
 		add_action( 'wp_ajax_' . self::UPDATE_COMMENT_COUNTS_ACTION, [ $this, 'update_comment_counts' ] );
 		add_action( 'wp_ajax_' . self::CACHE_FLUSH_ACTION, [ $this, 'cache_flush' ] );
-		add_action( 'wp_ajax_' . self::DOWNLOAD_CSV_ACTION, [ $this->generator, 'download_csv' ] );
+		add_action( 'wp_ajax_' . self::DOWNLOAD_SQL_ACTION, [ $this->generator, 'download_sql' ] );
 		add_action( 'wp_ajax_' . self::DELETE_ACTION, [ $this, 'delete' ] );
 		add_action( 'wp_ajax_' . self::GENERATE_ACTION, [ $this, 'generate' ] );
 	}
@@ -505,8 +505,8 @@ class Settings {
 				'updateCommentCountsNonce'  => wp_create_nonce( self::UPDATE_COMMENT_COUNTS_ACTION ),
 				'cacheFlushAction'          => self::CACHE_FLUSH_ACTION,
 				'cacheFlushNonce'           => wp_create_nonce( self::CACHE_FLUSH_ACTION ),
-				'downloadCSVAction'         => self::DOWNLOAD_CSV_ACTION,
-				'downloadCSVNonce'          => wp_create_nonce( self::DOWNLOAD_CSV_ACTION ),
+				'downloadSQLAction'         => self::DOWNLOAD_SQL_ACTION,
+				'downloadSQLNonce'          => wp_create_nonce( self::DOWNLOAD_SQL_ACTION ),
 				'deleteAction'              => self::DELETE_ACTION,
 				'deleteNonce'               => wp_create_nonce( self::DELETE_ACTION ),
 				'nothingToDo'               => esc_html__( 'Nothing to do.', 'kagg-generate' ),
@@ -717,13 +717,13 @@ class Settings {
 				'supplemental' => __( 'How many items to generate in one ajax request.', 'kagg-generator' ),
 				'default'      => 50 * 1000,
 			],
-			'csv'        => [
-				'label'        => __( 'Download CSV', 'kagg-generator' ),
+			'sql'        => [
+				'label'        => __( 'Download SQL', 'kagg-generator' ),
 				'section'      => 'first_section',
 				'type'         => 'checkbox',
 				'placeholder'  => '',
 				'helper'       => '',
-				'supplemental' => __( 'When selected, the plugin does not write to the database. Instead, it forces downloading of a CSV file.', 'kagg-generator' ),
+				'supplemental' => __( 'When selected, the plugin does not write to the database. Instead, it forces downloading of a SQL file.', 'kagg-generator' ),
 				'default'      => 'no',
 			],
 		];

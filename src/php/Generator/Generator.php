@@ -42,11 +42,11 @@ class Generator {
 	private $registered_items;
 
 	/**
-	 * Whether to download CSV file.
+	 * Whether to download SQL file.
 	 *
 	 * @var bool
 	 */
-	private $download_csv;
+	private $download_sql;
 
 	/**
 	 * Class constructor.
@@ -115,7 +115,7 @@ class Generator {
 		$this->use_local_infile = $this->use_local_infile();
 		$number                 = (int) $settings['number'];
 		$chunk_size             = (int) $settings['chunk_size'];
-		$this->download_csv     = isset( $settings['csv'] );
+		$this->download_sql     = isset( $settings['sql'] );
 		$count                  = min( $number - $index, $chunk_size );
 		$step                   = (int) floor( $index / $chunk_size ) + 1;
 		$steps                  = (int) ceil( $number / $chunk_size );
@@ -141,7 +141,7 @@ class Generator {
 			$time1 = round( $end - $start, 3 );
 
 			$start = microtime( true );
-			$this->write_items( $item_handler, $temp_filename );
+			$this->store_items( $item_handler, $temp_filename );
 			$end   = microtime( true );
 			$time2 = round( $end - $start, 3 );
 
@@ -153,7 +153,7 @@ class Generator {
 			$error_message = ob_get_clean() . $ex->getMessage();
 		}
 
-		if ( $this->download_csv ) {
+		if ( $this->download_sql ) {
 			$user_id          = get_current_user_id();
 			$temp_filenames   = array_filter( (array) get_user_meta( $user_id, $generation_id, true ) );
 			$temp_filenames[] = str_replace( '\\', '/', $temp_filename );
@@ -191,12 +191,12 @@ class Generator {
 	}
 
 	/**
-	 * Download CSV file.
+	 * Download SQL file.
 	 *
 	 * @return void
 	 */
-	public function download_csv() {
-		$this->run_checks( Settings::DOWNLOAD_CSV_ACTION );
+	public function download_sql() {
+		$this->run_checks( Settings::DOWNLOAD_SQL_ACTION );
 
 		// Nonce is checked by check_ajax_referer() in run_checks().
 		// phpcs:disable WordPress.Security.NonceVerification.Missing
@@ -301,7 +301,7 @@ class Generator {
 	}
 
 	/**
-	 * Write items to the database.
+	 * Store items in the database.
 	 *
 	 * @param Item   $item_handler  Item handler class instance.
 	 * @param string $temp_filename Temporary filename.
@@ -309,10 +309,10 @@ class Generator {
 	 * @return void
 	 * @throws RuntimeException With error message.
 	 */
-	private function write_items( $item_handler, $temp_filename ) {
+	private function store_items( $item_handler, $temp_filename ) {
 		global $wpdb;
 
-		if ( $this->download_csv ) {
+		if ( $this->download_sql ) {
 			return;
 		}
 
@@ -448,7 +448,7 @@ class Generator {
 	}
 
 	/**
-	 * Send HTTP headers for .csv file download.
+	 * Send HTTP headers for .sql file download.
 	 */
 	private function http_headers() {
 
@@ -456,7 +456,7 @@ class Generator {
 
 		nocache_headers();
 		header( 'Content-Description: File Transfer' );
-		header( 'Content-Type: text/csv' );
+		header( 'Content-Type: application/sql' );
 		header( 'Content-Disposition: attachment; filename=' . $file_name );
 		header( 'Content-Transfer-Encoding: binary' );
 	}
