@@ -207,9 +207,14 @@ class Generator {
 		);
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
-		$generation_id  = $this->get_input( $data, Settings::GENERATION_ID );
-		$user_id        = get_current_user_id();
-		$temp_filenames = array_filter( (array) get_user_meta( $user_id, $generation_id, true ) );
+		$generation_id      = $this->get_input( $data, Settings::GENERATION_ID );
+		$settings           = $this->get_settings( $data );
+		$item_type          = $settings['post_type'];
+		$item_classname     = $this->registered_items[ $item_type ];
+		$this->item_handler = new $item_classname();
+		$table              = $this->item_handler->get_table();
+		$user_id            = get_current_user_id();
+		$temp_filenames     = array_filter( (array) get_user_meta( $user_id, $generation_id, true ) );
 
 		if ( ! $temp_filenames ) {
 			exit();
@@ -217,11 +222,41 @@ class Generator {
 
 		$this->http_headers();
 
+		// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped, Squiz.WhiteSpace.LanguageConstructSpacing.IncorrectSingle
+		echo
+			"/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;\n" .
+			"/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;\n" .
+			"/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;\n" .
+			"/*!50503 SET NAMES utf8mb4 */;\n" .
+			"/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;\n" .
+			"/*!40103 SET TIME_ZONE='+00:00' */;\n" .
+			"/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;\n" .
+			"/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;\n" .
+			"/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;\n" .
+			"/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;\n" .
+			"\n" .
+			"LOCK TABLES `$table` WRITE;\n" .
+			"/*!40000 ALTER TABLE `$table` DISABLE KEYS */;\n";
+
 		foreach ( $temp_filenames as $temp_filename ) {
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_readfile
 			readfile( $temp_filename );
 			unlink( $temp_filename );
 		}
+
+		echo
+			"/*!40000 ALTER TABLE `$table` ENABLE KEYS */;\n" .
+			"UNLOCK TABLES;\n" .
+			"\n" .
+			"/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;\n" .
+			"/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;\n" .
+			"/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;\n" .
+			"/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;\n" .
+			"/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;\n" .
+			"/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;\n" .
+			"/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;\n" .
+			"/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;\n";
+		// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped, Squiz.WhiteSpace.LanguageConstructSpacing.IncorrectSingle
 
 		delete_user_meta( $user_id, $generation_id );
 
@@ -342,36 +377,13 @@ class Generator {
 	 * @return void
 	 * @throws RuntimeException With error message.
 	 * @noinspection SqlInsertValues
+	 * @noinspection SqlResolve
 	 */
 	private function write_file( $temp_filename, $f ) {
 		if ( $this->download_sql ) {
+			$table         = $this->item_handler->get_table();
 			$fields        = implode( ', ', $this->item_handler->get_fields() );
-			$file_contents =
-				"/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;\n" .
-				"/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;\n" .
-				"/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;\n" .
-				"/*!50503 SET NAMES utf8mb4 */;\n" .
-				"/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;\n" .
-				"/*!40103 SET TIME_ZONE='+00:00' */;\n" .
-				"/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;\n" .
-				"/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;\n" .
-				"/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;\n" .
-				"/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;\n" .
-				"\n" .
-				"LOCK TABLES `wp_posts` WRITE;\n" .
-				"/*!40000 ALTER TABLE `wp_posts` DISABLE KEYS */;\n" .
-				'INSERT INTO `wp_posts` (' . $fields . ') VALUES ' . stream_get_contents( $f ) . ";\n" .
-				"/*!40000 ALTER TABLE `wp_posts` ENABLE KEYS */;\n" .
-				"UNLOCK TABLES;\n" .
-				"/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;\n" .
-				"\n" .
-				"/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;\n" .
-				"/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;\n" .
-				"/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;\n" .
-				"/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;\n" .
-				"/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;\n" .
-				"/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;\n" .
-				"/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;\n";
+			$file_contents = "INSERT INTO `$table` ($fields) VALUES " . stream_get_contents( $f ) . ";\n";
 		} else {
 			$file_contents = stream_get_contents( $f );
 		}
