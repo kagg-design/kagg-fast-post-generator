@@ -112,8 +112,8 @@ class Comment extends Item {
 		$user_login = $user ? $user->user_login : '';
 
 		$now      = time();
-		$wp_date  = wp_date( self::MYSQL_TIME_FORMAT, $now );
-		$gmt_date = gmdate( self::MYSQL_TIME_FORMAT, $now );
+		$wp_date  = $this->wp_date( self::MYSQL_TIME_FORMAT, $now );
+		$gmt_date = $this->gmt_date( self::MYSQL_TIME_FORMAT, $now );
 
 		// Here we have to list the fields in the same order as in wp_comments table.
 		// Otherwise, csv file won't be created properly.

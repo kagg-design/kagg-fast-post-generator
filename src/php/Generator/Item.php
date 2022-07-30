@@ -148,12 +148,49 @@ abstract class Item {
 		global $wpdb;
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		return $wpdb->get_results(
+		$users = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT ID, user_email, display_name FROM $wpdb->users ORDER BY RAND() LIMIT %d",
 				self::RANDOM_USERS_COUNT
 			)
 		);
+
+		return array_map(
+			static function ( $user ) {
+				$user->ID = (int) $user->ID;
+
+				return $user;
+			},
+			$users
+		);
+	}
+
+	/**
+	 * Get WP or zero date.
+	 *
+	 * @param string $format Format.
+	 * @param int    $time   Time.
+	 *
+	 * @return false|string
+	 */
+	protected function wp_date( $format, $time ) {
+		$wp_date = wp_date( $format, $time );
+
+		return $wp_date ?: self::ZERO_MYSQL_TIME;
+	}
+
+	/**
+	 * Get GMT or zero date.
+	 *
+	 * @param string $format Format.
+	 * @param int    $time   Time.
+	 *
+	 * @return false|string
+	 */
+	protected function gmt_date( $format, $time ) {
+		$gmt_date = gmdate( $format, $time );
+
+		return $gmt_date ?: self::ZERO_MYSQL_TIME;
 	}
 
 	/**

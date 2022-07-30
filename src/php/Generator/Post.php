@@ -44,27 +44,29 @@ class Post extends Item {
 	 * @return void
 	 */
 	protected function prepare_stub() {
-		$user    = wp_get_current_user();
-		$user_id = $user ? $user->ID : 0;
+		$user_id = get_current_user_id();
 
 		$now      = time();
-		$wp_date  = wp_date( self::MYSQL_TIME_FORMAT, $now );
-		$gmt_date = gmdate( self::MYSQL_TIME_FORMAT, $now );
+		$wp_date  = $this->wp_date( self::MYSQL_TIME_FORMAT, $now );
+		$gmt_date = $this->gmt_date( self::MYSQL_TIME_FORMAT, $now );
 
 		// We have to init all post fields here in the same order as provided in get_post_fields().
 		// Otherwise, csv file won't be created properly.
 		$this->stub = [
-			'post_author'       => $user_id,
-			'post_date'         => $wp_date,
-			'post_date_gmt'     => $gmt_date,
-			'post_content'      => '',
-			'post_title'        => '',
-			'post_excerpt'      => '',
-			'post_name'         => '',
-			'post_modified'     => $wp_date,
-			'post_modified_gmt' => $gmt_date,
-			'guid'              => '',
-			'post_type'         => $this->item_type,
+			'post_author'           => $user_id,
+			'post_date'             => $wp_date,
+			'post_date_gmt'         => $gmt_date,
+			'post_content'          => '',
+			'post_title'            => '',
+			'post_excerpt'          => '',
+			'post_name'             => '',
+			'to_ping'               => '', // Must be included as it has no default value.
+			'pinged'                => '', // Must be included as it has no default value.
+			'post_modified'         => $wp_date,
+			'post_modified_gmt'     => $gmt_date,
+			'post_content_filtered' => '', // Must be included as it has no default value.
+			'guid'                  => '',
+			'post_type'             => $this->item_type,
 		];
 	}
 
@@ -79,8 +81,8 @@ class Post extends Item {
 		$initial_timestamp      = time() - self::INITIAL_TIME_SHIFT;
 		$this->post_time_keeper = new stdClass();
 
-		$this->post_time_keeper->post_date     = wp_date( self::MYSQL_TIME_FORMAT, $initial_timestamp );
-		$this->post_time_keeper->post_date_gmt = gmdate( self::MYSQL_TIME_FORMAT, $initial_timestamp );
+		$this->post_time_keeper->post_date     = $this->wp_date( self::MYSQL_TIME_FORMAT, $initial_timestamp );
+		$this->post_time_keeper->post_date_gmt = $this->gmt_date( self::MYSQL_TIME_FORMAT, $initial_timestamp );
 	}
 
 	/**

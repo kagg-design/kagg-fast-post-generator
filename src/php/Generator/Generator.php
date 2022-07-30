@@ -42,6 +42,13 @@ class Generator {
 	private $registered_items;
 
 	/**
+	 * Item handler instance.
+	 *
+	 * @var Item $item_handler
+	 */
+	private $item_handler;
+
+	/**
 	 * Whether to download SQL file.
 	 *
 	 * @var bool
@@ -123,25 +130,19 @@ class Generator {
 		$error                  = false;
 		$item_type              = $settings['post_type'];
 		$item_classname         = $this->registered_items[ $item_type ];
-
-		/**
-		 * Item handler instance.
-		 *
-		 * @var Item $item_handler
-		 */
-		$item_handler = new $item_classname();
+		$this->item_handler     = new $item_classname();
 
 		$time1 = 0;
 		$time2 = 0;
 
 		try {
 			$start = microtime( true );
-			$this->generate_items( $item_handler, $count, $temp_filename );
+			$this->generate_items( $count, $temp_filename );
 			$end   = microtime( true );
 			$time1 = round( $end - $start, 3 );
 
 			$start = microtime( true );
-			$this->store_items( $item_handler, $temp_filename );
+			$this->store_items( $temp_filename );
 			$end   = microtime( true );
 			$time2 = round( $end - $start, 3 );
 
@@ -259,14 +260,13 @@ class Generator {
 	/**
 	 * Generate items.
 	 *
-	 * @param Item   $item_handler  Item handler class instance.
 	 * @param int    $count         Number of items to generate.
 	 * @param string $temp_filename Temporary filename.
 	 *
 	 * @return void
 	 * @throws RuntimeException With error message.
 	 */
-	private function generate_items( $item_handler, $count, $temp_filename ) {
+	private function generate_items( $count, $temp_filename ) {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fopen
 		$f = fopen( 'php://temp', 'wb+' );
 
@@ -274,17 +274,107 @@ class Generator {
 			throw new RuntimeException( esc_html__( 'Cannot create a temporary php://temp file.', 'kagg-generator' ) );
 		}
 
-		for ( $i = 0; $i < $count; $i ++ ) {
-			$result = fputcsv( $f, $item_handler->generate(), '|' );
+		if ( $this->download_sql ) {
+			$write = [ $this, 'write_item_sql' ];
+		} else {
+			$write = [ $this, 'write_item_csv' ];
+		}
 
-			if ( ! $result ) {
+		for ( $i = 0; $i < $count; $i ++ ) {
+			$last_item = ( $count - 1 ) === $i;
+
+			if ( ! $write( $f, $last_item ) ) {
 				throw new RuntimeException( esc_html__( 'Cannot write to a temporary php://temp file.', 'kagg-generator' ) );
 			}
 		}
 
 		rewind( $f );
 
-		$file_contents = stream_get_contents( $f );
+		$this->write_file( $temp_filename, $f );
+	}
+
+	/**
+	 * Write item in csv format.
+	 *
+	 * @param resource $f         File.
+	 * @param bool     $last_item Whether we process the last item in the file.
+	 *
+	 * @return false|int
+	 * @noinspection PhpUnusedParameterInspection
+	 */
+	private function write_item_csv( $f, $last_item ) {
+		return fputcsv( $f, $this->item_handler->generate(), '|' );
+	}
+
+	/**
+	 * Write item in sql format.
+	 *
+	 * @param resource $f         File.
+	 * @param bool     $last_item Whether we process the last item in the file.
+	 *
+	 * @return false|int
+	 */
+	private function write_item_sql( $f, $last_item ) {
+		global $wpdb;
+
+		$fields = $this->item_handler->generate();
+
+		foreach ( $fields as &$field ) {
+			if ( is_string( $field ) ) {
+				$field = "'" . $wpdb->_real_escape( $field ) . "'";
+			}
+		}
+
+		unset( $field );
+
+		$last_comma = $last_item ? '' : ',';
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fwrite
+		return fwrite( $f, '(' . implode( ',', $fields ) . ')' . $last_comma );
+	}
+
+	/**
+	 * Write file.
+	 *
+	 * @param string   $temp_filename Temporary filename.
+	 * @param resource $f             File.
+	 *
+	 * @return void
+	 * @throws RuntimeException With error message.
+	 * @noinspection SqlInsertValues
+	 */
+	private function write_file( $temp_filename, $f ) {
+		if ( $this->download_sql ) {
+			$fields        = implode( ', ', $this->item_handler->get_fields() );
+			$file_contents =
+				"/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;\n" .
+				"/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;\n" .
+				"/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;\n" .
+				"/*!50503 SET NAMES utf8mb4 */;\n" .
+				"/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;\n" .
+				"/*!40103 SET TIME_ZONE='+00:00' */;\n" .
+				"/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;\n" .
+				"/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;\n" .
+				"/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;\n" .
+				"/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;\n" .
+				"\n" .
+				"LOCK TABLES `wp_posts` WRITE;\n" .
+				"/*!40000 ALTER TABLE `wp_posts` DISABLE KEYS */;\n" .
+				'INSERT INTO `wp_posts` (' . $fields . ') VALUES ' . stream_get_contents( $f ) . ";\n" .
+				"/*!40000 ALTER TABLE `wp_posts` ENABLE KEYS */;\n" .
+				"UNLOCK TABLES;\n" .
+				"/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;\n" .
+				"\n" .
+				"/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;\n" .
+				"/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;\n" .
+				"/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;\n" .
+				"/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;\n" .
+				"/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;\n" .
+				"/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;\n" .
+				"/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;\n";
+		} else {
+			$file_contents = stream_get_contents( $f );
+		}
 
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_file_put_contents
 		$result = file_put_contents( $temp_filename, $file_contents );
@@ -303,13 +393,12 @@ class Generator {
 	/**
 	 * Store items in the database.
 	 *
-	 * @param Item   $item_handler  Item handler class instance.
 	 * @param string $temp_filename Temporary filename.
 	 *
 	 * @return void
 	 * @throws RuntimeException With error message.
 	 */
-	private function store_items( $item_handler, $temp_filename ) {
+	private function store_items( $temp_filename ) {
 		global $wpdb;
 
 		if ( $this->download_sql ) {
@@ -318,7 +407,7 @@ class Generator {
 
 		$filename = str_replace( '\\', '/', $temp_filename );
 
-		$fields = implode( ', ', $item_handler->get_fields() );
+		$fields = implode( ', ', $this->item_handler->get_fields() );
 
 		$this->set_local_infile();
 
@@ -328,7 +417,7 @@ class Generator {
 		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared
 		$result = $wpdb->query(
 			$wpdb->prepare(
-				"LOAD DATA $local INFILE %s INTO TABLE {$item_handler->get_table()}
+				"LOAD DATA $local INFILE %s INTO TABLE {$this->item_handler->get_table()}
                     FIELDS TERMINATED BY '|' ENCLOSED BY '\"'
 					( $fields )",
 				$filename
