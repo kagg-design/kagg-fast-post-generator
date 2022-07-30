@@ -52,6 +52,7 @@ class Post extends Item {
 
 		// We have to init all post fields here in the same order as provided in get_post_fields().
 		// Otherwise, csv file won't be created properly.
+		// We must include to_ping, pinged, and post_content_filtered as they do not have default values.
 		$this->stub = [
 			'post_author'           => $user_id,
 			'post_date'             => $wp_date,
@@ -60,11 +61,11 @@ class Post extends Item {
 			'post_title'            => '',
 			'post_excerpt'          => '',
 			'post_name'             => '',
-			'to_ping'               => '', // Must be included as it has no default value.
-			'pinged'                => '', // Must be included as it has no default value.
+			'to_ping'               => '',
+			'pinged'                => '',
 			'post_modified'         => $wp_date,
 			'post_modified_gmt'     => $gmt_date,
-			'post_content_filtered' => '', // Must be included as it has no default value.
+			'post_content_filtered' => '',
 			'guid'                  => '',
 			'post_type'             => $this->item_type,
 		];
