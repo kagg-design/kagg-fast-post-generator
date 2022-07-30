@@ -92,7 +92,7 @@ class Post extends Item {
 	 * @noinspection NonSecureUniqidUsageInspection
 	 */
 	public function generate() {
-		$content = implode( "\r\r", Lorem::paragraphs( 12 ) );
+		$content = implode( "\n\n", Lorem::paragraphs( 12 ) );
 		$title   = substr( Lorem::sentence( 5 ), 0, - 1 );
 		$name    = str_replace( ' ', '-', strtolower( $title ) ) . '-' . uniqid();
 		$user    = $this->user_randomizer->get()[0];

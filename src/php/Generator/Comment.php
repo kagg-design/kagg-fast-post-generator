@@ -181,7 +181,7 @@ class Comment extends Item {
 		$parent = $this->add_comment_to_post( $post );
 
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
-		$content = implode( "\r\r", Lorem::sentences( mt_rand( 1, 30 ) ) );
+		$content = implode( "\n\n", Lorem::sentences( mt_rand( 1, 30 ) ) );
 
 		$comment                         = $this->stub;
 		$comment['comment_post_ID']      = $post->ID;
