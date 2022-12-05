@@ -39,6 +39,10 @@ Yes, you can!
 
 == Changelog ==
 
+= 1.6.0 =
+* Tested with WordPress 6.1.
+* Fixed fatal error with WP 6.1 and SHORTINIT.
+
 = 1.5.0 =
 * Added generation of SQL files.
 

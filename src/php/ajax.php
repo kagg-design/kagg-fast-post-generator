@@ -16,10 +16,6 @@ $root = dirname( dirname( dirname( dirname( dirname( dirname( $root ) ) ) ) ) );
 
 require $root . '/wp-load.php';
 
-// Components needed for i18n to work properly.
-require $root . '/wp-includes/l10n.php';
-require $root . '/wp-includes/class-wp-locale.php';
-
 // Components needed for check_ajax_referer() to work.
 require $root . '/wp-includes/capabilities.php';
 require $root . '/wp-includes/class-wp-roles.php';
@@ -33,6 +29,9 @@ require $root . '/wp-includes/rest-api.php';
 
 wp_plugin_directory_constants();
 wp_cookie_constants();
+
+// Components needed for i18n to work properly.
+wp_load_translations_early();
 
 require $root . '/wp-includes/pluggable.php';
 
