@@ -2,7 +2,7 @@
 Contributors: kaggdesign
 Tags: generate posts, generate pages, development, bulk generate
 Requires at least: 5.0
-Tested up to: 6.0
+Tested up to: 6.1
 Stable tag: 1.6.0
 Requires PHP: 5.6
 License: GPLv2 or later
