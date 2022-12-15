@@ -15,13 +15,6 @@ use KAGG\Generator\Generator\Generator;
 class Main {
 
 	/**
-	 * AdminNotices instance.
-	 *
-	 * @var AdminNotices
-	 */
-	private $admin_notices;
-
-	/**
 	 * Init class.
 	 *
 	 * @return void
@@ -31,35 +24,9 @@ class Main {
 			return;
 		}
 
-		$this->admin_notices = new AdminNotices();
-		$this->requirements();
-
 		( new Settings() )->init();
 
 		$this->hooks();
-	}
-
-	/**
-	 * Show requirements notice.
-	 *
-	 * @return void
-	 */
-	private function requirements() {
-		if ( ! ( new Generator() )->use_local_infile() ) {
-			return;
-		}
-
-		if ( ini_get( 'mysqli.allow_local_infile' ) ) {
-			return;
-		}
-
-		// Show notice.
-		$this->admin_notices->add_notice(
-			__( 'To work properly on your server, the KAGG Fast Post Generator plugin needs `mysqli.allow_local_infile = On` set in the php.ini file.', 'kagg-generator' ) .
-			'<br>' .
-			__( 'Ask your hosting provider to set this configuration option.', 'kagg-generator' ),
-			'notice notice-error'
-		);
 	}
 
 	/**
