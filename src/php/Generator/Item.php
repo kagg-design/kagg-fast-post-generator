@@ -18,16 +18,6 @@ abstract class Item {
 	const RANDOM_USERS_COUNT = 1000;
 
 	/**
-	 * Initial time shift, back in time.
-	 */
-	const INITIAL_TIME_SHIFT = YEAR_IN_SECONDS;
-
-	/**
-	 * Standard max time shift between generated items. May be adjusted in child classes.
-	 */
-	const MAX_TIME_SHIFT = HOUR_IN_SECONDS;
-
-	/**
 	 * Zero time in MySQL format.
 	 */
 	const ZERO_MYSQL_TIME = '0000-00-00 00:00:00';
@@ -66,12 +56,43 @@ abstract class Item {
 	protected $stub = [];
 
 	/**
-	 * Class constructor.
+	 * Initial time shift, back in time.
+	 *
+	 * @var int
 	 */
-	public function __construct() {
+	protected $initial_time_shift;
+
+	/**
+	 * Max time shift between generated items.
+	 *
+	 * @var int
+	 */
+	protected $max_time_shift;
+
+	/**
+	 * Class constructor.
+	 *
+	 * @param int $number Number of items to generate.
+	 * @param int $index  Current index.
+	 */
+	public function __construct( $number = 1, $index = 0 ) {
 		global $wpdb;
 
 		$this->table = $wpdb->prefix . $this->table;
+
+		$this->initial_time_shift = max(
+			0,
+			(int) apply_filters( 'kagg_generator_initial_time_shift', YEAR_IN_SECONDS )
+		);
+
+		$this->max_time_shift = (int) $this->initial_time_shift / $number;
+
+		$this->max_time_shift = max(
+			0,
+			(int) apply_filters( 'kagg_generator_max_time_shift', $this->max_time_shift )
+		);
+
+		$this->initial_time_shift = (int) $this->initial_time_shift * ( $number - $index ) / $number;
 
 		$this->prepare_stub();
 		$this->prepare_generate();
@@ -122,7 +143,7 @@ abstract class Item {
 	 */
 	protected function add_time_shift_to_post( $post ) {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
-		$time_shift = mt_rand( 0, self::MAX_TIME_SHIFT );
+		$time_shift = mt_rand( 0, $this->max_time_shift );
 
 		$date     = self::ZERO_MYSQL_TIME === $post->post_date ? 0 : strtotime( $post->post_date ) + $time_shift;
 		$date_gmt = self::ZERO_MYSQL_TIME === $post->post_date_gmt ? 0 : strtotime( $post->post_date_gmt ) + $time_shift;

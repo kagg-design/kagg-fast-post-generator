@@ -39,6 +39,11 @@ Yes, you can!
 
 == Changelog ==
 
+= 1.7.0 =
+* Improved plugin behaviour in admin.
+* Item generation time now is properly distributed within default period.
+* Added filters to change item initial time shift and maximum time shift.
+
 = 1.6.0 =
 * Tested with WordPress 6.1.
 * Fixed fatal error with WP 6.1 and SHORTINIT.

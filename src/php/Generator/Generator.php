@@ -130,7 +130,7 @@ class Generator {
 		$error                  = false;
 		$item_type              = $settings['post_type'];
 		$item_classname         = $this->registered_items[ $item_type ];
-		$this->item_handler     = new $item_classname();
+		$this->item_handler     = new $item_classname( $number, $index );
 
 		$time1 = 0;
 		$time2 = 0;
