@@ -176,7 +176,21 @@ class Comment extends Item {
 		$user = $this->user_randomizer->get()[0];
 		$post = $this->post_id_randomizer->get()[0];
 
-		$this->add_time_shift_to_post( $post );
+		if ( isset( $post->max_time_shift ) ) {
+			$max_time_shift = $post->max_time_shift;
+		} else {
+			$date                 = self::ZERO_MYSQL_TIME === $post->post_date ? 0 : strtotime( $post->post_date );
+			$date_gmt             = self::ZERO_MYSQL_TIME === $post->post_date_gmt ? 0 : strtotime( $post->post_date_gmt );
+			$max_date             = max( $date, $date_gmt );
+			$now                  = time();
+			$max_time_shift       = $now - $max_date;
+			$post_count           = max( 1, $this->post_id_randomizer->count() );
+			$comments_per_post    = $this->number / $post_count;
+			$max_time_shift       = max( 0, $max_time_shift ) / $comments_per_post;
+			$post->max_time_shift = $max_time_shift;
+		}
+
+		$this->add_time_shift_to_post( $post, $max_time_shift );
 
 		$parent = $this->add_comment_to_post( $post );
 

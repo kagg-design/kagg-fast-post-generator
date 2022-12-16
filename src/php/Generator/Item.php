@@ -28,6 +28,20 @@ abstract class Item {
 	const MYSQL_TIME_FORMAT = 'Y-m-d H:i:s';
 
 	/**
+	 * Number of items to generate.
+	 *
+	 * @var int
+	 */
+	protected $number;
+
+	/**
+	 * Current index.
+	 *
+	 * @var int
+	 */
+	protected $index;
+
+	/**
 	 * Item type.
 	 *
 	 * @var string
@@ -78,20 +92,16 @@ abstract class Item {
 	public function __construct( $number = 1, $index = 0 ) {
 		global $wpdb;
 
-		$this->table = $wpdb->prefix . $this->table;
+		$this->number = $number;
+		$this->index  = $index;
+		$this->table  = $wpdb->prefix . $this->table;
 
 		$this->initial_time_shift = max(
 			0,
 			(int) apply_filters( 'kagg_generator_initial_time_shift', YEAR_IN_SECONDS )
 		);
 
-		$this->max_time_shift = (int) $this->initial_time_shift / $number;
-
-		$this->max_time_shift = max(
-			0,
-			(int) apply_filters( 'kagg_generator_max_time_shift', $this->max_time_shift )
-		);
-
+		$this->max_time_shift     = (int) $this->initial_time_shift / $number;
 		$this->initial_time_shift = (int) $this->initial_time_shift * ( $number - $index ) / $number;
 
 		$this->prepare_stub();
@@ -137,13 +147,17 @@ abstract class Item {
 	/**
 	 * Add random time shift to post dates.
 	 *
-	 * @param object $post Post.
+	 * @param object $post           Post.
+	 * @param int    $max_time_shift Time shift.
 	 *
 	 * @return void
+	 * @noinspection CallableParameterUseCaseInTypeContextInspection
 	 */
-	protected function add_time_shift_to_post( $post ) {
+	protected function add_time_shift_to_post( $post, $max_time_shift = 0 ) {  // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
+		$max_time_shift = 0 === $max_time_shift ? $this->max_time_shift : $max_time_shift;
+
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
-		$time_shift = mt_rand( 0, $this->max_time_shift );
+		$time_shift = mt_rand( 0, $max_time_shift );
 
 		$date     = self::ZERO_MYSQL_TIME === $post->post_date ? 0 : strtotime( $post->post_date ) + $time_shift;
 		$date_gmt = self::ZERO_MYSQL_TIME === $post->post_date_gmt ? 0 : strtotime( $post->post_date_gmt ) + $time_shift;
