@@ -18,11 +18,6 @@ use stdClass;
 class User extends Item {
 
 	/**
-	 * Maximum random users count.
-	 */
-	const RANDOM_USERNAME_COUNT = 1000;
-
-	/**
 	 * Item type.
 	 *
 	 * @var string

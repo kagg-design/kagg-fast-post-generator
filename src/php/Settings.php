@@ -71,7 +71,11 @@ class Settings {
 	/**
 	 * Plugin prefix.
 	 */
-	const PREFIX        = 'kagg-generator-';
+	const PREFIX = 'kagg-generator-';
+
+	/**
+	 * Generation ID.
+	 */
 	const GENERATION_ID = 'generation_id';
 
 	/**

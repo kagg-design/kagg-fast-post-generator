@@ -7,8 +7,6 @@
 
 namespace KAGG\Generator;
 
-use KAGG\Generator\Generator\Generator;
-
 /**
  * Class Main.
  */
