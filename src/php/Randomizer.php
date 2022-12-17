@@ -81,6 +81,15 @@ class Randomizer {
 	}
 
 	/**
+	 * Get count.
+	 *
+	 * @return int
+	 */
+	public function count() {
+		return $this->count;
+	}
+
+	/**
 	 * Prepare random keys.
 	 */
 	private function prepare_random_keys() {

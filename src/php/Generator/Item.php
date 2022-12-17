@@ -7,25 +7,13 @@
 
 namespace KAGG\Generator\Generator;
 
+use KAGG\Generator\Lorem;
+use KAGG\Generator\Randomizer;
+
 /**
  * Class Item.
  */
 abstract class Item {
-
-	/**
-	 * Maximum random users count. Newly generated comments will have a random author from this user set.
-	 */
-	const RANDOM_USERS_COUNT = 1000;
-
-	/**
-	 * Initial time shift, back in time.
-	 */
-	const INITIAL_TIME_SHIFT = YEAR_IN_SECONDS;
-
-	/**
-	 * Standard max time shift between generated items. May be adjusted in child classes.
-	 */
-	const MAX_TIME_SHIFT = HOUR_IN_SECONDS;
 
 	/**
 	 * Zero time in MySQL format.
@@ -36,6 +24,34 @@ abstract class Item {
 	 * MySQL time format.
 	 */
 	const MYSQL_TIME_FORMAT = 'Y-m-d H:i:s';
+
+	/**
+	 * Maximum users count. Newly generated comments will have a random author from this user set.
+	 *
+	 * @var int
+	 */
+	protected $random_users_count;
+
+	/**
+	 * Percent of logged-in users. Must be from 0 to 100.
+	 *
+	 * @var int
+	 */
+	protected $logged_in_percentage;
+
+	/**
+	 * Number of items to generate.
+	 *
+	 * @var int
+	 */
+	protected $number;
+
+	/**
+	 * Current index.
+	 *
+	 * @var int
+	 */
+	protected $index;
 
 	/**
 	 * Item type.
@@ -66,12 +82,50 @@ abstract class Item {
 	protected $stub = [];
 
 	/**
-	 * Class constructor.
+	 * Initial time shift, back in time.
+	 *
+	 * @var int
 	 */
-	public function __construct() {
+	protected $initial_time_shift;
+
+	/**
+	 * Max time shift between generated items.
+	 *
+	 * @var int
+	 */
+	protected $max_time_shift;
+
+	/**
+	 * Class constructor.
+	 *
+	 * @param int $number Number of items to generate.
+	 * @param int $index  Current index.
+	 */
+	public function __construct( $number = 1, $index = 0 ) {
 		global $wpdb;
 
-		$this->table = $wpdb->prefix . $this->table;
+		$this->number = $number;
+		$this->index  = $index;
+		$this->table  = $wpdb->prefix . $this->table;
+
+		$this->random_users_count = max(
+			0,
+			(int) apply_filters( 'kagg_generator_random_users_count', 1000 )
+		);
+
+		$this->logged_in_percentage = max(
+			0,
+			(int) apply_filters( 'kagg_generator_logged_in_percentage', 10 )
+		);
+		$this->logged_in_percentage = min( 100, $this->logged_in_percentage );
+
+		$this->initial_time_shift = max(
+			0,
+			(int) apply_filters( 'kagg_generator_initial_time_shift', YEAR_IN_SECONDS )
+		);
+
+		$this->max_time_shift     = (int) $this->initial_time_shift / $number;
+		$this->initial_time_shift = (int) $this->initial_time_shift * ( $number - $index ) / $number;
 
 		$this->prepare_stub();
 		$this->prepare_generate();
@@ -116,13 +170,17 @@ abstract class Item {
 	/**
 	 * Add random time shift to post dates.
 	 *
-	 * @param object $post Post.
+	 * @param object $post           Post.
+	 * @param int    $max_time_shift Time shift.
 	 *
 	 * @return void
+	 * @noinspection CallableParameterUseCaseInTypeContextInspection
 	 */
-	protected function add_time_shift_to_post( $post ) {
+	protected function add_time_shift_to_post( $post, $max_time_shift = 0 ) {  // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
+		$max_time_shift = 0 === $max_time_shift ? $this->max_time_shift : $max_time_shift;
+
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
-		$time_shift = mt_rand( 0, self::MAX_TIME_SHIFT );
+		$time_shift = mt_rand( 0, $max_time_shift );
 
 		$date     = self::ZERO_MYSQL_TIME === $post->post_date ? 0 : strtotime( $post->post_date ) + $time_shift;
 		$date_gmt = self::ZERO_MYSQL_TIME === $post->post_date_gmt ? 0 : strtotime( $post->post_date_gmt ) + $time_shift;
@@ -142,7 +200,7 @@ abstract class Item {
 	/**
 	 * Prepare users.
 	 *
-	 * @return array[]
+	 * @return array
 	 */
 	protected function prepare_users() {
 		global $wpdb;
@@ -151,7 +209,7 @@ abstract class Item {
 		$users = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT ID, user_email, display_name FROM $wpdb->users ORDER BY RAND() LIMIT %d",
-				self::RANDOM_USERS_COUNT
+				$this->random_users_count
 			)
 		);
 
@@ -163,6 +221,29 @@ abstract class Item {
 			},
 			$users
 		);
+	}
+
+	/**
+	 * Prepare logged-out users.
+	 *
+	 * @return array
+	 */
+	protected function prepare_logged_out_users() {
+		$username_randomizer = new Randomizer( Lorem::get_name_list() );
+		$logged_out_users    = [];
+
+		for ( $i = 0; $i < $this->random_users_count; $i ++ ) {
+			$username   = $username_randomizer->get()[0];
+			$user_login = strtolower( $username );
+
+			$logged_out_users[] = (object) [
+				'ID'           => 0,
+				'user_email'   => $user_login . '@generator.kagg.eu',
+				'display_name' => $username,
+			];
+		}
+
+		return $logged_out_users;
 	}
 
 	/**

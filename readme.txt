@@ -3,7 +3,7 @@ Contributors: kaggdesign
 Tags: generate posts, generate pages, development, bulk generate
 Requires at least: 5.0
 Tested up to: 6.1
-Stable tag: 1.6.0
+Stable tag: 1.7.0
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -38,6 +38,21 @@ Yes, you can!
 * Join in on our [GitHub repository](https://github.com/kagg-design/kagg-fast-post-generator)
 
 == Changelog ==
+
+= 1.7.0 =
+* Improved plugin behaviour in admin.
+* Fixed: item generation time now is properly distributed within default period.
+* Added comments from not logged-in users.
+* Added filter for item's initial time shift.
+* Added filter for comment's random posts count.
+* Added filter for comment's random IPs count.
+* Added filter for comment's maximum nesting level.
+* Added filter for comment's nesting percentage.
+* Added filter for comment's max sentences.
+* Added filter for random user's count.
+* Added filter for logged-in user's percentage.
+* Added filter for paragraphs in post.
+* Added filter for words in title.
 
 = 1.6.0 =
 * Tested with WordPress 6.1.

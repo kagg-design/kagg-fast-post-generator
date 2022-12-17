@@ -18,11 +18,6 @@ use stdClass;
 class User extends Item {
 
 	/**
-	 * Maximum random users count.
-	 */
-	const RANDOM_USERNAME_COUNT = 1000;
-
-	/**
 	 * Item type.
 	 *
 	 * @var string
@@ -106,7 +101,7 @@ class User extends Item {
 		$this->user_time_keeper                  = new stdClass();
 		$this->user_time_keeper->user_registered = gmdate(
 			self::MYSQL_TIME_FORMAT,
-			time() - self::INITIAL_TIME_SHIFT
+			time() - $this->initial_time_shift
 		);
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -163,7 +158,7 @@ class User extends Item {
 	 */
 	private function add_time_shift_to_user( $user ) {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
-		$time_shift = mt_rand( 0, self::MAX_TIME_SHIFT );
+		$time_shift = mt_rand( 0, $this->max_time_shift );
 
 		$date = self::ZERO_MYSQL_TIME === $user->user_registered ? 0 : strtotime( $user->user_registered ) + $time_shift;
 		$now  = time();

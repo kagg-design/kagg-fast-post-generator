@@ -71,7 +71,11 @@ class Settings {
 	/**
 	 * Plugin prefix.
 	 */
-	const PREFIX        = 'kagg-generator-';
+	const PREFIX = 'kagg-generator-';
+
+	/**
+	 * Generation ID.
+	 */
 	const GENERATION_ID = 'generation_id';
 
 	/**
@@ -122,8 +126,9 @@ class Settings {
 		);
 
 		add_action( 'admin_menu', [ $this, 'add_settings_page' ] );
-		add_action( 'admin_init', [ $this, 'setup_sections' ] );
-		add_action( 'admin_init', [ $this, 'setup_fields' ] );
+		add_action( 'current_screen', [ $this, 'requirements' ] );
+		add_action( 'current_screen', [ $this, 'setup_fields' ] );
+		add_action( 'current_screen', [ $this, 'setup_sections' ], 11 );
 		add_filter( 'pre_update_option_' . self::OPTION_KEY, [ $this, 'pre_update_option_filter' ], 10, 3 );
 		add_action( 'plugins_loaded', [ $this, 'load_textdomain' ], 100 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'admin_enqueue_scripts' ] );
@@ -216,6 +221,10 @@ class Settings {
 	 * Setup settings sections.
 	 */
 	public function setup_sections() {
+		if ( ! $this->is_options_screen() ) {
+			return;
+		}
+
 		add_settings_section(
 			'first_section',
 			__( 'Options', 'kagg-generator' ),
@@ -259,11 +268,42 @@ class Settings {
 	}
 
 	/**
+	 * Show requirements notice.
+	 *
+	 * @return void
+	 */
+	public function requirements() {
+		if ( ! $this->is_options_screen() ) {
+			return;
+		}
+
+		if ( ! $this->generator->use_local_infile() ) {
+			return;
+		}
+
+		if ( ini_get( 'mysqli.allow_local_infile' ) ) {
+			return;
+		}
+
+		// Show notice.
+		( new AdminNotices() )->add_notice(
+			__( 'To work properly on your server, the KAGG Fast Post Generator plugin needs `mysqli.allow_local_infile = On` set in the php.ini file.', 'kagg-generator' ) .
+			'<br>' .
+			__( 'Ask your hosting provider to set this configuration option.', 'kagg-generator' ),
+			'notice notice-error'
+		);
+	}
+
+	/**
 	 * Setup options fields.
 	 *
 	 * @return void
 	 */
 	public function setup_fields() {
+		if ( ! $this->is_options_screen() ) {
+			return;
+		}
+
 		register_setting( self::OPTION_GROUP, self::OPTION_KEY );
 
 		foreach ( $this->form_fields as $key => $field ) {
@@ -786,5 +826,24 @@ class Settings {
 	 */
 	private function get_field_default( $field ) {
 		return empty( $field['default'] ) ? '' : $field['default'];
+	}
+
+	/**
+	 * Is current admin screen the plugin options screen.
+	 *
+	 * @return bool
+	 */
+	private function is_options_screen() {
+		if ( ! function_exists( 'get_current_screen' ) ) {
+			return false;
+		}
+
+		$current_screen = get_current_screen();
+
+		if ( ! $current_screen ) {
+			return false;
+		}
+
+		return 'options' === $current_screen->id || 'tools_page_kagg-generator' === $current_screen->id;
 	}
 }
