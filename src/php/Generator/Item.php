@@ -16,16 +16,6 @@ use KAGG\Generator\Randomizer;
 abstract class Item {
 
 	/**
-	 * Maximum random users count. Newly generated comments will have a random author from this user set.
-	 */
-	const RANDOM_USERS_COUNT = 1000;
-
-	/**
-	 * Percent of logged-in users. Must be from 0 to 100.
-	 */
-	const LOGGED_IN_PERCENTAGE = 10;
-
-	/**
 	 * Zero time in MySQL format.
 	 */
 	const ZERO_MYSQL_TIME = '0000-00-00 00:00:00';
@@ -34,6 +24,20 @@ abstract class Item {
 	 * MySQL time format.
 	 */
 	const MYSQL_TIME_FORMAT = 'Y-m-d H:i:s';
+
+	/**
+	 * Maximum users count. Newly generated comments will have a random author from this user set.
+	 *
+	 * @var int
+	 */
+	protected $random_users_count;
+
+	/**
+	 * Percent of logged-in users. Must be from 0 to 100.
+	 *
+	 * @var int
+	 */
+	protected $logged_in_percentage;
 
 	/**
 	 * Number of items to generate.
@@ -103,6 +107,17 @@ abstract class Item {
 		$this->number = $number;
 		$this->index  = $index;
 		$this->table  = $wpdb->prefix . $this->table;
+
+		$this->random_users_count = max(
+			0,
+			(int) apply_filters( 'kagg_generator_random_users_count', 1000 )
+		);
+
+		$this->logged_in_percentage = max(
+			0,
+			(int) apply_filters( 'kagg_generator_logged_in_percentage', 10 )
+		);
+		$this->logged_in_percentage = min( 100, $this->logged_in_percentage );
 
 		$this->initial_time_shift = max(
 			0,
@@ -194,7 +209,7 @@ abstract class Item {
 		$users = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT ID, user_email, display_name FROM $wpdb->users ORDER BY RAND() LIMIT %d",
-				self::RANDOM_USERS_COUNT
+				$this->random_users_count
 			)
 		);
 
@@ -217,7 +232,7 @@ abstract class Item {
 		$username_randomizer = new Randomizer( Lorem::get_name_list() );
 		$logged_out_users    = [];
 
-		for ( $i = 0; $i < self::RANDOM_USERS_COUNT; $i ++ ) {
+		for ( $i = 0; $i < $this->random_users_count; $i ++ ) {
 			$username   = $username_randomizer->get()[0];
 			$user_login = strtolower( $username );
 

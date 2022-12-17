@@ -25,6 +25,20 @@ class Post extends Item {
 	protected $item_type = 'post';
 
 	/**
+	 * Number of paragraphs in post.
+	 *
+	 * @var int
+	 */
+	protected $paragraphs_in_post;
+
+	/**
+	 * Number of words in title.
+	 *
+	 * @var int
+	 */
+	protected $words_in_title;
+
+	/**
 	 * Randomizer class instance for users.
 	 *
 	 * @var Randomizer
@@ -44,6 +58,16 @@ class Post extends Item {
 	 * @return void
 	 */
 	protected function prepare_stub() {
+		$this->paragraphs_in_post = max(
+			1,
+			(int) apply_filters( 'kagg_generator_paragraphs_in_post', 12 )
+		);
+
+		$this->words_in_title = max(
+			1,
+			(int) apply_filters( 'kagg_generator_words_in_title', 5 )
+		);
+
 		$user_id = get_current_user_id();
 
 		$now      = time();
@@ -93,8 +117,8 @@ class Post extends Item {
 	 * @noinspection NonSecureUniqidUsageInspection
 	 */
 	public function generate() {
-		$content = implode( "\n\n", Lorem::paragraphs( 12 ) );
-		$title   = substr( Lorem::sentence( 5 ), 0, - 1 );
+		$content = implode( "\n\n", Lorem::paragraphs( $this->paragraphs_in_post ) );
+		$title   = substr( Lorem::sentence( $this->words_in_title ), 0, - 1 );
 		$name    = str_replace( ' ', '-', strtolower( $title ) ) . '-' . uniqid();
 		$user    = $this->user_randomizer->get()[0];
 

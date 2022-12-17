@@ -18,23 +18,38 @@ class Comment extends Item {
 
 	/**
 	 * Maximum random posts count. Newly generated comments in a chunk will be distributed among them.
+	 *
+	 * @var int
 	 */
-	const RANDOM_POSTS_COUNT = 1000;
+	protected $random_posts_count;
 
 	/**
-	 * Maximum random IP count. Newly generated comments will have a random IP from this set.
+	 * Random IPs count. Newly generated comments will have a random IP from this set.
+	 *
+	 * @var int
 	 */
-	const RANDOM_IPS_COUNT = 1000;
+	protected $random_ips_count;
 
 	/**
 	 * Max nesting level number, starting from 0.
+	 *
+	 * @var int
 	 */
-	const MAX_COMMENT_NESTING_LEVEL = 2;
+	protected $max_nesting_level;
 
 	/**
 	 * Percent of nested comments comparing to previous level. Must be from 0 to 100.
+	 *
+	 * @var int
 	 */
-	const NESTING_PERCENTAGE = 50;
+	protected $nesting_percentage;
+
+	/**
+	 * Max sentences in comment.
+	 *
+	 * @var int
+	 */
+	protected $max_sentences;
 
 	/**
 	 * Item type.
@@ -112,6 +127,32 @@ class Comment extends Item {
 	 * @return void
 	 */
 	protected function prepare_stub() {
+		$this->random_posts_count = max(
+			1,
+			(int) apply_filters( 'kagg_generator_comment_random_posts_count', 1000 )
+		);
+
+		$this->random_ips_count = max(
+			1,
+			(int) apply_filters( 'kagg_generator_comment_random_ips_count', 1000 )
+		);
+
+		$this->max_nesting_level = max(
+			0,
+			(int) apply_filters( 'kagg_generator_comment_max_nesting_level', 2 )
+		);
+
+		$this->nesting_percentage = max(
+			0,
+			(int) apply_filters( 'kagg_generator_comment_max_nesting_level', 50 )
+		);
+		$this->nesting_percentage = min( 100, $this->nesting_percentage );
+
+		$this->max_sentences = max(
+			1,
+			(int) apply_filters( 'kagg_generator_comment_max_sentences', 30 )
+		);
+
 		$user       = wp_get_current_user();
 		$user_id    = $user ? $user->ID : 0;
 		$user_name  = $user ? $user->display_name : '';
@@ -162,14 +203,14 @@ class Comment extends Item {
 
 		$this->post_comments_stub    = [];
 		$this->nesting_probabilities = [];
-		$nesting_percentage          = self::NESTING_PERCENTAGE / 100;
+		$nesting_percentage          = $this->nesting_percentage / 100;
 
 		// Sum of geometric progression.
 		$nesting_sum =
-			( $nesting_percentage ** ( self::MAX_COMMENT_NESTING_LEVEL + 1 ) - 1 ) /
+			( $nesting_percentage ** ( $this->max_nesting_level + 1 ) - 1 ) /
 			( $nesting_percentage - 1 );
 
-		for ( $i = 0; $i <= self::MAX_COMMENT_NESTING_LEVEL; $i ++ ) {
+		for ( $i = 0; $i <= $this->max_nesting_level; $i ++ ) {
 			$this->post_comments_stub[ $i ]    = [];
 			$this->nesting_probabilities[ $i ] = (int) round( ( $nesting_percentage ** $i / $nesting_sum ) * 100 );
 		}
@@ -182,7 +223,7 @@ class Comment extends Item {
 	 */
 	public function generate() {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
-		if ( mt_rand( 1, 100 ) <= self::LOGGED_IN_PERCENTAGE ) {
+		if ( mt_rand( 1, 100 ) <= $this->logged_in_percentage ) {
 			$user = $this->user_randomizer->get()[0];
 		} else {
 			$user = $this->logged_out_user_randomizer->get()[0];
@@ -209,7 +250,7 @@ class Comment extends Item {
 		$parent = $this->add_comment_to_post( $post );
 
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
-		$content = implode( "\n\n", Lorem::sentences( mt_rand( 1, 30 ) ) );
+		$content = implode( "\n\n", Lorem::sentences( mt_rand( 1, $this->max_sentences ) ) );
 
 		$comment                         = $this->stub;
 		$comment['comment_post_ID']      = $post->ID;
@@ -298,7 +339,7 @@ class Comment extends Item {
          				INNER JOIN
 						(SELECT ID FROM $wpdb->posts WHERE post_type = 'post' ORDER BY RAND() LIMIT %d) AS t
                         ON p.ID = t.ID;",
-				self::RANDOM_POSTS_COUNT
+				$this->random_posts_count
 			)
 		);
 
@@ -320,7 +361,7 @@ class Comment extends Item {
 	private function prepare_ips() {
 		$ips = [ '127.0.0.1' ];
 
-		for ( $i = 1; $i < self::RANDOM_IPS_COUNT; $i ++ ) {
+		for ( $i = 1; $i < $this->random_ips_count; $i ++ ) {
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
 			$ips[ $i ] = mt_rand( 0, 255 ) . '.' . mt_rand( 0, 255 ) . '.' . mt_rand( 0, 255 ) . '.' . mt_rand( 0, 255 );
 		}
