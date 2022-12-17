@@ -72,6 +72,13 @@ class Comment extends Item {
 	private $user_randomizer;
 
 	/**
+	 * Randomizer class instance for logged-out users.
+	 *
+	 * @var Randomizer
+	 */
+	private $logged_out_user_randomizer;
+
+	/**
 	 * Randomizer class instance for IPs.
 	 *
 	 * @var Randomizer
@@ -143,9 +150,10 @@ class Comment extends Item {
 	protected function prepare_generate() {
 		global $wpdb;
 
-		$this->post_id_randomizer = new Randomizer( $this->prepare_posts() );
-		$this->user_randomizer    = new Randomizer( $this->prepare_users() );
-		$this->ip_randomizer      = new Randomizer( $this->prepare_ips() );
+		$this->post_id_randomizer         = new Randomizer( $this->prepare_posts() );
+		$this->user_randomizer            = new Randomizer( $this->prepare_users() );
+		$this->logged_out_user_randomizer = new Randomizer( $this->prepare_logged_out_users() );
+		$this->ip_randomizer              = new Randomizer( $this->prepare_ips() );
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$this->comment_ID = (int) $wpdb->get_var(
@@ -173,7 +181,13 @@ class Comment extends Item {
 	 * @return array
 	 */
 	public function generate() {
-		$user = $this->user_randomizer->get()[0];
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
+		if ( mt_rand( 1, 100 ) <= self::LOGGED_IN_PERCENTAGE ) {
+			$user = $this->user_randomizer->get()[0];
+		} else {
+			$user = $this->logged_out_user_randomizer->get()[0];
+		}
+
 		$post = $this->post_id_randomizer->get()[0];
 
 		if ( isset( $post->max_time_shift ) ) {

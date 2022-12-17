@@ -7,6 +7,9 @@
 
 namespace KAGG\Generator\Generator;
 
+use KAGG\Generator\Lorem;
+use KAGG\Generator\Randomizer;
+
 /**
  * Class Item.
  */
@@ -16,6 +19,11 @@ abstract class Item {
 	 * Maximum random users count. Newly generated comments will have a random author from this user set.
 	 */
 	const RANDOM_USERS_COUNT = 1000;
+
+	/**
+	 * Percent of logged-in users. Must be from 0 to 100.
+	 */
+	const LOGGED_IN_PERCENTAGE = 10;
 
 	/**
 	 * Zero time in MySQL format.
@@ -177,7 +185,7 @@ abstract class Item {
 	/**
 	 * Prepare users.
 	 *
-	 * @return array[]
+	 * @return array
 	 */
 	protected function prepare_users() {
 		global $wpdb;
@@ -198,6 +206,29 @@ abstract class Item {
 			},
 			$users
 		);
+	}
+
+	/**
+	 * Prepare logged-out users.
+	 *
+	 * @return array
+	 */
+	protected function prepare_logged_out_users() {
+		$username_randomizer = new Randomizer( Lorem::get_name_list() );
+		$logged_out_users    = [];
+
+		for ( $i = 0; $i < self::RANDOM_USERS_COUNT; $i ++ ) {
+			$username   = $username_randomizer->get()[0];
+			$user_login = strtolower( $username );
+
+			$logged_out_users[] = (object) [
+				'ID'           => 0,
+				'user_email'   => $user_login . '@generator.kagg.eu',
+				'display_name' => $username,
+			];
+		}
+
+		return $logged_out_users;
 	}
 
 	/**
