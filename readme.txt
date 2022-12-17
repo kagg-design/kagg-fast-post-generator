@@ -41,7 +41,8 @@ Yes, you can!
 
 = 1.7.0 =
 * Improved plugin behaviour in admin.
-* Item generation time now is properly distributed within default period.
+* Fixed: item generation time now is properly distributed within default period.
+* Added comments from not logged-in users.
 * Added filter to change item initial time shift.
 
 = 1.6.0 =
