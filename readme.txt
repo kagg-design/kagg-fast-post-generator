@@ -2,7 +2,7 @@
 Contributors: kaggdesign
 Tags: generate posts, generate pages, development, bulk generate
 Requires at least: 5.0
-Tested up to: 6.1
+Tested up to: 6.2
 Stable tag: 1.7.0
 Requires PHP: 5.6
 License: GPLv2 or later
@@ -38,6 +38,9 @@ Yes, you can!
 * Join in on our [GitHub repository](https://github.com/kagg-design/kagg-fast-post-generator)
 
 == Changelog ==
+
+= 1.8.0 =
+* Tested with WordPress 6.2.
 
 = 1.7.0 =
 * Improved plugin behaviour in admin.
