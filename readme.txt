@@ -2,19 +2,19 @@
 Contributors: kaggdesign
 Tags: generate posts, generate pages, development, bulk generate
 Requires at least: 5.0
-Tested up to: 6.2
-Stable tag: 1.8.0
+Tested up to: 6.3
+Stable tag: 1.9.0
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-The plugin generates posts/pages. Useful to generate millions of records in wp_posts table.
+The plugin generates posts/pages. Useful to generate millions of records in the wp_posts table.
 
 == Description ==
 
-In WordPress development, sometimes it is needed to generate big databases with hundreds of thousands of posts/pages. Existing plugins can generate test content, but very slowly, with the usual rate of 1,000 posts per hour.
+In WordPress development, sometimes it is needed to generate extensive databases with hundreds of thousands of posts/pages. Existing plugins can generate test content very slowly, with the usual rate of 1,000 posts per hour.
 
-The Fast Post Generator plugin is able to generate millions of posts/pages in minutes.
+The Fast Post Generator plugin can generate millions of posts/pages in minutes, which is 20,000 faster than similar plugins.
 
 = Features =
 
@@ -38,6 +38,9 @@ Yes, you can!
 * Join in on our [GitHub repository](https://github.com/kagg-design/kagg-fast-post-generator)
 
 == Changelog ==
+
+= 1.9.0 =
+* Tested with WordPress 6.3.
 
 = 1.8.0 =
 * Tested with WordPress 6.2.
