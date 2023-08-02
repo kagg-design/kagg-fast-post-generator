@@ -72,7 +72,7 @@ class Generator {
 	 *
 	 * @return string[]
 	 */
-	public function get_registered_items() {
+	public function get_registered_items(): array {
 		return $this->registered_items;
 	}
 
@@ -82,7 +82,7 @@ class Generator {
 	 * @return bool
 	 * @throws RuntimeException With error message.
 	 */
-	public function use_local_infile() {
+	public function use_local_infile(): bool {
 		global $wpdb;
 
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -169,8 +169,8 @@ class Generator {
 				sprintf(
 				// translators: 1: Step. 2: Steps. 3: Error messages.
 					esc_html__( 'Step %1$s/%2$s. Error encountered: %3$s.', 'kagg-generator' ),
-					number_format( $step, 0 ),
-					number_format( $steps, 0 ),
+					number_format( $step ),
+					number_format( $steps ),
 					$error_message
 				)
 			);
@@ -180,10 +180,10 @@ class Generator {
 			sprintf(
 			// translators: 1: Step. 2: Steps. 3: Generated items. 4: Total items to generate. 5: Generation time. 6: DB storing time. 7: Total time.
 				esc_html__( 'Step %1$s/%2$s. %3$s/%4$s items generated. Time used: (generate: %5$s + store: %6$s) = %7$s sec.', 'kagg-generator' ),
-				number_format( $step, 0 ),
-				number_format( $steps, 0 ),
-				number_format( min( $step * $chunk_size, $number ), 0 ),
-				number_format( $number, 0 ),
+				number_format( $step ),
+				number_format( $steps ),
+				number_format( min( $step * $chunk_size, $number ) ),
+				number_format( $number ),
 				number_format( $time1, 3 ),
 				number_format( $time2, 3 ),
 				number_format( $time1 + $time2, 3 )
@@ -271,7 +271,7 @@ class Generator {
 	 *
 	 * @return void
 	 */
-	public function run_checks( $action, $check_data = false ) {
+	public function run_checks( string $action, bool $check_data = false ) {
 		// Run a security check.
 		if ( ! check_ajax_referer( $action, 'nonce', false ) ) {
 			wp_send_json_error( esc_html__( 'Your session has expired. Please reload the page.', 'kagg-generator' ) );
@@ -301,7 +301,7 @@ class Generator {
 	 * @return void
 	 * @throws RuntimeException With error message.
 	 */
-	private function generate_items( $count, $temp_filename ) {
+	private function generate_items( int $count, string $temp_filename ) {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fopen
 		$f = fopen( 'php://temp', 'wb+' );
 
@@ -337,7 +337,7 @@ class Generator {
 	 * @return false|int
 	 * @noinspection PhpUnusedParameterInspection
 	 */
-	private function write_item_csv( $f, $last_item ) {
+	private function write_item_csv( $f, bool $last_item ) {
 		return fputcsv( $f, $this->item_handler->generate(), '|' );
 	}
 
@@ -349,7 +349,7 @@ class Generator {
 	 *
 	 * @return false|int
 	 */
-	private function write_item_sql( $f, $last_item ) {
+	private function write_item_sql( $f, bool $last_item ) {
 		global $wpdb;
 
 		$fields = $this->item_handler->generate();
@@ -379,7 +379,7 @@ class Generator {
 	 * @noinspection SqlInsertValues
 	 * @noinspection SqlResolve
 	 */
-	private function write_file( $temp_filename, $f ) {
+	private function write_file( string $temp_filename, $f ) {
 		if ( $this->download_sql ) {
 			$table         = $this->item_handler->get_table();
 			$fields        = implode( ', ', $this->item_handler->get_fields() );
@@ -410,7 +410,7 @@ class Generator {
 	 * @return void
 	 * @throws RuntimeException With error message.
 	 */
-	private function store_items( $temp_filename ) {
+	private function store_items( string $temp_filename ) {
 		global $wpdb;
 
 		if ( $this->download_sql ) {
@@ -468,7 +468,7 @@ class Generator {
 			throw new RuntimeException( $wpdb->last_error );
 		}
 
-		$this->local_infile_value = isset( $result['Value'] ) ? $result['Value'] : '';
+		$this->local_infile_value = $result['Value'] ?? '';
 
 		if ( 'ON' !== $this->local_infile_value ) {
 			$result = $wpdb->query( "SET GLOBAL local_infile = 'ON'" );
@@ -518,7 +518,7 @@ class Generator {
 	 * @return string
 	 * @noinspection PhpSameParameterValueInspection
 	 */
-	private function get_input( $data, $name ) {
+	private function get_input( array $data, string $name ): string {
 		foreach ( $data as $datum ) {
 			if ( $datum->name === $name ) {
 				return $datum->value;
@@ -535,7 +535,7 @@ class Generator {
 	 *
 	 * @return array
 	 */
-	private function get_settings( $data ) {
+	private function get_settings( array $data ): array {
 		$settings   = [];
 		$option_key = Settings::OPTION_KEY;
 

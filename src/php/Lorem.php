@@ -1020,7 +1020,7 @@ class Lorem {
 	 *
 	 * @return array
 	 */
-	public static function get_name_list() {
+	public static function get_name_list(): array {
 		return static::$name_list;
 	}
 
@@ -1030,7 +1030,7 @@ class Lorem {
 	 * @example 'Lorem'
 	 * @return string
 	 */
-	public static function word() {
+	public static function word(): string {
 		return static::$word_list[ array_rand( static::$word_list ) ];
 	}
 
@@ -1043,8 +1043,9 @@ class Lorem {
 	 * @return array|string
 	 *
 	 * @example array('Lorem', 'ipsum', 'dolor')
+	 * @noinspection RandomApiMigrationInspection
 	 */
-	public static function words( $nb = 3, $as_text = false ) {
+	public static function words( int $nb = 3, bool $as_text = false ) {
 		static $keys = null;
 
 		static $index = 0;
@@ -1082,7 +1083,7 @@ class Lorem {
 	 *
 	 * @example 'Lorem ipsum dolor sit amet.'
 	 */
-	public static function sentence( $nb_words = 6, $variable_nb_words = true ) {
+	public static function sentence( int $nb_words = 6, bool $variable_nb_words = true ): string {
 		if ( $nb_words <= 0 ) {
 			return '';
 		}
@@ -1103,8 +1104,9 @@ class Lorem {
 	 * @return array|string
 	 *
 	 * @example array('Lorem ipsum dolor sit amet.', 'Consectetur adipisicing eli.')
+	 * @noinspection RandomApiMigrationInspection
 	 */
-	public static function sentences( $nb = 3, $as_text = false ) {
+	public static function sentences( int $nb = 3, bool $as_text = false ) {
 		static $keys = null;
 
 		static $index = 0;
@@ -1148,7 +1150,7 @@ class Lorem {
 	 *
 	 * @example 'Sapiente sunt omnis. Ut pariatur ad autem ducimus et. Voluptas rem voluptas sint modi dolorem amet.'
 	 */
-	public static function paragraph( $nb_sentences = 3, $variable_nb_sentences = true ) {
+	public static function paragraph( int $nb_sentences = 3, bool $variable_nb_sentences = true ): string {
 		if ( $nb_sentences <= 0 ) {
 			return '';
 		}
@@ -1170,7 +1172,7 @@ class Lorem {
 	 *
 	 * @example array($paragraph1, $paragraph2, $paragraph3)
 	 */
-	public static function paragraphs( $nb = 3, $as_text = false ) {
+	public static function paragraphs( int $nb = 3, bool $as_text = false ) {
 		$paragraphs = [];
 
 		for ( $i = 0; $i < $nb; $i ++ ) {
@@ -1191,7 +1193,7 @@ class Lorem {
 	 * @throws InvalidArgumentException InvalidArgumentException.
 	 * @example 'Sapiente sunt omnis. Ut pariatur ad autem ducimus et. Voluptas rem voluptas sint modi dolorem amet.'
 	 */
-	public static function text( $max_num_chars = 200 ) {
+	public static function text( int $max_num_chars = 200 ): string {
 		if ( $max_num_chars < 5 ) {
 			throw new InvalidArgumentException( 'Method text() can only generate text of at least 5 characters.' );
 		}
@@ -1213,8 +1215,9 @@ class Lorem {
 	 * @param integer $nb_elements Number of elements.
 	 *
 	 * @return int
+	 * @noinspection RandomApiMigrationInspection
 	 */
-	protected static function randomize_nb_elements( $nb_elements ) {
+	protected static function randomize_nb_elements( int $nb_elements ): int {
 
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
 		return (int) ( $nb_elements * mt_rand( 60, 140 ) / 100 ) + 1;
@@ -1224,8 +1227,9 @@ class Lorem {
 	 * Prepare random keys.
 	 *
 	 * @return array
+	 * @noinspection RandomApiMigrationInspection
 	 */
-	private static function prepare_random_keys() {
+	private static function prepare_random_keys(): array {
 		$keys      = [];
 		$max_index = count( static::$word_list ) - 1;
 
@@ -1241,12 +1245,12 @@ class Lorem {
 	 * Get text.
 	 *
 	 * @param int    $max_num_chars Max number of characters.
-	 * @param string $type Text type.
-	 * @param array  $text Text.
+	 * @param string $type          Text type.
+	 * @param array  $text          Text.
 	 *
 	 * @return array
 	 */
-	private static function get_text( $max_num_chars, $type, $text ) {
+	private static function get_text( int $max_num_chars, string $type, array $text ): array {
 		$size = 0;
 
 		// Until $max_num_chars is reached.
@@ -1270,7 +1274,7 @@ class Lorem {
 	 *
 	 * @return string
 	 */
-	private static function text_array_to_string( $type, array $text ) {
+	private static function text_array_to_string( string $type, array $text ): string {
 		if ( 'word' === $type ) {
 			// Capitalize first letter.
 			$text[0] = strtoupper( $text[0] );

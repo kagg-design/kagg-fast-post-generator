@@ -142,13 +142,13 @@ class Settings {
 	/**
 	 * Add link to plugin setting page on plugins page.
 	 *
-	 * @param array  $links Plugin links.
-	 * @param string $file  Filename.
+	 * @param array|mixed $links Plugin links.
+	 * @param string      $file  Filename.
 	 *
 	 * @return array Plugin links
 	 * @noinspection PhpUnusedParameterInspection
 	 */
-	public function add_settings_link( $links, $file ) {
+	public function add_settings_link( $links, string $file ): array {
 		$action_links = [
 			'settings' =>
 				'<a href="' . admin_url( 'tools.php?page=' . self::PAGE ) .
@@ -158,7 +158,7 @@ class Settings {
 				esc_html__( 'Settings', 'kagg-generator' ) . '</a>',
 		];
 
-		return array_merge( $action_links, $links );
+		return array_merge( $action_links, (array) $links );
 	}
 
 	/**
@@ -238,7 +238,7 @@ class Settings {
 	 *
 	 * @param array $arguments Section arguments.
 	 */
-	public function first_section( $arguments ) {
+	public function first_section( array $arguments ) {
 	}
 
 	/**
@@ -249,7 +249,7 @@ class Settings {
 	 *
 	 * @return mixed The value specified for the option or a default value for the option.
 	 */
-	public function get_option( $key, $empty_value = null ) {
+	public function get_option( string $key, $empty_value = null ) {
 		if ( empty( $this->settings ) ) {
 			$this->init_settings();
 		}
@@ -326,7 +326,7 @@ class Settings {
 	 *
 	 * @param array $arguments Field arguments.
 	 */
-	public function field_callback( $arguments ) {
+	public function field_callback( array $arguments ) {
 		$value = $this->get_option( $arguments['field_id'] );
 
 		// Check which type of field we want.
@@ -480,14 +480,14 @@ class Settings {
 	 * @return mixed
 	 * @noinspection PhpUnusedParameterInspection
 	 */
-	public function pre_update_option_filter( $value, $old_value, $option ) {
+	public function pre_update_option_filter( $value, $old_value, string $option ) {
 		if ( $value === $old_value ) {
 			return $value;
 		}
 
 		$form_fields = $this->get_form_fields();
 		foreach ( $form_fields as $key => $form_field ) {
-			$value[ $key ] = isset( $value[ $key ] ) ? $value[ $key ] : $form_field;
+			$value[ $key ] = $value[ $key ] ?? $form_field;
 
 			if ( 'checkbox' === $form_field['type'] ) {
 				$value[ $key ] = '1' === $value[ $key ] || 'yes' === $value[ $key ] ? 'yes' : 'no';
@@ -644,7 +644,7 @@ class Settings {
 	 * @return bool
 	 * @noinspection SqlResolve
 	 */
-	public function delete_items( $item_handler ) {
+	private function delete_items( Item $item_handler ): bool {
 		global $wpdb;
 
 		$table        = $item_handler->get_table();
@@ -794,7 +794,7 @@ class Settings {
 	 *
 	 * @return array of options
 	 */
-	private function get_form_fields() {
+	private function get_form_fields(): array {
 		if ( empty( $this->form_fields ) ) {
 			$this->init_form_fields();
 		}
@@ -809,7 +809,7 @@ class Settings {
 	 *
 	 * @return array
 	 */
-	private function set_defaults( $field ) {
+	private function set_defaults( array $field ): array {
 		if ( ! isset( $field['default'] ) ) {
 			$field['default'] = '';
 		}
@@ -822,9 +822,9 @@ class Settings {
 	 *
 	 * @param array $field Field.
 	 *
-	 * @return string
+	 * @return string|mixed
 	 */
-	private function get_field_default( $field ) {
+	private function get_field_default( array $field ) {
 		return empty( $field['default'] ) ? '' : $field['default'];
 	}
 
@@ -833,7 +833,7 @@ class Settings {
 	 *
 	 * @return bool
 	 */
-	private function is_options_screen() {
+	private function is_options_screen(): bool {
 		if ( ! function_exists( 'get_current_screen' ) ) {
 			return false;
 		}

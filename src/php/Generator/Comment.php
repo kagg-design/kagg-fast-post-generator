@@ -154,10 +154,10 @@ class Comment extends Item {
 		);
 
 		$user       = wp_get_current_user();
-		$user_id    = $user ? $user->ID : 0;
-		$user_name  = $user ? $user->display_name : '';
-		$user_email = $user ? $user->user_email : '';
-		$user_login = $user ? $user->user_login : '';
+		$user_id    = $user->ID ?? 0;
+		$user_name  = $user->display_name ?? '';
+		$user_email = $user->user_email ?? '';
+		$user_login = $user->user_login ?? '';
 
 		$now      = time();
 		$wp_date  = $this->wp_date( self::MYSQL_TIME_FORMAT, $now );
@@ -220,8 +220,9 @@ class Comment extends Item {
 	 * Generate comment.
 	 *
 	 * @return array
+	 * @noinspection RandomApiMigrationInspection
 	 */
-	public function generate() {
+	public function generate(): array {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
 		if ( mt_rand( 1, 100 ) <= $this->logged_in_percentage ) {
 			$user = $this->user_randomizer->get()[0];
@@ -272,8 +273,9 @@ class Comment extends Item {
 	 * @param object $post Post.
 	 *
 	 * @return int
+	 * @noinspection RandomApiMigrationInspection
 	 */
-	private function add_comment_to_post( $post ) {
+	private function add_comment_to_post( $post ): int {
 		if ( ! isset( $post->comments ) ) {
 			$post->comments = $this->post_comments_stub;
 		}
@@ -307,6 +309,7 @@ class Comment extends Item {
 	 * Get comment level.
 	 *
 	 * @return int|string
+	 * @noinspection RandomApiMigrationInspection
 	 */
 	private function get_comment_level() {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
@@ -328,7 +331,7 @@ class Comment extends Item {
 	 *
 	 * @return string[]
 	 */
-	private function prepare_posts() {
+	private function prepare_posts(): array {
 		global $wpdb;
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -357,8 +360,9 @@ class Comment extends Item {
 	 * Prepare IPs.
 	 *
 	 * @return string[]
+	 * @noinspection RandomApiMigrationInspection
 	 */
-	private function prepare_ips() {
+	private function prepare_ips(): array {
 		$ips = [ '127.0.0.1' ];
 
 		for ( $i = 1; $i < $this->random_ips_count; $i ++ ) {

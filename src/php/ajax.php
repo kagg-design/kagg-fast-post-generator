@@ -12,7 +12,7 @@ const SHORTINIT = true;
 
 // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 $root = isset( $_SERVER['SCRIPT_FILENAME'] ) ? filter_var( $_SERVER['SCRIPT_FILENAME'], FILTER_SANITIZE_STRING ) : '';
-$root = dirname( dirname( dirname( dirname( dirname( dirname( $root ) ) ) ) ) );
+$root = dirname( $root, 6 );
 
 require $root . '/wp-load.php';
 

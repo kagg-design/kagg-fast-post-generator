@@ -34,7 +34,7 @@ class AdminNotices {
 	 *                        is-dismissible.
 	 * @param array  $options Notice options.
 	 */
-	public function add_notice( $message, $class = 'notice', $options = [] ) {
+	public function add_notice( string $message, string $class = 'notice', array $options = [] ) {
 		$this->notices[] = [
 			'message' => $message,
 			'class'   => $class,
@@ -68,7 +68,7 @@ class AdminNotices {
 	 *
 	 * @return bool
 	 */
-	protected function is_screen_allowed( $notice ) {
+	protected function is_screen_allowed( array $notice ): bool {
 		$screen_ids = isset( $notice['options']['screen_ids'] ) ? (array) $notice['options']['screen_ids'] : null;
 		if ( empty( $screen_ids ) ) {
 			return true;

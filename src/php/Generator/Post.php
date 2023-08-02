@@ -116,7 +116,7 @@ class Post extends Item {
 	 * @return array
 	 * @noinspection NonSecureUniqidUsageInspection
 	 */
-	public function generate() {
+	public function generate(): array {
 		$content = implode( "\n\n", Lorem::paragraphs( $this->paragraphs_in_post ) );
 		$title   = substr( Lorem::sentence( $this->words_in_title ), 0, - 1 );
 		$name    = str_replace( ' ', '-', strtolower( $title ) ) . '-' . uniqid();

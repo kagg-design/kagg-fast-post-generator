@@ -40,6 +40,7 @@ Yes, you can!
 == Changelog ==
 
 = 1.9.0 =
+* Dropped support for PHP 5.6. Minimum required PHP version is now 7.0.
 * Tested with WordPress 6.3.
 
 = 1.8.0 =

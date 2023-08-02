@@ -45,8 +45,7 @@ class Randomizer {
 	 *
 	 * @param array $elements Elements to randomize.
 	 */
-	public function __construct( $elements ) {
-		$elements       = (array) $elements;
+	public function __construct( array $elements ) {
 		$elements       = $elements ?: [ 0 ];
 		$this->elements = $elements;
 		$this->count    = count( $this->elements );
@@ -60,8 +59,9 @@ class Randomizer {
 	 * @param int $quantity Number of elements to get.
 	 *
 	 * @return array
+	 * @noinspection RandomApiMigrationInspection
 	 */
-	public function get( $quantity = 1 ) {
+	public function get( int $quantity = 1 ): array {
 		$quantity = min( $quantity, $this->count );
 
 		if ( ( $this->index + $quantity ) > $this->count ) {
@@ -85,13 +85,14 @@ class Randomizer {
 	 *
 	 * @return int
 	 */
-	public function count() {
+	public function count(): int {
 		return $this->count;
 	}
 
 	/**
 	 * Prepare random keys.
-	 */
+	 *
+	 * @noinspection RandomApiMigrationInspection*/
 	private function prepare_random_keys() {
 		for ( $i = 0; $i < $this->count; $i ++ ) {
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand

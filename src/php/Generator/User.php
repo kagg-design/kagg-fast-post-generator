@@ -119,7 +119,7 @@ class User extends Item {
 	 *
 	 * @return array
 	 */
-	public function generate() {
+	public function generate(): array {
 		$username   = $this->username_randomizer->get()[0];
 		$user_login = strtolower( $username );
 
@@ -155,6 +155,7 @@ class User extends Item {
 	 * @param object $user User.
 	 *
 	 * @return void
+	 * @noinspection RandomApiMigrationInspection
 	 */
 	private function add_time_shift_to_user( $user ) {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand

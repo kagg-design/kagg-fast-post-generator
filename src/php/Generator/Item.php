@@ -101,7 +101,7 @@ abstract class Item {
 	 * @param int $number Number of items to generate.
 	 * @param int $index  Current index.
 	 */
-	public function __construct( $number = 1, $index = 0 ) {
+	public function __construct( int $number = 1, int $index = 0 ) {
 		global $wpdb;
 
 		$this->number = $number;
@@ -136,7 +136,7 @@ abstract class Item {
 	 *
 	 * @return string
 	 */
-	public function get_type() {
+	public function get_type(): string {
 		return $this->item_type;
 	}
 
@@ -145,7 +145,7 @@ abstract class Item {
 	 *
 	 * @return string
 	 */
-	public function get_table() {
+	public function get_table(): string {
 		return $this->table;
 	}
 
@@ -154,7 +154,7 @@ abstract class Item {
 	 *
 	 * @return string
 	 */
-	public function get_marker_field() {
+	public function get_marker_field(): string {
 		return $this->marker_field;
 	}
 
@@ -163,7 +163,7 @@ abstract class Item {
 	 *
 	 * @return array
 	 */
-	public function get_fields() {
+	public function get_fields(): array {
 		return array_keys( $this->stub );
 	}
 
@@ -175,8 +175,9 @@ abstract class Item {
 	 *
 	 * @return void
 	 * @noinspection CallableParameterUseCaseInTypeContextInspection
+	 * @noinspection RandomApiMigrationInspection
 	 */
-	protected function add_time_shift_to_post( $post, $max_time_shift = 0 ) {  // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
+	protected function add_time_shift_to_post( $post, int $max_time_shift = 0 ) {  // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
 		$max_time_shift = 0 === $max_time_shift ? $this->max_time_shift : $max_time_shift;
 
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
@@ -202,7 +203,7 @@ abstract class Item {
 	 *
 	 * @return array
 	 */
-	protected function prepare_users() {
+	protected function prepare_users(): array {
 		global $wpdb;
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -228,7 +229,7 @@ abstract class Item {
 	 *
 	 * @return array
 	 */
-	protected function prepare_logged_out_users() {
+	protected function prepare_logged_out_users(): array {
 		$username_randomizer = new Randomizer( Lorem::get_name_list() );
 		$logged_out_users    = [];
 
@@ -254,7 +255,7 @@ abstract class Item {
 	 *
 	 * @return false|string
 	 */
-	protected function wp_date( $format, $time ) {
+	protected function wp_date( string $format, int $time ) {
 		$wp_date = wp_date( $format, $time );
 
 		return $wp_date ?: self::ZERO_MYSQL_TIME;
@@ -268,7 +269,7 @@ abstract class Item {
 	 *
 	 * @return false|string
 	 */
-	protected function gmt_date( $format, $time ) {
+	protected function gmt_date( string $format, int $time ) {
 		$gmt_date = gmdate( $format, $time );
 
 		return $gmt_date ?: self::ZERO_MYSQL_TIME;
@@ -293,5 +294,5 @@ abstract class Item {
 	 *
 	 * @return array
 	 */
-	abstract protected function generate();
+	abstract protected function generate(): array;
 }
