@@ -14,7 +14,7 @@ The plugin generates posts/pages. Useful to generate millions of records in the 
 
 In WordPress development, sometimes it is needed to generate extensive databases with hundreds of thousands of posts/pages. Existing plugins can generate test content very slowly, with the usual rate of 1,000 posts per hour.
 
-The Fast Post Generator plugin can generate millions of posts/pages in minutes, which is 20,000 faster than similar plugins.
+The Fast Post Generator plugin can generate millions of posts/pages in minutes, which is 20,000 times faster than similar plugins.
 
 = Features =
 
