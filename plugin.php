@@ -21,7 +21,7 @@
  * Domain Path:       /languages/
  */
 
-namespace KAGG\Generator;
+use KAGG\Generator\Main;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	// @codeCoverageIgnoreStart
@@ -58,4 +58,19 @@ define( 'KAGG_GENERATOR_FILE', __FILE__ );
  */
 require_once constant( 'KAGG_GENERATOR_PATH' ) . '/vendor/autoload.php';
 
-( new Main() )->init();
+/**
+ * Get Generator Main class instance.
+ *
+ * @return Main
+ */
+function kagg_generator(): Main {
+	static $plugin;
+
+	if ( ! $plugin ) {
+		$plugin = new Main();
+	}
+
+	return $plugin;
+}
+
+kagg_generator()->init();
