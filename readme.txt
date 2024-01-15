@@ -41,6 +41,9 @@ Yes, you can!
 
 = 1.10.0 =
 * Tested with WordPress 6.4.
+* Tested with PHP 8.3.
+* Fixed fatal error with WP 6.3.
+* Fixed deprecation errors with PHP 8.
 
 = 1.9.0 =
 * Dropped support for PHP 5.6. The minimum required PHP version is now 7.0.
