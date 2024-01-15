@@ -40,15 +40,15 @@ Yes, you can!
 == Changelog ==
 
 = 1.9.0 =
-* Dropped support for PHP 5.6. Minimum required PHP version is now 7.0.
+* Dropped support for PHP 5.6. The minimum required PHP version is now 7.0.
 * Tested with WordPress 6.3.
 
 = 1.8.0 =
 * Tested with WordPress 6.2.
 
 = 1.7.0 =
-* Improved plugin behaviour in admin.
-* Fixed: item generation time now is properly distributed within default period.
+* Improved plugin behavior in admin.
+* Fixed: Item generation time now is properly distributed within the default period.
 * Added comments from not logged-in users.
 * Added filter for item's initial time shift.
 * Added filter for comment's random posts count.
@@ -70,7 +70,7 @@ Yes, you can!
 
 = 1.4.0 =
 * Added generation of comments, with hierarchy.
-* Improved posts generation, now with random date and author.
+* Improved posts' generation, now with random date and author.
 * Added generation of users.
 
 = 1.3.1 =
