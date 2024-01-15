@@ -26,6 +26,7 @@ require $root . '/wp-includes/class-wp-session-tokens.php';
 require $root . '/wp-includes/class-wp-user-meta-session-tokens.php';
 require $root . '/wp-includes/kses.php';
 require $root . '/wp-includes/rest-api.php';
+require $root . '/wp-includes/blocks.php';
 
 wp_plugin_directory_constants();
 wp_cookie_constants();
