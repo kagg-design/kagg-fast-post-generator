@@ -36,12 +36,12 @@ if ( defined( 'KAGG_GENERATOR_VERSION' ) ) {
 /**
  * Plugin version.
  */
-define( 'KAGG_GENERATOR_VERSION', '1.9.0' );
+const KAGG_GENERATOR_VERSION = '1.9.0';
 
 /**
  * Path to the plugin dir.
  */
-define( 'KAGG_GENERATOR_PATH', __DIR__ );
+const KAGG_GENERATOR_PATH = __DIR__;
 
 /**
  * Plugin dir url.
@@ -51,7 +51,7 @@ define( 'KAGG_GENERATOR_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
 /**
  * Main plugin file.
  */
-define( 'KAGG_GENERATOR_FILE', __FILE__ );
+const KAGG_GENERATOR_FILE = __FILE__;
 
 /**
  * Init plugin on plugin load.
@@ -67,7 +67,9 @@ function kagg_generator(): Main {
 	static $plugin;
 
 	if ( ! $plugin ) {
+		// @codeCoverageIgnoreStart
 		$plugin = new Main();
+		// @codeCoverageIgnoreEnd
 	}
 
 	return $plugin;
