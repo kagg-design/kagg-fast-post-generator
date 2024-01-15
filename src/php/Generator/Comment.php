@@ -246,7 +246,7 @@ class Comment extends Item {
 			$post->max_time_shift = $max_time_shift;
 		}
 
-		$this->add_time_shift_to_post( $post, $max_time_shift );
+		$this->add_time_shift_to_post( $post, (int) $max_time_shift );
 
 		$parent = $this->add_comment_to_post( $post );
 

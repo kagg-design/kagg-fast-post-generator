@@ -124,8 +124,8 @@ abstract class Item {
 			(int) apply_filters( 'kagg_generator_initial_time_shift', YEAR_IN_SECONDS )
 		);
 
-		$this->max_time_shift     = (int) $this->initial_time_shift / $number;
-		$this->initial_time_shift = (int) $this->initial_time_shift * ( $number - $index ) / $number;
+		$this->max_time_shift     = (int) ( $this->initial_time_shift / $number );
+		$this->initial_time_shift = (int) ( $this->initial_time_shift * ( $number - $index ) / $number );
 
 		$this->prepare_stub();
 		$this->prepare_generate();
