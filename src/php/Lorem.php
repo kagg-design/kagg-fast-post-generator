@@ -5,6 +5,7 @@
  * @package kagg/generator
  */
 
+// phpcs:ignore Generic.Commenting.DocComment.MissingShort
 /** @noinspection SpellCheckingInspection */
 
 namespace KAGG\Generator;
@@ -1068,7 +1069,7 @@ class Lorem {
 
 		while ( $index < $max_index ) {
 			$words[] = static::$word_list[ $keys[ $index ] ];
-			$index ++;
+			++$index;
 		}
 
 		return $as_text ? implode( ' ', $words ) : $words;
@@ -1135,7 +1136,7 @@ class Lorem {
 
 		while ( $index < $max_index ) {
 			$sentences[] = $prepared_sentences[ $keys[ $index ] ];
-			$index ++;
+			++$index;
 		}
 
 		return $as_text ? implode( ' ', $sentences ) : $sentences;
@@ -1177,7 +1178,7 @@ class Lorem {
 	public static function paragraphs( int $nb = 3, bool $as_text = false ) {
 		$paragraphs = [];
 
-		for ( $i = 0; $i < $nb; $i ++ ) {
+		for ( $i = 0; $i < $nb; $i++ ) {
 			$paragraphs [] = static::paragraph();
 		}
 
@@ -1235,7 +1236,7 @@ class Lorem {
 		$keys      = [];
 		$max_index = count( static::$word_list ) - 1;
 
-		for ( $i = 0; $i < self::RANDOM_KEYS_COUNT; $i ++ ) {
+		for ( $i = 0; $i < self::RANDOM_KEYS_COUNT; $i++ ) {
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
 			$keys[] = mt_rand( 0, $max_index );
 		}

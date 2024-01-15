@@ -233,7 +233,7 @@ abstract class Item {
 		$username_randomizer = new Randomizer( Lorem::get_name_list() );
 		$logged_out_users    = [];
 
-		for ( $i = 0; $i < $this->random_users_count; $i ++ ) {
+		for ( $i = 0; $i < $this->random_users_count; $i++ ) {
 			$username   = $username_randomizer->get()[0];
 			$user_login = strtolower( $username );
 
