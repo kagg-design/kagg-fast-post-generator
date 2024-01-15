@@ -4,7 +4,7 @@ Tags: generate posts, generate pages, development, bulk generate
 Requires at least: 5.0
 Tested up to: 6.3
 Stable tag: 1.9.0
-Requires PHP: 5.6
+Requires PHP: 7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -38,6 +38,9 @@ Yes, you can!
 * Join in on our [GitHub repository](https://github.com/kagg-design/kagg-fast-post-generator)
 
 == Changelog ==
+
+= 1.10.0 =
+* Tested with WordPress 6.4.
 
 = 1.9.0 =
 * Dropped support for PHP 5.6. The minimum required PHP version is now 7.0.
