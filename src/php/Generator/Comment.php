@@ -38,7 +38,7 @@ class Comment extends Item {
 	protected $max_nesting_level;
 
 	/**
-	 * Percent of nested comments comparing to previous level. Must be from 0 to 100.
+	 * Percentage of nested comments comparing to previous level. Must be from 0 to 100.
 	 *
 	 * @var int
 	 */
@@ -122,7 +122,7 @@ class Comment extends Item {
 	private $nesting_probabilities;
 
 	/**
-	 * Prepare post stub.
+	 * Prepare post's stub.
 	 *
 	 * @return void
 	 */
@@ -184,7 +184,7 @@ class Comment extends Item {
 	}
 
 	/**
-	 * Prepare generate process.
+	 * Prepare the generation process.
 	 *
 	 * @return void
 	 */
@@ -327,7 +327,7 @@ class Comment extends Item {
 	}
 
 	/**
-	 * Prepare post ids.
+	 * Prepare posts' ids.
 	 *
 	 * @return string[]
 	 */

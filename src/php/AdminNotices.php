@@ -13,7 +13,7 @@ namespace KAGG\Generator;
 class AdminNotices {
 
 	/**
-	 * Admin notices array.
+	 * Admin notices an array.
 	 *
 	 * @var array
 	 */
@@ -62,7 +62,7 @@ class AdminNotices {
 	}
 
 	/**
-	 * Is current admin screen allowed to show the notice.
+	 * Whether the current admin screen allowed to show the notice.
 	 *
 	 * @param array $notice Notice.
 	 *

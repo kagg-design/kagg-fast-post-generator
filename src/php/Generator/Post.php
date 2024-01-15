@@ -1,6 +1,6 @@
 <?php
 /**
- * Post class file.
+ * 'Post' class file.
  *
  * @package kagg/generator
  */
@@ -25,7 +25,7 @@ class Post extends Item {
 	protected $item_type = 'post';
 
 	/**
-	 * Number of paragraphs in post.
+	 * Number of paragraphs in the post.
 	 *
 	 * @var int
 	 */
@@ -46,14 +46,14 @@ class Post extends Item {
 	private $user_randomizer;
 
 	/**
-	 * Non-existing post, having a time to use in post generation.
+	 * Non-existing post, having a time to use in the post's generation.
 	 *
 	 * @var stdClass
 	 */
 	private $post_time_keeper;
 
 	/**
-	 * Prepare post stub.
+	 * Prepare the post's stub.
 	 *
 	 * @return void
 	 */
@@ -74,7 +74,7 @@ class Post extends Item {
 		$wp_date  = $this->wp_date( self::MYSQL_TIME_FORMAT, $now );
 		$gmt_date = $this->gmt_date( self::MYSQL_TIME_FORMAT, $now );
 
-		// We have to init all post fields here in the same order as provided in get_post_fields().
+		// We have to init all post's fields here in the same order as provided in get_post_fields().
 		// Otherwise, csv file won't be created properly.
 		// We must include to_ping, pinged, and post_content_filtered as they do not have default values.
 		$this->stub = [
@@ -96,7 +96,7 @@ class Post extends Item {
 	}
 
 	/**
-	 * Prepare generate process.
+	 * Prepare the generation process.
 	 *
 	 * @return void
 	 */

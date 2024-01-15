@@ -5,6 +5,8 @@
  * @package kagg/generator
  */
 
+/** @noinspection SpellCheckingInspection */
+
 namespace KAGG\Generator;
 
 use InvalidArgumentException;
@@ -1016,7 +1018,7 @@ class Lorem {
 	];
 
 	/**
-	 * Get name list.
+	 * Get the name list.
 	 *
 	 * @return array
 	 */
@@ -1038,7 +1040,7 @@ class Lorem {
 	 * Generate an array of random words.
 	 *
 	 * @param integer $nb      How many words to return.
-	 * @param bool    $as_text If true the sentences are returned as one string.
+	 * @param bool    $as_text If true, the sentences are returned as one string.
 	 *
 	 * @return array|string
 	 *
@@ -1186,7 +1188,7 @@ class Lorem {
 	 * Generate a text string.
 	 * Depending on the $max_num_chars, returns a string made of words, sentences, or paragraphs.
 	 *
-	 * @param int $max_num_chars Maximum number of characters the text should contain (minimum 5).
+	 * @param int $max_num_chars The maximum number of characters the text should contain (minimum 5).
 	 *
 	 * @return string
 	 *
@@ -1267,7 +1269,7 @@ class Lorem {
 	}
 
 	/**
-	 * Convert text array to string.
+	 * Convert a text array to string.
 	 *
 	 * @param string $type Text element type.
 	 * @param array  $text Text.
@@ -1276,7 +1278,7 @@ class Lorem {
 	 */
 	private static function text_array_to_string( string $type, array $text ): string {
 		if ( 'word' === $type ) {
-			// Capitalize first letter.
+			// Capitalize a first letter.
 			$text[0] = strtoupper( $text[0] );
 
 			// End the sentence with full stop.
