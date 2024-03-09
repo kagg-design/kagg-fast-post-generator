@@ -33,7 +33,7 @@ abstract class Item {
 	protected $random_users_count;
 
 	/**
-	 * Percent of logged-in users. Must be from 0 to 100.
+	 * Percentage of logged-in users. Must be from 0 to 100.
 	 *
 	 * @var int
 	 */
@@ -124,15 +124,15 @@ abstract class Item {
 			(int) apply_filters( 'kagg_generator_initial_time_shift', YEAR_IN_SECONDS )
 		);
 
-		$this->max_time_shift     = (int) $this->initial_time_shift / $number;
-		$this->initial_time_shift = (int) $this->initial_time_shift * ( $number - $index ) / $number;
+		$this->max_time_shift     = (int) ( $this->initial_time_shift / $number );
+		$this->initial_time_shift = (int) ( $this->initial_time_shift * ( $number - $index ) / $number );
 
 		$this->prepare_stub();
 		$this->prepare_generate();
 	}
 
 	/**
-	 * Get item type.
+	 * Get an item type.
 	 *
 	 * @return string
 	 */
@@ -168,7 +168,7 @@ abstract class Item {
 	}
 
 	/**
-	 * Add random time shift to post dates.
+	 * Add random time shift to post's dates.
 	 *
 	 * @param object $post           Post.
 	 * @param int    $max_time_shift Time shift.
@@ -233,7 +233,7 @@ abstract class Item {
 		$username_randomizer = new Randomizer( Lorem::get_name_list() );
 		$logged_out_users    = [];
 
-		for ( $i = 0; $i < $this->random_users_count; $i ++ ) {
+		for ( $i = 0; $i < $this->random_users_count; $i++ ) {
 			$username   = $username_randomizer->get()[0];
 			$user_login = strtolower( $username );
 
@@ -262,7 +262,7 @@ abstract class Item {
 	}
 
 	/**
-	 * Get GMT or zero date.
+	 * Get GMT or zero dates.
 	 *
 	 * @param string $format Format.
 	 * @param int    $time   Time.
@@ -283,7 +283,7 @@ abstract class Item {
 	abstract protected function prepare_stub();
 
 	/**
-	 * Prepare generate process.
+	 * Prepare the generation process.
 	 *
 	 * @return void
 	 */

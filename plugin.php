@@ -10,7 +10,7 @@
  * Plugin Name:       KAGG Fast Post Generator
  * Plugin URI:        https://wordpress.org/plugins/kagg-fast-post-generator/
  * Description:       Generates posts/pages. Useful to generate millions of records in wp_posts table.
- * Version:           1.9.0
+ * Version:           1.10.0
  * Requires at least: 5.3
  * Requires PHP:      7.0
  * Author:            KAGG Design
@@ -21,7 +21,7 @@
  * Domain Path:       /languages/
  */
 
-namespace KAGG\Generator;
+use KAGG\Generator\Main;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	// @codeCoverageIgnoreStart
@@ -36,12 +36,12 @@ if ( defined( 'KAGG_GENERATOR_VERSION' ) ) {
 /**
  * Plugin version.
  */
-define( 'KAGG_GENERATOR_VERSION', '1.9.0' );
+const KAGG_GENERATOR_VERSION = '1.10.0';
 
 /**
  * Path to the plugin dir.
  */
-define( 'KAGG_GENERATOR_PATH', __DIR__ );
+const KAGG_GENERATOR_PATH = __DIR__;
 
 /**
  * Plugin dir url.
@@ -51,11 +51,28 @@ define( 'KAGG_GENERATOR_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
 /**
  * Main plugin file.
  */
-define( 'KAGG_GENERATOR_FILE', __FILE__ );
+const KAGG_GENERATOR_FILE = __FILE__;
 
 /**
  * Init plugin on plugin load.
  */
 require_once constant( 'KAGG_GENERATOR_PATH' ) . '/vendor/autoload.php';
 
-( new Main() )->init();
+/**
+ * Get Generator Main class instance.
+ *
+ * @return Main
+ */
+function kagg_generator(): Main {
+	static $plugin;
+
+	if ( ! $plugin ) {
+		// @codeCoverageIgnoreStart
+		$plugin = new Main();
+		// @codeCoverageIgnoreEnd
+	}
+
+	return $plugin;
+}
+
+kagg_generator()->init();

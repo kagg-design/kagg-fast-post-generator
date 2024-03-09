@@ -34,7 +34,7 @@ class Settings {
 	const HANDLE = 'kagg-generator-admin';
 
 	/**
-	 * The plugin generate action.
+	 * The plugin 'generate' action.
 	 */
 	const GENERATE_ACTION = 'kagg-generator-generate';
 
@@ -54,7 +54,7 @@ class Settings {
 	const UPDATE_COMMENT_COUNTS_ACTION = 'kagg-generator-update-comment-counts';
 
 	/**
-	 * The plugin delete action.
+	 * The plugin 'delete' action.
 	 */
 	const DELETE_ACTION = 'kagg-generator-delete';
 
@@ -162,7 +162,7 @@ class Settings {
 	}
 
 	/**
-	 * Add settings page to the menu.
+	 * Add the settings page to the menu.
 	 */
 	public function add_settings_page() {
 		$page_title = __( 'KAGG Fast Post Generator', 'kagg-generator' );
@@ -268,7 +268,7 @@ class Settings {
 	}
 
 	/**
-	 * Show requirements notice.
+	 * Show requirements' notice.
 	 *
 	 * @return void
 	 */
@@ -325,6 +325,9 @@ class Settings {
 	 * Output settings field.
 	 *
 	 * @param array $arguments Field arguments.
+	 *
+	 * @noinspection HtmlWrongAttributeValue
+	 * @noinspection HtmlUnknownAttribute
 	 */
 	public function field_callback( array $arguments ) {
 		$value = $this->get_option( $arguments['field_id'] );
@@ -362,7 +365,7 @@ class Settings {
 					$options_markup = '';
 					$iterator       = 0;
 					foreach ( $arguments['options'] as $key => $label ) {
-						$iterator ++;
+						++$iterator;
 						$options_markup .= sprintf(
 							'<label for="%2$s_%7$s"><input id="%2$s_%7$s" name="%1$s[%2$s]" type="%3$s" value="%4$s" %5$s /> %6$s</label><br/>',
 							esc_attr( self::OPTION_KEY ),
@@ -456,13 +459,13 @@ class Settings {
 			default:
 		}
 
-		// If there is help text.
+		// If there is a help text.
 		$helper = $arguments['helper'];
 		if ( $helper ) {
 			printf( '<span class="helper"> %s</span>', esc_html( $helper ) );
 		}
 
-		// If there is supplemental text.
+		// If there is a supplemental text.
 		$supplemental = $arguments['supplemental'];
 		if ( $supplemental ) {
 			printf( '<p class="description">%s</p>', esc_html( $supplemental ) );
@@ -585,7 +588,7 @@ class Settings {
 	}
 
 	/**
-	 * Flush object cache. This action is needed if persistent object cache like Redis is active.
+	 * Flush object cache. This action is needed if a persistent object cache like Redis is active.
 	 *
 	 * @return void
 	 */

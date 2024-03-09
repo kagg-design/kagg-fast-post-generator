@@ -92,7 +92,7 @@ class Generator {
 		);
 
 		if ( false === $result ) {
-			throw new RuntimeException( $wpdb->last_error );
+			throw new RuntimeException( esc_html( $wpdb->last_error ) );
 		}
 
 		return ! empty( $result['Value'] );
@@ -161,6 +161,7 @@ class Generator {
 
 			update_user_meta( $user_id, $generation_id, $temp_filenames );
 		} else {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
 			unlink( $temp_filename );
 		}
 
@@ -223,7 +224,7 @@ class Generator {
 		$this->http_headers();
 
 		// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped, Squiz.WhiteSpace.LanguageConstructSpacing.IncorrectSingle
-		echo
+		echo(
 			"/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;\n" .
 			"/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;\n" .
 			"/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;\n" .
@@ -236,15 +237,17 @@ class Generator {
 			"/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;\n" .
 			"\n" .
 			"LOCK TABLES `$table` WRITE;\n" .
-			"/*!40000 ALTER TABLE `$table` DISABLE KEYS */;\n";
+			"/*!40000 ALTER TABLE `$table` DISABLE KEYS */;\n"
+		);
 
 		foreach ( $temp_filenames as $temp_filename ) {
-			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_readfile
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile
 			readfile( $temp_filename );
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
 			unlink( $temp_filename );
 		}
 
-		echo
+		echo(
 			"/*!40000 ALTER TABLE `$table` ENABLE KEYS */;\n" .
 			"UNLOCK TABLES;\n" .
 			"\n" .
@@ -255,7 +258,8 @@ class Generator {
 			"/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;\n" .
 			"/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;\n" .
 			"/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;\n" .
-			"/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;\n";
+			"/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;\n"
+		);
 		// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped, Squiz.WhiteSpace.LanguageConstructSpacing.IncorrectSingle
 
 		delete_user_meta( $user_id, $generation_id );
@@ -302,7 +306,7 @@ class Generator {
 	 * @throws RuntimeException With error message.
 	 */
 	private function generate_items( int $count, string $temp_filename ) {
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fopen
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
 		$f = fopen( 'php://temp', 'wb+' );
 
 		if ( ! $f ) {
@@ -315,7 +319,7 @@ class Generator {
 			$write = [ $this, 'write_item_csv' ];
 		}
 
-		for ( $i = 0; $i < $count; $i ++ ) {
+		for ( $i = 0; $i < $count; $i++ ) {
 			$last_item = ( $count - 1 ) === $i;
 
 			if ( ! $write( $f, $last_item ) ) {
@@ -364,7 +368,7 @@ class Generator {
 
 		$last_comma = $last_item ? '' : ',';
 
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fwrite
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
 		return fwrite( $f, '(' . implode( ',', $fields ) . ')' . $last_comma );
 	}
 
@@ -388,15 +392,17 @@ class Generator {
 			$file_contents = stream_get_contents( $f );
 		}
 
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_file_put_contents
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
 		$result = file_put_contents( $temp_filename, $file_contents );
 
 		if ( ! $result ) {
 			throw new RuntimeException(
-				sprintf(
-				// translators: 1: Temp filename.
-					esc_html__( 'Cannot write to the temporary file %s.', 'kagg-generator' ),
-					$temp_filename
+				esc_html(
+					sprintf(
+					// translators: 1: Temp filename.
+						esc_html__( 'Cannot write to the temporary file %s.', 'kagg-generator' ),
+						$temp_filename
+					)
 				)
 			);
 		}
@@ -439,7 +445,7 @@ class Generator {
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
 		if ( false === $result ) {
-			throw new RuntimeException( $wpdb->last_error );
+			throw new RuntimeException( esc_html( $wpdb->last_error ) );
 		}
 
 		$this->revert_local_infile();
@@ -465,7 +471,7 @@ class Generator {
 		);
 
 		if ( false === $result ) {
-			throw new RuntimeException( $wpdb->last_error );
+			throw new RuntimeException( esc_html( $wpdb->last_error ) );
 		}
 
 		$this->local_infile_value = $result['Value'] ?? '';
@@ -474,7 +480,7 @@ class Generator {
 			$result = $wpdb->query( "SET GLOBAL local_infile = 'ON'" );
 
 			if ( false === $result ) {
-				throw new RuntimeException( $wpdb->last_error );
+				throw new RuntimeException( esc_html( $wpdb->last_error ) );
 			}
 		}
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -504,7 +510,7 @@ class Generator {
 			// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
 			if ( false === $result ) {
-				throw new RuntimeException( $wpdb->last_error );
+				throw new RuntimeException( esc_html( $wpdb->last_error ) );
 			}
 		}
 	}

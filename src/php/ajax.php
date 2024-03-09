@@ -11,7 +11,7 @@
 const SHORTINIT = true;
 
 // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-$root = isset( $_SERVER['SCRIPT_FILENAME'] ) ? filter_var( $_SERVER['SCRIPT_FILENAME'], FILTER_SANITIZE_STRING ) : '';
+$root = isset( $_SERVER['SCRIPT_FILENAME'] ) ? filter_var( $_SERVER['SCRIPT_FILENAME'], FILTER_SANITIZE_FULL_SPECIAL_CHARS ) : '';
 $root = dirname( $root, 6 );
 
 require $root . '/wp-load.php';
@@ -26,6 +26,7 @@ require $root . '/wp-includes/class-wp-session-tokens.php';
 require $root . '/wp-includes/class-wp-user-meta-session-tokens.php';
 require $root . '/wp-includes/kses.php';
 require $root . '/wp-includes/rest-api.php';
+require $root . '/wp-includes/blocks.php';
 
 wp_plugin_directory_constants();
 wp_cookie_constants();

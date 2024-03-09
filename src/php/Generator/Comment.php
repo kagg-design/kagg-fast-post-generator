@@ -38,7 +38,7 @@ class Comment extends Item {
 	protected $max_nesting_level;
 
 	/**
-	 * Percent of nested comments comparing to previous level. Must be from 0 to 100.
+	 * Percentage of nested comments comparing to previous level. Must be from 0 to 100.
 	 *
 	 * @var int
 	 */
@@ -122,7 +122,7 @@ class Comment extends Item {
 	private $nesting_probabilities;
 
 	/**
-	 * Prepare post stub.
+	 * Prepare post's stub.
 	 *
 	 * @return void
 	 */
@@ -184,7 +184,7 @@ class Comment extends Item {
 	}
 
 	/**
-	 * Prepare generate process.
+	 * Prepare the generation process.
 	 *
 	 * @return void
 	 */
@@ -210,7 +210,7 @@ class Comment extends Item {
 			( $nesting_percentage ** ( $this->max_nesting_level + 1 ) - 1 ) /
 			( $nesting_percentage - 1 );
 
-		for ( $i = 0; $i <= $this->max_nesting_level; $i ++ ) {
+		for ( $i = 0; $i <= $this->max_nesting_level; $i++ ) {
 			$this->post_comments_stub[ $i ]    = [];
 			$this->nesting_probabilities[ $i ] = (int) round( ( $nesting_percentage ** $i / $nesting_sum ) * 100 );
 		}
@@ -246,7 +246,7 @@ class Comment extends Item {
 			$post->max_time_shift = $max_time_shift;
 		}
 
-		$this->add_time_shift_to_post( $post, $max_time_shift );
+		$this->add_time_shift_to_post( $post, (int) $max_time_shift );
 
 		$parent = $this->add_comment_to_post( $post );
 
@@ -296,11 +296,11 @@ class Comment extends Item {
 				break;
 			}
 
-			$level --;
+			--$level;
 		} while ( $level >= 0 );
 		// phpcs:enable WordPress.WP.AlternativeFunctions.rand_mt_rand
 
-		$post->comments[ $level ][] = ++ $this->comment_ID;
+		$post->comments[ $level ][] = ++$this->comment_ID;
 
 		return $parent;
 	}
@@ -327,7 +327,7 @@ class Comment extends Item {
 	}
 
 	/**
-	 * Prepare post ids.
+	 * Prepare posts' ids.
 	 *
 	 * @return string[]
 	 */
@@ -365,7 +365,7 @@ class Comment extends Item {
 	private function prepare_ips(): array {
 		$ips = [ '127.0.0.1' ];
 
-		for ( $i = 1; $i < $this->random_ips_count; $i ++ ) {
+		for ( $i = 1; $i < $this->random_ips_count; $i++ ) {
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
 			$ips[ $i ] = mt_rand( 0, 255 ) . '.' . mt_rand( 0, 255 ) . '.' . mt_rand( 0, 255 ) . '.' . mt_rand( 0, 255 );
 		}

@@ -46,7 +46,7 @@ class User extends Item {
 	private $username_randomizer;
 
 	/**
-	 * Non-existing user, having a user_registered date to use in post generation.
+	 * Non-existing user, having a user_registered date to use in post's generation.
 	 *
 	 * @var stdClass
 	 */
@@ -67,12 +67,12 @@ class User extends Item {
 	private $existing_user_logins = [];
 
 	/**
-	 * Prepare post stub.
+	 * Prepare post's stub.
 	 *
 	 * @return void
 	 */
 	protected function prepare_stub() {
-		// We have to init all post fields here in the same order as provided in get_post_fields().
+		// We have to init all post's fields here in the same order as provided in get_post_fields().
 		// Otherwise, csv file won't be created properly.
 		$this->stub = [
 			'user_login'          => '',
@@ -88,7 +88,7 @@ class User extends Item {
 	}
 
 	/**
-	 * Prepare generate process.
+	 * Prepare the generation process.
 	 *
 	 * @return void
 	 */

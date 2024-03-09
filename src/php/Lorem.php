@@ -5,6 +5,9 @@
  * @package kagg/generator
  */
 
+// phpcs:ignore Generic.Commenting.DocComment.MissingShort
+/** @noinspection SpellCheckingInspection */
+
 namespace KAGG\Generator;
 
 use InvalidArgumentException;
@@ -1016,7 +1019,7 @@ class Lorem {
 	];
 
 	/**
-	 * Get name list.
+	 * Get the name list.
 	 *
 	 * @return array
 	 */
@@ -1038,7 +1041,7 @@ class Lorem {
 	 * Generate an array of random words.
 	 *
 	 * @param integer $nb      How many words to return.
-	 * @param bool    $as_text If true the sentences are returned as one string.
+	 * @param bool    $as_text If true, the sentences are returned as one string.
 	 *
 	 * @return array|string
 	 *
@@ -1066,7 +1069,7 @@ class Lorem {
 
 		while ( $index < $max_index ) {
 			$words[] = static::$word_list[ $keys[ $index ] ];
-			$index ++;
+			++$index;
 		}
 
 		return $as_text ? implode( ' ', $words ) : $words;
@@ -1133,7 +1136,7 @@ class Lorem {
 
 		while ( $index < $max_index ) {
 			$sentences[] = $prepared_sentences[ $keys[ $index ] ];
-			$index ++;
+			++$index;
 		}
 
 		return $as_text ? implode( ' ', $sentences ) : $sentences;
@@ -1175,7 +1178,7 @@ class Lorem {
 	public static function paragraphs( int $nb = 3, bool $as_text = false ) {
 		$paragraphs = [];
 
-		for ( $i = 0; $i < $nb; $i ++ ) {
+		for ( $i = 0; $i < $nb; $i++ ) {
 			$paragraphs [] = static::paragraph();
 		}
 
@@ -1186,7 +1189,7 @@ class Lorem {
 	 * Generate a text string.
 	 * Depending on the $max_num_chars, returns a string made of words, sentences, or paragraphs.
 	 *
-	 * @param int $max_num_chars Maximum number of characters the text should contain (minimum 5).
+	 * @param int $max_num_chars The maximum number of characters the text should contain (minimum 5).
 	 *
 	 * @return string
 	 *
@@ -1233,7 +1236,7 @@ class Lorem {
 		$keys      = [];
 		$max_index = count( static::$word_list ) - 1;
 
-		for ( $i = 0; $i < self::RANDOM_KEYS_COUNT; $i ++ ) {
+		for ( $i = 0; $i < self::RANDOM_KEYS_COUNT; $i++ ) {
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
 			$keys[] = mt_rand( 0, $max_index );
 		}
@@ -1267,7 +1270,7 @@ class Lorem {
 	}
 
 	/**
-	 * Convert text array to string.
+	 * Convert a text array to string.
 	 *
 	 * @param string $type Text element type.
 	 * @param array  $text Text.
@@ -1276,7 +1279,7 @@ class Lorem {
 	 */
 	private static function text_array_to_string( string $type, array $text ): string {
 		if ( 'word' === $type ) {
-			// Capitalize first letter.
+			// Capitalize a first letter.
 			$text[0] = strtoupper( $text[0] );
 
 			// End the sentence with full stop.
