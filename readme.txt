@@ -2,8 +2,8 @@
 Contributors: kaggdesign
 Tags: generate posts, generate pages, development, bulk generate
 Requires at least: 5.0
-Tested up to: 6.3
-Stable tag: 1.9.0
+Tested up to: 6.5
+Stable tag: 1.10.0
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -18,7 +18,7 @@ The Fast Post Generator plugin can generate millions of posts/pages in minutes, 
 
 = Features =
 
-* Plugin generates posts/pages with random content.
+* The plugin generates posts/pages with random content.
 
 == Plugin Support ==
 
@@ -40,9 +40,9 @@ Yes, you can!
 == Changelog ==
 
 = 1.10.0 =
-* Tested with WordPress 6.4.
+* Tested with WordPress 6.5.
 * Tested with PHP 8.3.
-* Fixed fatal error with WP 6.3.
+* Fixed fatal error with WP 6.3+.
 * Fixed deprecation errors with PHP 8.
 
 = 1.9.0 =
@@ -64,7 +64,7 @@ Yes, you can!
 * Added filter for comment's max sentences.
 * Added filter for random user's count.
 * Added filter for logged-in user's percentage.
-* Added filter for paragraphs in post.
+* Added filter for paragraphs in the post.
 * Added filter for words in title.
 
 = 1.6.0 =
