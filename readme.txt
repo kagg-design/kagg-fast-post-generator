@@ -1,9 +1,9 @@
 === KAGG Generator ===
 Contributors: kaggdesign
 Tags: generate posts, generate pages, development, bulk generate
-Requires at least: 5.0
+Requires at least: 5.3
 Tested up to: 6.5
-Stable tag: 1.10.0
+Stable tag: 1.11.0
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -84,6 +84,7 @@ Yes, you can!
 
 = 1.3.1 =
 * Tested with WordPress 6.0.
+* The minimal WordPress version is now 5.3.
 
 = 1.2.0 =
 * Added ability to work on Linux servers.
