@@ -39,6 +39,9 @@ Yes, you can!
 
 == Changelog ==
 
+= 1.11.0 =
+* Added admin notice about the unusable system temp directory.
+
 = 1.10.0 =
 * Tested with WordPress 6.5.
 * Tested with PHP 8.3.

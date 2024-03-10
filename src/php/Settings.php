@@ -277,21 +277,25 @@ class Settings {
 			return;
 		}
 
-		if ( ! $this->generator->use_local_infile() ) {
-			return;
+		if ( $this->generator->use_local_infile() && ! ini_get( 'mysqli.allow_local_infile' ) ) {
+			// Show notice.
+			( new AdminNotices() )->add_notice(
+				__( 'To work properly on your server, the KAGG Fast Post Generator plugin needs `mysqli.allow_local_infile = On` set in the php.ini file.', 'kagg-generator' ) .
+				'<br>' .
+				__( 'Ask your hosting provider to set this configuration option.', 'kagg-generator' ),
+				'notice notice-error'
+			);
 		}
 
-		if ( ini_get( 'mysqli.allow_local_infile' ) ) {
-			return;
+		if ( preg_match( '/[^a-zA-Z0-9 _-]/', pathinfo( str_replace( '\\', '/', sys_get_temp_dir() ), PATHINFO_BASENAME ) ) ) {
+			// Show notice.
+			( new AdminNotices() )->add_notice(
+				__( 'The temporary directory path contains invalid characters. Please check the path and make sure it contains only ASCII letters, numbers, spaces, underscores, and hyphens.', 'kagg-generator' ) .
+				'<br>' .
+				__( "You may need to modify the 'sys_temp_dir' setting in the php.ini file.", 'kagg-generator' ),
+				'notice notice-error'
+			);
 		}
-
-		// Show notice.
-		( new AdminNotices() )->add_notice(
-			__( 'To work properly on your server, the KAGG Fast Post Generator plugin needs `mysqli.allow_local_infile = On` set in the php.ini file.', 'kagg-generator' ) .
-			'<br>' .
-			__( 'Ask your hosting provider to set this configuration option.', 'kagg-generator' ),
-			'notice notice-error'
-		);
 	}
 
 	/**
