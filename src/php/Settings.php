@@ -6,7 +6,7 @@
  */
 
 // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-/** @noinspection PhpUnnecessaryCurlyVarSyntaxInspection */
+/** @noinspection PhpUnnecessaryCurlyVarSyntaxInspection PhpUnnecessaryCurlyVarSyntaxInspection. */
 
 namespace KAGG\Generator;
 
@@ -146,7 +146,7 @@ class Settings {
 	 * @param string      $file  Filename.
 	 *
 	 * @return array Plugin links
-	 * @noinspection PhpUnusedParameterInspection
+	 * @noinspection PhpUnusedParameterInspection PhpUnusedParameterInspection.
 	 */
 	public function add_settings_link( $links, string $file ): array {
 		$action_links = [
@@ -330,8 +330,8 @@ class Settings {
 	 *
 	 * @param array $arguments Field arguments.
 	 *
-	 * @noinspection HtmlWrongAttributeValue
-	 * @noinspection HtmlUnknownAttribute
+	 * @noinspection HtmlWrongAttributeValue HtmlWrongAttributeValue.
+	 * @noinspection HtmlUnknownAttribute HtmlUnknownAttribute.
 	 */
 	public function field_callback( array $arguments ) {
 		$value = $this->get_option( $arguments['field_id'] );
@@ -485,7 +485,7 @@ class Settings {
 	 * @param string $option    Option name.
 	 *
 	 * @return mixed
-	 * @noinspection PhpUnusedParameterInspection
+	 * @noinspection PhpUnusedParameterInspection PhpUnusedParameterInspection.
 	 */
 	public function pre_update_option_filter( $value, $old_value, string $option ) {
 		if ( $value === $old_value ) {
@@ -608,7 +608,7 @@ class Settings {
 	 * Delete all generated items.
 	 *
 	 * @return void
-	 * @noinspection SqlResolve
+	 * @noinspection SqlResolve SqlResolve.
 	 */
 	public function delete() {
 		$this->generator->run_checks( self::DELETE_ACTION );
@@ -649,7 +649,7 @@ class Settings {
 	 * @param Item $item_handler Item handler.
 	 *
 	 * @return bool
-	 * @noinspection SqlResolve
+	 * @noinspection SqlResolve SqlResolve.
 	 */
 	private function delete_items( Item $item_handler ): bool {
 		global $wpdb;

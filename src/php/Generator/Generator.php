@@ -339,7 +339,7 @@ class Generator {
 	 * @param bool     $last_item Whether we process the last item in the file.
 	 *
 	 * @return false|int
-	 * @noinspection PhpUnusedParameterInspection
+	 * @noinspection PhpUnusedParameterInspection PhpUnusedParameterInspection.
 	 */
 	private function write_item_csv( $f, bool $last_item ) {
 		return fputcsv( $f, $this->item_handler->generate(), '|' );
@@ -380,8 +380,8 @@ class Generator {
 	 *
 	 * @return void
 	 * @throws RuntimeException With error message.
-	 * @noinspection SqlInsertValues
-	 * @noinspection SqlResolve
+	 * @noinspection SqlInsertValues SqlInsertValues.
+	 * @noinspection SqlResolve SqlResolve.
 	 */
 	private function write_file( string $temp_filename, $f ) {
 		if ( $this->download_sql ) {
@@ -522,7 +522,7 @@ class Generator {
 	 * @param string $name Input name.
 	 *
 	 * @return string
-	 * @noinspection PhpSameParameterValueInspection
+	 * @noinspection PhpSameParameterValueInspection PhpSameParameterValueInspection.
 	 */
 	private function get_input( array $data, string $name ): string {
 		foreach ( $data as $datum ) {

@@ -220,7 +220,7 @@ class Comment extends Item {
 	 * Generate comment.
 	 *
 	 * @return array
-	 * @noinspection RandomApiMigrationInspection
+	 * @noinspection RandomApiMigrationInspection RandomApiMigrationInspection.
 	 */
 	public function generate(): array {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
@@ -273,7 +273,7 @@ class Comment extends Item {
 	 * @param object $post Post.
 	 *
 	 * @return int
-	 * @noinspection RandomApiMigrationInspection
+	 * @noinspection RandomApiMigrationInspection RandomApiMigrationInspection.
 	 */
 	private function add_comment_to_post( $post ): int {
 		if ( ! isset( $post->comments ) ) {
@@ -309,7 +309,7 @@ class Comment extends Item {
 	 * Get comment level.
 	 *
 	 * @return int|string
-	 * @noinspection RandomApiMigrationInspection
+	 * @noinspection RandomApiMigrationInspection RandomApiMigrationInspection.
 	 */
 	private function get_comment_level() {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
@@ -360,7 +360,7 @@ class Comment extends Item {
 	 * Prepare IPs.
 	 *
 	 * @return string[]
-	 * @noinspection RandomApiMigrationInspection
+	 * @noinspection RandomApiMigrationInspection RandomApiMigrationInspection.
 	 */
 	private function prepare_ips(): array {
 		$ips = [ '127.0.0.1' ];

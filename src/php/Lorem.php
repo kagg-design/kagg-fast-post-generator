@@ -6,7 +6,7 @@
  */
 
 // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-/** @noinspection SpellCheckingInspection */
+/** @noinspection SpellCheckingInspection SpellCheckingInspection. */
 
 namespace KAGG\Generator;
 
@@ -1046,7 +1046,7 @@ class Lorem {
 	 * @return array|string
 	 *
 	 * @example array('Lorem', 'ipsum', 'dolor')
-	 * @noinspection RandomApiMigrationInspection
+	 * @noinspection RandomApiMigrationInspection RandomApiMigrationInspection.
 	 */
 	public static function words( int $nb = 3, bool $as_text = false ) {
 		static $keys = null;
@@ -1107,7 +1107,7 @@ class Lorem {
 	 * @return array|string
 	 *
 	 * @example array('Lorem ipsum dolor sit amet.', 'Consectetur adipisicing eli.')
-	 * @noinspection RandomApiMigrationInspection
+	 * @noinspection RandomApiMigrationInspection RandomApiMigrationInspection.
 	 */
 	public static function sentences( int $nb = 3, bool $as_text = false ) {
 		static $keys = null;
@@ -1218,7 +1218,7 @@ class Lorem {
 	 * @param integer $nb_elements Number of elements.
 	 *
 	 * @return int
-	 * @noinspection RandomApiMigrationInspection
+	 * @noinspection RandomApiMigrationInspection RandomApiMigrationInspection.
 	 */
 	protected static function randomize_nb_elements( int $nb_elements ): int {
 
@@ -1230,7 +1230,7 @@ class Lorem {
 	 * Prepare random keys.
 	 *
 	 * @return array
-	 * @noinspection RandomApiMigrationInspection
+	 * @noinspection RandomApiMigrationInspection RandomApiMigrationInspection.
 	 */
 	private static function prepare_random_keys(): array {
 		$keys      = [];
