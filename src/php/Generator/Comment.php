@@ -144,7 +144,7 @@ class Comment extends Item {
 
 		$this->nesting_percentage = max(
 			0,
-			(int) apply_filters( 'kagg_generator_comment_max_nesting_level', 50 )
+			(int) apply_filters( 'kagg_generator_comment_nesting_percentage', 50 )
 		);
 		$this->nesting_percentage = min( 100, $this->nesting_percentage );
 
