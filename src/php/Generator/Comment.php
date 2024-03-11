@@ -340,7 +340,9 @@ class Comment extends Item {
 				"SELECT p.ID, post_date, post_date_gmt
 						FROM $wpdb->posts AS p
          				INNER JOIN
-						(SELECT ID FROM $wpdb->posts WHERE post_type = 'post' ORDER BY RAND() LIMIT %d) AS t
+						(SELECT ID FROM $wpdb->posts
+						WHERE post_type = 'post' AND post_status IN ('publish', 'private') AND comment_status = 'open'
+						ORDER BY RAND() LIMIT %d) AS t
                         ON p.ID = t.ID;",
 				$this->random_posts_count
 			)
