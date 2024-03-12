@@ -10,6 +10,7 @@ namespace KAGG\Generator\Generator;
 use KAGG\Generator\Lorem;
 use KAGG\Generator\Randomizer;
 use KAGG\Generator\Settings;
+use stdClass;
 
 /**
  * Class Comment.
@@ -122,6 +123,13 @@ class Comment extends Item {
 	private $nesting_probabilities;
 
 	/**
+	 * Object, keeping a time to use in the comment's generation.
+	 *
+	 * @var stdClass
+	 */
+	private $time_keeper;
+
+	/**
 	 * Prepare post's stub.
 	 *
 	 * @return void
@@ -197,9 +205,15 @@ class Comment extends Item {
 		$this->ip_randomizer              = new Randomizer( $this->prepare_ips() );
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$this->comment_ID = (int) $wpdb->get_var(
-			"SELECT comment_ID FROM $wpdb->comments ORDER BY comment_ID DESC LIMIT 1"
+		$last_comment = $wpdb->get_row(
+			"SELECT comment_ID, comment_date, comment_date_gmt FROM $wpdb->comments ORDER BY comment_ID DESC LIMIT 1"
 		);
+
+		$this->comment_ID = (int) ( $last_comment->comment_ID ?? 0 );
+
+		$this->time_keeper                = new stdClass();
+		$this->time_keeper->timestamp     = (int) ( $last_comment->comment_date ?? 0 );
+		$this->time_keeper->timestamp_gmt = (int) ( $last_comment->comment_date_gmt ?? 0 );
 
 		$this->post_comments_stub    = [];
 		$this->nesting_probabilities = [];
@@ -223,6 +237,8 @@ class Comment extends Item {
 	 * @noinspection RandomApiMigrationInspection RandomApiMigrationInspection.
 	 */
 	public function generate(): array {
+		static $max_time_gmt = 0;
+
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
 		if ( mt_rand( 1, 100 ) <= $this->logged_in_percentage ) {
 			$user = $this->user_randomizer->get()[0];
@@ -248,7 +264,9 @@ class Comment extends Item {
 
 		$this->add_time_shift_to_post( $post, (int) $max_time_shift );
 
-		$parent = $this->add_comment_to_post( $post );
+		$parent                           = $this->add_comment_to_post( $post );
+		$this->time_keeper->timestamp     = max( $post->timestamp, $this->time_keeper->timestamp );
+		$this->time_keeper->timestamp_gmt = max( $post->timestamp_gmt, $this->time_keeper->timestamp_gmt );
 
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
 		$content = implode( "\n\n", Lorem::sentences( mt_rand( 1, $this->max_sentences ) ) );
@@ -258,11 +276,19 @@ class Comment extends Item {
 		$comment['comment_author']       = $user->display_name;
 		$comment['comment_author_email'] = $user->user_email;
 		$comment['comment_author_IP']    = $this->ip_randomizer->get()[0];
-		$comment['comment_date']         = $post->post_date;
-		$comment['comment_date_gmt']     = $post->post_date_gmt;
+		$comment['comment_date']         = gmdate( self::MYSQL_TIME_FORMAT, $this->time_keeper->timestamp );
+		$comment['comment_date_gmt']     = gmdate( self::MYSQL_TIME_FORMAT, $this->time_keeper->timestamp_gmt );
 		$comment['comment_content']      = $content;
 		$comment['comment_parent']       = $parent;
 		$comment['user_id']              = $user->ID;
+
+		$time_gmt = strtotime( $comment['comment_date_gmt'] );
+
+//		if ( $time_gmt < $max_time_gmt ) {
+//			$a = $max_time_gmt;
+//		}
+
+		$max_time_gmt = max( $time_gmt, $max_time_gmt );
 
 		return $comment;
 	}

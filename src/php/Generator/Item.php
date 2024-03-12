@@ -182,19 +182,21 @@ abstract class Item {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
 		$time_shift = mt_rand( 0, $max_time_shift );
 
-		$date     = self::ZERO_MYSQL_TIME === $post->post_date ? 0 : strtotime( $post->post_date ) + $time_shift;
-		$date_gmt = self::ZERO_MYSQL_TIME === $post->post_date_gmt ? 0 : strtotime( $post->post_date_gmt ) + $time_shift;
-		$max_date = max( $date, $date_gmt );
-		$now      = time();
+		$timestamp     = self::ZERO_MYSQL_TIME === $post->post_date ? 0 : (int) strtotime( $post->post_date ) + $time_shift;
+		$timestamp_gmt = self::ZERO_MYSQL_TIME === $post->post_date_gmt ? 0 : (int) strtotime( $post->post_date_gmt ) + $time_shift;
+		$max_timestamp = max( $timestamp, $timestamp_gmt );
+		$now           = time();
 
-		if ( $max_date > $now ) {
-			$in_future = $max_date - $now;
-			$date      = max( $date - $in_future, 0 );
-			$date_gmt  = max( $date_gmt - $in_future, 0 );
+		if ( $max_timestamp > $now ) {
+			$in_future     = $max_timestamp - $now;
+			$timestamp     = max( $timestamp - $in_future, 0 );
+			$timestamp_gmt = max( $timestamp_gmt - $in_future, 0 );
 		}
 
-		$post->post_date     = 0 === $date ? self::ZERO_MYSQL_TIME : gmdate( self::MYSQL_TIME_FORMAT, $date );
-		$post->post_date_gmt = 0 === $date_gmt ? self::ZERO_MYSQL_TIME : gmdate( self::MYSQL_TIME_FORMAT, $date_gmt );
+		$post->timestamp     = $timestamp;
+		$post->timestamp_gmt = $timestamp_gmt;
+		$post->post_date     = 0 === $timestamp ? self::ZERO_MYSQL_TIME : gmdate( self::MYSQL_TIME_FORMAT, $timestamp );
+		$post->post_date_gmt = 0 === $timestamp_gmt ? self::ZERO_MYSQL_TIME : gmdate( self::MYSQL_TIME_FORMAT, $timestamp_gmt );
 	}
 
 	/**
