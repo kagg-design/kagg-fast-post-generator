@@ -34,7 +34,7 @@ class AdminNotices {
 	 *                           is-dismissible.
 	 * @param array  $options    Notice options.
 	 */
-	public function add_notice( string $message, string $class_name = 'notice', array $options = [] ) {
+	public function add_notice( string $message, string $class_name = 'notice', array $options = [] ): void {
 		$this->notices[] = [
 			'message' => $message,
 			'class'   => $class_name,
@@ -45,7 +45,7 @@ class AdminNotices {
 	/**
 	 * Show all notices.
 	 */
-	public function show_notices() {
+	public function show_notices(): void {
 		foreach ( $this->notices as $notice ) {
 			if ( ! $this->is_screen_allowed( $notice ) ) {
 				continue;

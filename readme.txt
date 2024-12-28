@@ -2,9 +2,9 @@
 Contributors: kaggdesign
 Tags: generate posts, generate pages, development, bulk generate
 Requires at least: 5.3
-Tested up to: 6.5
+Tested up to: 6.7
 Stable tag: 1.11.0
-Requires PHP: 7.0
+Requires PHP: 7.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -40,7 +40,10 @@ Yes, you can!
 == Changelog ==
 
 = 2.0.0 =
+* Dropped support for PHP 7.0. The minimum required PHP version is now 7.2.
 * Fixed kagg_generator_comment_max_nesting_level filter name.
+* Tested with WordPress 6.7.
+* Tested with PHP 8.4.
 
 = 1.11.0 =
 * Added admin notice about the unusable system temp directory.

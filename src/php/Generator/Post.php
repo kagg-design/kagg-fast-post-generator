@@ -57,7 +57,7 @@ class Post extends Item {
 	 *
 	 * @return void
 	 */
-	protected function prepare_stub() {
+	protected function prepare_stub(): void {
 		$this->paragraphs_in_post = max(
 			1,
 			(int) apply_filters( 'kagg_generator_paragraphs_in_post', 12 )
@@ -100,7 +100,7 @@ class Post extends Item {
 	 *
 	 * @return void
 	 */
-	protected function prepare_generate() {
+	protected function prepare_generate(): void {
 		$this->user_randomizer = new Randomizer( $this->prepare_users() );
 
 		$initial_timestamp      = time() - $this->initial_time_shift;
@@ -114,7 +114,7 @@ class Post extends Item {
 	 * Generate post.
 	 *
 	 * @return array
-	 * @noinspection NonSecureUniqidUsageInspection NonSecureUniqidUsageInspection.
+	 * @noinspection NonSecureUniqidUsageInspection
 	 */
 	public function generate(): array {
 		$content = implode( "\n\n", Lorem::paragraphs( $this->paragraphs_in_post ) );

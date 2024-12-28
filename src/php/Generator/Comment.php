@@ -126,7 +126,7 @@ class Comment extends Item {
 	 *
 	 * @return void
 	 */
-	protected function prepare_stub() {
+	protected function prepare_stub(): void {
 		$this->random_posts_count = max(
 			1,
 			(int) apply_filters( 'kagg_generator_comment_random_posts_count', 1000 )
@@ -188,7 +188,7 @@ class Comment extends Item {
 	 *
 	 * @return void
 	 */
-	protected function prepare_generate() {
+	protected function prepare_generate(): void {
 		global $wpdb;
 
 		$this->post_id_randomizer         = new Randomizer( $this->prepare_posts() );
@@ -220,7 +220,7 @@ class Comment extends Item {
 	 * Generate comment.
 	 *
 	 * @return array
-	 * @noinspection RandomApiMigrationInspection RandomApiMigrationInspection.
+	 * @noinspection RandomApiMigrationInspection
 	 */
 	public function generate(): array {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
@@ -273,9 +273,9 @@ class Comment extends Item {
 	 * @param object $post Post.
 	 *
 	 * @return int
-	 * @noinspection RandomApiMigrationInspection RandomApiMigrationInspection.
+	 * @noinspection RandomApiMigrationInspection
 	 */
-	private function add_comment_to_post( $post ): int {
+	private function add_comment_to_post( object $post ): int {
 		if ( ! isset( $post->comments ) ) {
 			$post->comments = $this->post_comments_stub;
 		}
@@ -309,7 +309,7 @@ class Comment extends Item {
 	 * Get comment level.
 	 *
 	 * @return int|string
-	 * @noinspection RandomApiMigrationInspection RandomApiMigrationInspection.
+	 * @noinspection RandomApiMigrationInspection
 	 */
 	private function get_comment_level() {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
@@ -360,7 +360,7 @@ class Comment extends Item {
 	 * Prepare IPs.
 	 *
 	 * @return string[]
-	 * @noinspection RandomApiMigrationInspection RandomApiMigrationInspection.
+	 * @noinspection RandomApiMigrationInspection
 	 */
 	private function prepare_ips(): array {
 		$ips = [ '127.0.0.1' ];

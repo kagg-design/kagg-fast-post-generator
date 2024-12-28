@@ -12,7 +12,7 @@
  * Description:       Generates posts/pages. Useful to generate millions of records in wp_posts table.
  * Version:           1.11.0
  * Requires at least: 5.3
- * Requires PHP:      7.0
+ * Requires PHP:      7.2
  * Author:            KAGG Design
  * Author URI:        https://profiles.wordpress.org/kaggdesign/
  * License:           GPL v2 or later
