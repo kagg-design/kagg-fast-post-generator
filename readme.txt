@@ -42,6 +42,8 @@ Yes, you can!
 = 2.0.0 =
 * Dropped support for PHP 7.0. The minimum required PHP version is now 7.2.
 * Fixed kagg_generator_comment_max_nesting_level filter name.
+* Fixed inability to create a temporary table when it exists after previous operations.
+* Fixed deprecation errors with PHP 8.4.
 * Tested with WordPress 6.7.
 * Tested with PHP 8.4.
 
