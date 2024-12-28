@@ -4,12 +4,12 @@ on: [ push, pull_request ]
 
 jobs:
   run:
-    runs-on: ${{ matrix.os }}
-
     strategy:
       matrix:
         os: [ ubuntu-latest ]
-        php-version: [ '7.0' ]
+        php-version: [ '7.2' ]
+
+    runs-on: ${{ matrix.os }}
 
     name: PHP ${{ matrix.php-version }} on ${{ matrix.os }}
 
@@ -24,7 +24,7 @@ jobs:
           extensions: json, mysqli, mbstring, zip
 
       - name: Install dependencies with caching
-        uses: kagg-design/composer-install@v2
+        uses: ramsey/composer-install@v3
 
       - name: Run code sniffer
-        run: vendor/bin/phpcs --colors
+        run: composer phpcs

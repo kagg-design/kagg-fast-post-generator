@@ -71,7 +71,7 @@ class User extends Item {
 	 *
 	 * @return void
 	 */
-	protected function prepare_stub() {
+	protected function prepare_stub(): void {
 		// We have to init all post's fields here in the same order as provided in get_post_fields().
 		// Otherwise, csv file won't be created properly.
 		$this->stub = [
@@ -92,7 +92,7 @@ class User extends Item {
 	 *
 	 * @return void
 	 */
-	protected function prepare_generate() {
+	protected function prepare_generate(): void {
 		global $wpdb;
 
 		$this->username_randomizer = new Randomizer( Lorem::get_name_list() );
@@ -157,7 +157,7 @@ class User extends Item {
 	 * @return void
 	 * @noinspection RandomApiMigrationInspection
 	 */
-	private function add_time_shift_to_user( $user ) {
+	private function add_time_shift_to_user( object $user ): void {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
 		$time_shift = mt_rand( 0, $this->max_time_shift );
 

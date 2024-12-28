@@ -126,7 +126,7 @@ class Comment extends Item {
 	 *
 	 * @return void
 	 */
-	protected function prepare_stub() {
+	protected function prepare_stub(): void {
 		$this->random_posts_count = max(
 			1,
 			(int) apply_filters( 'kagg_generator_comment_random_posts_count', 1000 )
@@ -144,7 +144,7 @@ class Comment extends Item {
 
 		$this->nesting_percentage = max(
 			0,
-			(int) apply_filters( 'kagg_generator_comment_max_nesting_level', 50 )
+			(int) apply_filters( 'kagg_generator_comment_nesting_percentage', 50 )
 		);
 		$this->nesting_percentage = min( 100, $this->nesting_percentage );
 
@@ -188,7 +188,7 @@ class Comment extends Item {
 	 *
 	 * @return void
 	 */
-	protected function prepare_generate() {
+	protected function prepare_generate(): void {
 		global $wpdb;
 
 		$this->post_id_randomizer         = new Randomizer( $this->prepare_posts() );
@@ -275,7 +275,7 @@ class Comment extends Item {
 	 * @return int
 	 * @noinspection RandomApiMigrationInspection
 	 */
-	private function add_comment_to_post( $post ): int {
+	private function add_comment_to_post( object $post ): int {
 		if ( ! isset( $post->comments ) ) {
 			$post->comments = $this->post_comments_stub;
 		}

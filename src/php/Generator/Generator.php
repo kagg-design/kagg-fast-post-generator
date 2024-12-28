@@ -18,7 +18,7 @@ class Generator {
 	/**
 	 * Name of the local_infile MySQL variable.
 	 */
-	const LOCAL_INFILE = 'local_infile';
+	private const LOCAL_INFILE = 'local_infile';
 
 	/**
 	 * Value of the local_infile MySQL variable.
@@ -103,7 +103,7 @@ class Generator {
 	 *
 	 * @return void
 	 */
-	public function run() {
+	public function run(): void {
 		$this->run_checks( Settings::GENERATE_ACTION, true );
 
 		ob_start();
@@ -197,7 +197,7 @@ class Generator {
 	 *
 	 * @return void
 	 */
-	public function download_sql() {
+	public function download_sql(): void {
 		$this->run_checks( Settings::DOWNLOAD_SQL_ACTION );
 
 		// Nonce is checked by check_ajax_referer() in run_checks().
@@ -275,7 +275,7 @@ class Generator {
 	 *
 	 * @return void
 	 */
-	public function run_checks( string $action, bool $check_data = false ) {
+	public function run_checks( string $action, bool $check_data = false ): void {
 		// Run a security check.
 		if ( ! check_ajax_referer( $action, 'nonce', false ) ) {
 			wp_send_json_error( esc_html__( 'Your session has expired. Please reload the page.', 'kagg-generator' ) );
@@ -305,7 +305,7 @@ class Generator {
 	 * @return void
 	 * @throws RuntimeException With error message.
 	 */
-	private function generate_items( int $count, string $temp_filename ) {
+	private function generate_items( int $count, string $temp_filename ): void {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
 		$f = fopen( 'php://temp', 'wb+' );
 
@@ -339,14 +339,15 @@ class Generator {
 	 * @param bool     $last_item Whether we process the last item in the file.
 	 *
 	 * @return false|int
-	 * @noinspection PhpUnusedParameterInspection
+	 * @noinspection PhpUnusedParameterInspection.
+	 * @noinspection PhpRedundantOptionalArgumentInspection
 	 */
 	private function write_item_csv( $f, bool $last_item ) {
-		return fputcsv( $f, $this->item_handler->generate(), '|' );
+		return fputcsv( $f, $this->item_handler->generate(), '|', '"', '\\' );
 	}
 
 	/**
-	 * Write item in sql format.
+	 * Write item in SQL format.
 	 *
 	 * @param resource $f         File.
 	 * @param bool     $last_item Whether we process the last item in the file.
@@ -383,7 +384,7 @@ class Generator {
 	 * @noinspection SqlInsertValues
 	 * @noinspection SqlResolve
 	 */
-	private function write_file( string $temp_filename, $f ) {
+	private function write_file( string $temp_filename, $f ): void {
 		if ( $this->download_sql ) {
 			$table         = $this->item_handler->get_table();
 			$fields        = implode( ', ', $this->item_handler->get_fields() );
@@ -416,7 +417,7 @@ class Generator {
 	 * @return void
 	 * @throws RuntimeException With error message.
 	 */
-	private function store_items( string $temp_filename ) {
+	private function store_items( string $temp_filename ): void {
 		global $wpdb;
 
 		if ( $this->download_sql ) {
@@ -457,7 +458,7 @@ class Generator {
 	 * @return void
 	 * @throws RuntimeException With error message.
 	 */
-	private function set_local_infile() {
+	private function set_local_infile(): void {
 		global $wpdb;
 
 		if ( ! $this->use_local_infile ) {
@@ -492,7 +493,7 @@ class Generator {
 	 * @return void
 	 * @throws RuntimeException With error message.
 	 */
-	private function revert_local_infile() {
+	private function revert_local_infile(): void {
 		global $wpdb;
 
 		if ( ! $this->use_local_infile ) {
@@ -557,7 +558,7 @@ class Generator {
 	/**
 	 * Send HTTP headers for .sql file download.
 	 */
-	private function http_headers() {
+	private function http_headers(): void {
 
 		$file_name = 'kagg-generator.sql';
 

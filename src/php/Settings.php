@@ -21,62 +21,62 @@ class Settings {
 	/**
 	 * The plugin settings option name.
 	 */
-	const OPTION_GROUP = 'kagg_generator_group';
+	private const OPTION_GROUP = 'kagg_generator_group';
 
 	/**
 	 * The plugin settings page slug.
 	 */
-	const PAGE = 'kagg-generator';
+	private const PAGE = 'kagg-generator';
 
 	/**
 	 * The plugin style and script handle.
 	 */
-	const HANDLE = 'kagg-generator-admin';
+	private const HANDLE = 'kagg-generator-admin';
 
 	/**
 	 * The plugin 'generate' action.
 	 */
-	const GENERATE_ACTION = 'kagg-generator-generate';
+	public const GENERATE_ACTION = 'kagg-generator-generate';
 
 	/**
 	 * The plugin cache flush action.
 	 */
-	const CACHE_FLUSH_ACTION = 'kagg-generator-cache-flush';
+	private const CACHE_FLUSH_ACTION = 'kagg-generator-cache-flush';
 
 	/**
 	 * The plugin download SQL file action.
 	 */
-	const DOWNLOAD_SQL_ACTION = 'kagg-generator-download-sql';
+	public const DOWNLOAD_SQL_ACTION = 'kagg-generator-download-sql';
 
 	/**
 	 * The plugin update comment counts action.
 	 */
-	const UPDATE_COMMENT_COUNTS_ACTION = 'kagg-generator-update-comment-counts';
+	private const UPDATE_COMMENT_COUNTS_ACTION = 'kagg-generator-update-comment-counts';
 
 	/**
 	 * The plugin 'delete' action.
 	 */
-	const DELETE_ACTION = 'kagg-generator-delete';
+	private const DELETE_ACTION = 'kagg-generator-delete';
 
 	/**
 	 * The name of the option to store plugin settings.
 	 */
-	const OPTION_KEY = 'kagg_generator_settings';
+	public const OPTION_KEY = 'kagg_generator_settings';
 
 	/**
 	 * The first part of the generated marker for added items.
 	 */
-	const MARKER = 'https://generator.kagg.eu/';
+	public const MARKER = 'https://generator.kagg.eu/';
 
 	/**
 	 * Plugin prefix.
 	 */
-	const PREFIX = 'kagg-generator-';
+	public const PREFIX = 'kagg-generator-';
 
 	/**
 	 * Generation ID.
 	 */
-	const GENERATION_ID = 'generation_id';
+	public const GENERATION_ID = 'generation_id';
 
 	/**
 	 * Generator class instance.
@@ -104,7 +104,7 @@ class Settings {
 	 *
 	 * @return void
 	 */
-	public function init() {
+	public function init(): void {
 		$this->generator = new Generator();
 
 		$this->init_form_fields();
@@ -117,7 +117,7 @@ class Settings {
 	 *
 	 * @return void
 	 */
-	public function hooks() {
+	public function hooks(): void {
 		add_filter(
 			'plugin_action_links_' . plugin_basename( KAGG_GENERATOR_FILE ),
 			[ $this, 'add_settings_link' ],
@@ -140,7 +140,7 @@ class Settings {
 	}
 
 	/**
-	 * Add link to plugin setting page on plugins page.
+	 * Add a link to the plugin setting page.
 	 *
 	 * @param array|mixed $links Plugin links.
 	 * @param string      $file  Filename.
@@ -164,7 +164,7 @@ class Settings {
 	/**
 	 * Add the settings page to the menu.
 	 */
-	public function add_settings_page() {
+	public function add_settings_page(): void {
 		$page_title = __( 'KAGG Fast Post Generator', 'kagg-generator' );
 		$menu_title = __( 'KAGG Generator', 'kagg-generator' );
 		$capability = 'manage_options';
@@ -180,7 +180,7 @@ class Settings {
 	/**
 	 * Settings page.
 	 */
-	public function settings_page() {
+	public function settings_page(): void {
 		?>
 		<div class="wrap">
 			<h2 id="title">
@@ -220,7 +220,7 @@ class Settings {
 	/**
 	 * Setup settings sections.
 	 */
-	public function setup_sections() {
+	public function setup_sections(): void {
 		if ( ! $this->is_options_screen() ) {
 			return;
 		}
@@ -238,7 +238,7 @@ class Settings {
 	 *
 	 * @param array $arguments Section arguments.
 	 */
-	public function first_section( array $arguments ) {
+	public function first_section( array $arguments ): void {
 	}
 
 	/**
@@ -272,7 +272,7 @@ class Settings {
 	 *
 	 * @return void
 	 */
-	public function requirements() {
+	public function requirements(): void {
 		if ( ! $this->is_options_screen() ) {
 			return;
 		}
@@ -303,7 +303,7 @@ class Settings {
 	 *
 	 * @return void
 	 */
-	public function setup_fields() {
+	public function setup_fields(): void {
 		if ( ! $this->is_options_screen() ) {
 			return;
 		}
@@ -333,7 +333,7 @@ class Settings {
 	 * @noinspection HtmlWrongAttributeValue
 	 * @noinspection HtmlUnknownAttribute
 	 */
-	public function field_callback( array $arguments ) {
+	public function field_callback( array $arguments ): void {
 		$value = $this->get_option( $arguments['field_id'] );
 
 		// Check which type of field we want.
@@ -507,7 +507,7 @@ class Settings {
 	/**
 	 * Load plugin text domain.
 	 */
-	public function load_textdomain() {
+	public function load_textdomain(): void {
 		load_plugin_textdomain(
 			'kagg-generator',
 			false,
@@ -518,7 +518,7 @@ class Settings {
 	/**
 	 * Enqueue plugin scripts.
 	 */
-	public function admin_enqueue_scripts() {
+	public function admin_enqueue_scripts(): void {
 		wp_enqueue_style(
 			self::HANDLE,
 			KAGG_GENERATOR_URL . '/assets/css/admin.css',
@@ -572,7 +572,7 @@ class Settings {
 	 *
 	 * @return void
 	 */
-	public function update_comment_counts() {
+	public function update_comment_counts(): void {
 		global $wpdb;
 
 		$this->generator->run_checks( self::UPDATE_COMMENT_COUNTS_ACTION );
@@ -596,7 +596,7 @@ class Settings {
 	 *
 	 * @return void
 	 */
-	public function cache_flush() {
+	public function cache_flush(): void {
 		$this->generator->run_checks( self::CACHE_FLUSH_ACTION );
 
 		wp_cache_flush();
@@ -610,7 +610,7 @@ class Settings {
 	 * @return void
 	 * @noinspection SqlResolve
 	 */
-	public function delete() {
+	public function delete(): void {
 		$this->generator->run_checks( self::DELETE_ACTION );
 
 		$registered_items = $this->generator->get_registered_items();
@@ -674,6 +674,7 @@ class Settings {
 
 		$queries = [
 			'START TRANSACTION',
+			"DROP TABLE {$table}_copy",
 			"CREATE TABLE {$table}_copy LIKE $table",
 			$wpdb->prepare(
 				"INSERT INTO {$table}_copy
@@ -722,14 +723,14 @@ class Settings {
 	 *
 	 * @return void
 	 */
-	public function generate() {
+	public function generate(): void {
 		$this->generator->run();
 	}
 
 	/**
 	 * Init options form fields.
 	 */
-	private function init_form_fields() {
+	private function init_form_fields(): void {
 		$this->form_fields = [
 			'post_type'  => [
 				'label'        => __( 'Item type', 'kagg-generator' ),
@@ -783,7 +784,7 @@ class Settings {
 	 * and make sure the $settings array is either the default
 	 * or the settings stored in the database.
 	 */
-	private function init_settings() {
+	private function init_settings(): void {
 		$this->settings = get_option( self::OPTION_KEY, null );
 
 		// If there are no settings defined, use defaults.

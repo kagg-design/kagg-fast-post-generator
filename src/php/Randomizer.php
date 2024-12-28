@@ -92,8 +92,9 @@ class Randomizer {
 	/**
 	 * Prepare random keys.
 	 *
-	 * @noinspection RandomApiMigrationInspection*/
-	private function prepare_random_keys() {
+	 * @noinspection RandomApiMigrationInspection
+	 */
+	private function prepare_random_keys(): void {
 		for ( $i = 0; $i < $this->count; $i++ ) {
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
 			$this->keys[] = mt_rand( 0, $this->count - 1 );

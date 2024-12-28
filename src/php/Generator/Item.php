@@ -18,12 +18,12 @@ abstract class Item {
 	/**
 	 * Zero time in MySQL format.
 	 */
-	const ZERO_MYSQL_TIME = '0000-00-00 00:00:00';
+	protected const ZERO_MYSQL_TIME = '0000-00-00 00:00:00';
 
 	/**
 	 * MySQL time format.
 	 */
-	const MYSQL_TIME_FORMAT = 'Y-m-d H:i:s';
+	protected const MYSQL_TIME_FORMAT = 'Y-m-d H:i:s';
 
 	/**
 	 * Maximum users count. Newly generated comments will have a random author from this user set.
@@ -174,10 +174,9 @@ abstract class Item {
 	 * @param int    $max_time_shift Time shift.
 	 *
 	 * @return void
-	 * @noinspection CallableParameterUseCaseInTypeContextInspection
 	 * @noinspection RandomApiMigrationInspection
 	 */
-	protected function add_time_shift_to_post( $post, int $max_time_shift = 0 ) {  // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
+	protected function add_time_shift_to_post( object $post, int $max_time_shift = 0 ): void {  // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
 		$max_time_shift = 0 === $max_time_shift ? $this->max_time_shift : $max_time_shift;
 
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
@@ -280,14 +279,14 @@ abstract class Item {
 	 *
 	 * @return void
 	 */
-	abstract protected function prepare_stub();
+	abstract protected function prepare_stub(): void;
 
 	/**
 	 * Prepare the generation process.
 	 *
 	 * @return void
 	 */
-	protected function prepare_generate() {}
+	protected function prepare_generate(): void {}
 
 	/**
 	 * Generate item.

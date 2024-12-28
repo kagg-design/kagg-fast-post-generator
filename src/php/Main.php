@@ -17,7 +17,7 @@ class Main {
 	 *
 	 * @return void
 	 */
-	public function init() {
+	public function init(): void {
 		if ( ! is_admin() ) {
 			return;
 		}
@@ -32,7 +32,7 @@ class Main {
 	 *
 	 * @return void
 	 */
-	private function hooks() {
+	private function hooks(): void {
 		add_action( 'plugins_loaded', [ $this, 'load_plugin_textdomain' ] );
 	}
 
@@ -41,7 +41,7 @@ class Main {
 	 *
 	 * @return void
 	 */
-	public function load_plugin_textdomain() {
+	public function load_plugin_textdomain(): void {
 		global $l10n;
 
 		$domain = 'kagg-generator';

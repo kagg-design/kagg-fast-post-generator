@@ -18,7 +18,7 @@ use InvalidArgumentException;
  * Based on https://github.com/fzaninotto/Faker.
  */
 class Lorem {
-	const RANDOM_KEYS_COUNT = 1000;
+	private const RANDOM_KEYS_COUNT = 1000;
 
 	/**
 	 * Word list.
