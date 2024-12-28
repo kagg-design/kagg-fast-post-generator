@@ -36,7 +36,7 @@ if ( defined( 'KAGG_GENERATOR_VERSION' ) ) {
 /**
  * Plugin version.
  */
-const KAGG_GENERATOR_VERSION = '1.11.0';
+const KAGG_GENERATOR_VERSION = '2.0.0';
 
 /**
  * Path to the plugin dir.
