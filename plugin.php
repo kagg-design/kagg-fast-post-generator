@@ -1,13 +1,13 @@
 <?php
 /**
- * Fast post generator.
+ * KAGG Generator.
  *
  * @package           kagg/generator
  * @author            KAGG Design
  * @license           GPL-2.0-or-later
  * @wordpress-plugin
  *
- * Plugin Name:       KAGG Fast Post Generator
+ * Plugin Name:       KAGG Generator
  * Plugin URI:        https://wordpress.org/plugins/kagg-fast-post-generator/
  * Description:       Generates posts/pages. Useful to generate millions of records in wp_posts table.
  * Version:           2.0.0
@@ -18,7 +18,6 @@
  * License:           GPL v2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       kagg-generator
- * Domain Path:       /languages/
  */
 
 use KAGG\Generator\Main;
