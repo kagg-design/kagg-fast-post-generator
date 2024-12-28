@@ -674,7 +674,7 @@ class Settings {
 
 		$queries = [
 			'START TRANSACTION',
-			"DROP TABLE {$table}_copy",
+			"DROP TABLE IF EXISTS {$table}_copy",
 			"CREATE TABLE {$table}_copy LIKE $table",
 			$wpdb->prepare(
 				"INSERT INTO {$table}_copy
