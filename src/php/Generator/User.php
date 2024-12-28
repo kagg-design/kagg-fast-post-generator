@@ -155,7 +155,7 @@ class User extends Item {
 	 * @param object $user User.
 	 *
 	 * @return void
-	 * @noinspection RandomApiMigrationInspection
+	 * @noinspection RandomApiMigrationInspection RandomApiMigrationInspection.
 	 */
 	private function add_time_shift_to_user( $user ) {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand

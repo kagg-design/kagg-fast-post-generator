@@ -59,7 +59,7 @@ class Randomizer {
 	 * @param int $quantity Number of elements to get.
 	 *
 	 * @return array
-	 * @noinspection RandomApiMigrationInspection
+	 * @noinspection RandomApiMigrationInspection RandomApiMigrationInspection.
 	 */
 	public function get( int $quantity = 1 ): array {
 		$quantity = min( $quantity, $this->count );
@@ -92,7 +92,8 @@ class Randomizer {
 	/**
 	 * Prepare random keys.
 	 *
-	 * @noinspection RandomApiMigrationInspection*/
+	 * @noinspection RandomApiMigrationInspection RandomApiMigrationInspection.
+	 */
 	private function prepare_random_keys() {
 		for ( $i = 0; $i < $this->count; $i++ ) {
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand

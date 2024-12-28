@@ -114,7 +114,7 @@ class Post extends Item {
 	 * Generate post.
 	 *
 	 * @return array
-	 * @noinspection NonSecureUniqidUsageInspection
+	 * @noinspection NonSecureUniqidUsageInspection NonSecureUniqidUsageInspection.
 	 */
 	public function generate(): array {
 		$content = implode( "\n\n", Lorem::paragraphs( $this->paragraphs_in_post ) );

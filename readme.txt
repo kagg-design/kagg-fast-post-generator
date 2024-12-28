@@ -39,6 +39,9 @@ Yes, you can!
 
 == Changelog ==
 
+= 2.0.0 =
+* Fixed kagg_generator_comment_max_nesting_level filter name.
+
 = 1.11.0 =
 * Added admin notice about the unusable system temp directory.
 

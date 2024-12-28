@@ -174,8 +174,7 @@ abstract class Item {
 	 * @param int    $max_time_shift Time shift.
 	 *
 	 * @return void
-	 * @noinspection CallableParameterUseCaseInTypeContextInspection
-	 * @noinspection RandomApiMigrationInspection
+	 * @noinspection RandomApiMigrationInspection RandomApiMigrationInspection.
 	 */
 	protected function add_time_shift_to_post( $post, int $max_time_shift = 0 ) {  // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
 		$max_time_shift = 0 === $max_time_shift ? $this->max_time_shift : $max_time_shift;
