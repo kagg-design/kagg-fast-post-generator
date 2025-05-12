@@ -22,6 +22,7 @@ class Main {
 			return;
 		}
 
+		( new ErrorHandler() )->init();
 		( new Settings() )->init();
 
 		$this->hooks();

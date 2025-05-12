@@ -2,8 +2,8 @@
 Contributors: kaggdesign
 Tags: generate posts, generate pages, development, bulk generate
 Requires at least: 5.3
-Tested up to: 6.7
-Stable tag: 2.0.1
+Tested up to: 6.8
+Stable tag: 2.1.0
 Requires PHP: 7.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -38,6 +38,10 @@ Yes, you can!
 * Join in on our [GitHub repository](https://github.com/kagg-design/kagg-fast-post-generator)
 
 == Changelog ==
+
+= 2.1.0 =
+* Fixed "Function _load_textdomain_just_in_time was called incorrectly" notice.
+* Tested with WordPress 6.8.
 
 = 2.0.1 =
 * Fixed error on deleting a temporary table.
