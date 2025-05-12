@@ -39,6 +39,9 @@ Yes, you can!
 
 == Changelog ==
 
+= 2.1.0 =
+* Fixed "Function _load_textdomain_just_in_time was called incorrectly" notice.
+
 = 2.0.1 =
 * Fixed error on deleting a temporary table.
 
