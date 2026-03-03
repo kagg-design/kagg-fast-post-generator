@@ -25,7 +25,7 @@ class Lorem {
 	 *
 	 * @var string[]
 	 */
-	protected static $word_list = [
+	protected static array $word_list = [
 		'alias',
 		'consequatur',
 		'aut',
@@ -282,7 +282,7 @@ class Lorem {
 	 *
 	 * @var string[]
 	 */
-	protected static $name_list = [
+	protected static array $name_list = [
 		'Aaron',
 		'Abel',
 		'Abigail',
@@ -1213,7 +1213,7 @@ class Lorem {
 	}
 
 	/**
-	 * Randomize number of elements.
+	 * Randomize the number of elements.
 	 *
 	 * @param integer $nb_elements Number of elements.
 	 *
@@ -1279,10 +1279,10 @@ class Lorem {
 	 */
 	private static function text_array_to_string( string $type, array $text ): string {
 		if ( 'word' === $type ) {
-			// Capitalize a first letter.
+			// Capitalize the first letter.
 			$text[0] = strtoupper( $text[0] );
 
-			// End the sentence with full stop.
+			// End the sentence with a full stop.
 			$text[ count( $text ) - 1 ] .= '.';
 		}
 

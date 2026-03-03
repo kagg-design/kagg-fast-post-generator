@@ -17,28 +17,28 @@ class Randomizer {
 	 *
 	 * @var array
 	 */
-	private $keys = [];
+	private array $keys = [];
 
 	/**
 	 * Elements.
 	 *
 	 * @var array
 	 */
-	private $elements;
+	private array $elements;
 
 	/**
 	 * Elements count.
 	 *
 	 * @var int
 	 */
-	private $count;
+	private int $count;
 
 	/**
 	 * Current index in elements array.
 	 *
 	 * @var int
 	 */
-	private $index = 0;
+	private int $index = 0;
 
 	/**
 	 * CLass constructor.

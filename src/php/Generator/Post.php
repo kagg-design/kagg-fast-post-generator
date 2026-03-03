@@ -22,35 +22,35 @@ class Post extends Item {
 	 *
 	 * @var string
 	 */
-	protected $item_type = 'post';
+	protected string $item_type = 'post';
 
 	/**
 	 * Number of paragraphs in the post.
 	 *
 	 * @var int
 	 */
-	protected $paragraphs_in_post;
+	protected int $paragraphs_in_post;
 
 	/**
 	 * Number of words in title.
 	 *
 	 * @var int
 	 */
-	protected $words_in_title;
+	protected int $words_in_title;
 
 	/**
 	 * Randomizer class instance for users.
 	 *
 	 * @var Randomizer
 	 */
-	private $user_randomizer;
+	private Randomizer $user_randomizer;
 
 	/**
 	 * Non-existing post, having a time to use in the post's generation.
 	 *
 	 * @var stdClass
 	 */
-	private $post_time_keeper;
+	private stdClass $post_time_keeper;
 
 	/**
 	 * Prepare the post's stub.

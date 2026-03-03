@@ -17,7 +17,7 @@ class AdminNotices {
 	 *
 	 * @var array
 	 */
-	private $notices = [];
+	private array $notices = [];
 
 	/**
 	 * AdminNotices constructor.
@@ -62,7 +62,7 @@ class AdminNotices {
 	}
 
 	/**
-	 * Whether the current admin screen allowed to show the notice.
+	 * Whether the current admin screen allowed showing the notice.
 	 *
 	 * @param array $notice Notice.
 	 *

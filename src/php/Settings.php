@@ -83,21 +83,21 @@ class Settings {
 	 *
 	 * @var Generator
 	 */
-	private $generator;
+	private Generator $generator;
 
 	/**
 	 * Form fields.
 	 *
 	 * @var array
 	 */
-	private $form_fields;
+	private array $form_fields;
 
 	/**
 	 * Plugin settings.
 	 *
 	 * @var array
 	 */
-	private $settings;
+	private array $settings;
 
 	/**
 	 * Init class.
@@ -333,7 +333,7 @@ class Settings {
 	 * @noinspection HtmlWrongAttributeValue
 	 * @noinspection HtmlUnknownAttribute
 	 */
-	public function field_callback( array $arguments ): void {
+	public function field_callback( array $arguments ): void { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
 		$value = $this->get_option( $arguments['field_id'] );
 
 		// Check which type of field we want.
@@ -778,23 +778,27 @@ class Settings {
 	}
 
 	/**
-	 * Initialise Settings.
+	 * Initialize Settings.
 	 *
 	 * Store all settings in a single database entry
 	 * and make sure the $settings array is either the default
 	 * or the settings stored in the database.
 	 */
 	private function init_settings(): void {
-		$this->settings = get_option( self::OPTION_KEY, null );
+		$settings = get_option( self::OPTION_KEY, null );
 
 		// If there are no settings defined, use defaults.
-		if ( ! is_array( $this->settings ) ) {
-			$form_fields    = $this->get_form_fields();
-			$this->settings = array_merge(
-				array_fill_keys( array_keys( $form_fields ), '' ),
-				wp_list_pluck( $form_fields, 'default' )
-			);
+		if ( is_array( $settings ) ) {
+			$this->settings = $settings;
+
+			return;
 		}
+
+		$form_fields    = $this->get_form_fields();
+		$this->settings = array_merge(
+			array_fill_keys( array_keys( $form_fields ), '' ),
+			wp_list_pluck( $form_fields, 'default' )
+		);
 	}
 
 	/**
