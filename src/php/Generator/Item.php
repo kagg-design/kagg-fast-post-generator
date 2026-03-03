@@ -44,56 +44,56 @@ abstract class Item {
 	 *
 	 * @var int
 	 */
-	protected $number;
+	protected int $number;
 
 	/**
 	 * Current index.
 	 *
 	 * @var int
 	 */
-	protected $index;
+	protected int $index;
 
 	/**
 	 * Item type.
 	 *
 	 * @var string
 	 */
-	protected $item_type;
+	protected string $item_type = '';
 
 	/**
-	 * Item DB table name without prefix.
+	 * Item DB table name without a prefix.
 	 *
 	 * @var string
 	 */
-	protected $table = 'posts';
+	protected string $table = 'posts';
 
 	/**
 	 * Item DB table field name containing added items' marker.
 	 *
 	 * @var string
 	 */
-	protected $marker_field = 'guid';
+	protected string $marker_field = 'guid';
 
 	/**
 	 * Item stub.
 	 *
 	 * @var array
 	 */
-	protected $stub = [];
+	protected array $stub = [];
 
 	/**
 	 * Initial time shift, back in time.
 	 *
 	 * @var int
 	 */
-	protected $initial_time_shift;
+	protected int $initial_time_shift;
 
 	/**
 	 * Max time shift between generated items.
 	 *
 	 * @var int
 	 */
-	protected $max_time_shift;
+	protected int $max_time_shift;
 
 	/**
 	 * Class constructor.
@@ -141,7 +141,7 @@ abstract class Item {
 	}
 
 	/**
-	 * Get table name.
+	 * Get a table name.
 	 *
 	 * @return string
 	 */
@@ -150,7 +150,7 @@ abstract class Item {
 	}
 
 	/**
-	 * Get marker field name.
+	 * Get a marker field name.
 	 *
 	 * @return string
 	 */

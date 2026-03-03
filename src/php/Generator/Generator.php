@@ -7,6 +7,7 @@
 
 namespace KAGG\Generator\Generator;
 
+use JsonException;
 use KAGG\Generator\Settings;
 use RuntimeException;
 
@@ -25,35 +26,35 @@ class Generator {
 	 *
 	 * @var string
 	 */
-	private $local_infile_value;
+	private string $local_infile_value;
 
 	/**
 	 * Use LOCAL in the MySQL statement LOAD DATA [LOCAL] INFILE.
 	 *
 	 * @var bool
 	 */
-	private $use_local_infile;
+	private bool $use_local_infile;
 
 	/**
-	 * Registered item types and theirs handler class names.
+	 * Registered item types and their handler class names.
 	 *
 	 * @var string[] Item handlers.
 	 */
-	private $registered_items;
+	private array $registered_items;
 
 	/**
 	 * Item handler instance.
 	 *
 	 * @var Item $item_handler
 	 */
-	private $item_handler;
+	private Item $item_handler;
 
 	/**
 	 * Whether to download SQL file.
 	 *
 	 * @var bool
 	 */
-	private $download_sql;
+	private bool $download_sql;
 
 	/**
 	 * Class constructor.
@@ -80,7 +81,7 @@ class Generator {
 	 * Determine if we should use LOCAL in the MySQL statement LOAD DATA [LOCAL] INFILE.
 	 *
 	 * @return bool
-	 * @throws RuntimeException With error message.
+	 * @throws RuntimeException With an error message.
 	 */
 	public function use_local_infile(): bool {
 		global $wpdb;
@@ -111,10 +112,18 @@ class Generator {
 		// Nonce is checked by check_ajax_referer() in run_checks().
 		// phpcs:disable WordPress.Security.NonceVerification.Missing
 		$index = isset( $_POST['index'] ) ? (int) sanitize_text_field( wp_unslash( $_POST['index'] ) ) : 0;
-		$data  = json_decode(
-			isset( $_POST['data'] ) ? sanitize_text_field( wp_unslash( $_POST['data'] ) ) : '',
-			false
-		);
+		try {
+			$data = json_decode(
+				isset( $_POST['data'] )
+					? sanitize_text_field( wp_unslash( $_POST['data'] ) )
+					: '',
+				false,
+				512,
+				JSON_THROW_ON_ERROR
+			);
+		} catch ( JsonException $e ) {
+			$data = [];
+		}
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		$generation_id          = $this->get_input( $data, Settings::GENERATION_ID );
@@ -202,10 +211,18 @@ class Generator {
 
 		// Nonce is checked by check_ajax_referer() in run_checks().
 		// phpcs:disable WordPress.Security.NonceVerification.Missing
-		$data = json_decode(
-			isset( $_POST['data'] ) ? sanitize_text_field( wp_unslash( $_POST['data'] ) ) : '',
-			false
-		);
+		try {
+			$data = json_decode(
+				isset( $_POST['data'] )
+				? sanitize_text_field( wp_unslash( $_POST['data'] ) )
+				: '',
+				false,
+				512,
+				JSON_THROW_ON_ERROR
+			);
+		} catch ( JsonException $e ) {
+			$data = [];
+		}
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		$generation_id      = $this->get_input( $data, Settings::GENERATION_ID );
@@ -303,7 +320,7 @@ class Generator {
 	 * @param string $temp_filename Temporary filename.
 	 *
 	 * @return void
-	 * @throws RuntimeException With error message.
+	 * @throws RuntimeException With an error message.
 	 */
 	private function generate_items( int $count, string $temp_filename ): void {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
@@ -380,7 +397,7 @@ class Generator {
 	 * @param resource $f             File.
 	 *
 	 * @return void
-	 * @throws RuntimeException With error message.
+	 * @throws RuntimeException With an error message.
 	 * @noinspection SqlInsertValues
 	 * @noinspection SqlResolve
 	 */
@@ -415,7 +432,7 @@ class Generator {
 	 * @param string $temp_filename Temporary filename.
 	 *
 	 * @return void
-	 * @throws RuntimeException With error message.
+	 * @throws RuntimeException With an error message.
 	 */
 	private function store_items( string $temp_filename ): void {
 		global $wpdb;
@@ -453,10 +470,10 @@ class Generator {
 	}
 
 	/**
-	 * Set local_infile variable to 'ON' if needed.
+	 * Set the local_infile variable to 'ON' if needed.
 	 *
 	 * @return void
-	 * @throws RuntimeException With error message.
+	 * @throws RuntimeException With an error message.
 	 */
 	private function set_local_infile(): void {
 		global $wpdb;
@@ -488,10 +505,10 @@ class Generator {
 	}
 
 	/**
-	 * Revert local variable if needed.
+	 * Revert a local variable if needed.
 	 *
 	 * @return void
-	 * @throws RuntimeException With error message.
+	 * @throws RuntimeException With an error message.
 	 */
 	private function revert_local_infile(): void {
 		global $wpdb;

@@ -22,42 +22,42 @@ class User extends Item {
 	 *
 	 * @var string
 	 */
-	protected $item_type = 'user';
+	protected string $item_type = 'user';
 
 	/**
-	 * Item DB table name without prefix.
+	 * Item DB table name without a prefix.
 	 *
 	 * @var string
 	 */
-	protected $table = 'users';
+	protected string $table = 'users';
 
 	/**
 	 * Item DB table field name containing added items' marker.
 	 *
 	 * @var string
 	 */
-	protected $marker_field = 'user_url';
+	protected string $marker_field = 'user_url';
 
 	/**
 	 * Randomizer class instance for usernames.
 	 *
 	 * @var Randomizer
 	 */
-	private $username_randomizer;
+	private Randomizer $username_randomizer;
 
 	/**
 	 * Non-existing user, having a user_registered date to use in post's generation.
 	 *
 	 * @var stdClass
 	 */
-	private $user_time_keeper;
+	private stdClass $user_time_keeper;
 
 	/**
 	 * Random password for generated users. The same for all users.
 	 *
 	 * @var string
 	 */
-	private $password;
+	private string $password;
 
 	/**
 	 * Existing user logins.
@@ -150,7 +150,7 @@ class User extends Item {
 	}
 
 	/**
-	 * Add random time shift to user registered date.
+	 * Add a random time shift to the user registered date.
 	 *
 	 * @param object $user User.
 	 *

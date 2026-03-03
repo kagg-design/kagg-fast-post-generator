@@ -17,5 +17,5 @@ class Page extends Post {
 	 *
 	 * @var string
 	 */
-	protected $item_type = 'page';
+	protected string $item_type = 'page';
 }

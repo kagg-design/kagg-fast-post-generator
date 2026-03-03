@@ -21,98 +21,98 @@ class Comment extends Item {
 	 *
 	 * @var int
 	 */
-	protected $random_posts_count;
+	protected int $random_posts_count;
 
 	/**
 	 * Random IPs count. Newly generated comments will have a random IP from this set.
 	 *
 	 * @var int
 	 */
-	protected $random_ips_count;
+	protected int $random_ips_count;
 
 	/**
 	 * Max nesting level number, starting from 0.
 	 *
 	 * @var int
 	 */
-	protected $max_nesting_level;
+	protected int $max_nesting_level;
 
 	/**
 	 * Percentage of nested comments comparing to previous level. Must be from 0 to 100.
 	 *
 	 * @var int
 	 */
-	protected $nesting_percentage;
+	protected int $nesting_percentage;
 
 	/**
 	 * Max sentences in comment.
 	 *
 	 * @var int
 	 */
-	protected $max_sentences;
+	protected int $max_sentences;
 
 	/**
 	 * Item type.
 	 *
 	 * @var string
 	 */
-	protected $item_type = 'comment';
+	protected string $item_type = 'comment';
 
 	/**
-	 * Item DB table name without prefix.
+	 * Item DB table name without a prefix.
 	 *
 	 * @var string
 	 */
-	protected $table = 'comments';
+	protected string $table = 'comments';
 
 	/**
 	 * Item DB table field name containing added items' marker.
 	 *
 	 * @var string
 	 */
-	protected $marker_field = 'comment_author_url';
+	protected string $marker_field = 'comment_author_url';
 
 	/**
 	 * Randomizer class instance for post_ids.
 	 *
 	 * @var Randomizer
 	 */
-	private $post_id_randomizer;
+	private Randomizer $post_id_randomizer;
 
 	/**
 	 * Randomizer class instance for users.
 	 *
 	 * @var Randomizer
 	 */
-	private $user_randomizer;
+	private Randomizer $user_randomizer;
 
 	/**
 	 * Randomizer class instance for logged-out users.
 	 *
 	 * @var Randomizer
 	 */
-	private $logged_out_user_randomizer;
+	private Randomizer $logged_out_user_randomizer;
 
 	/**
 	 * Randomizer class instance for IPs.
 	 *
 	 * @var Randomizer
 	 */
-	private $ip_randomizer;
+	private Randomizer $ip_randomizer;
 
 	/**
 	 * Current comment id.
 	 *
 	 * @var int
 	 */
-	private $comment_ID;
+	private int $comment_ID;
 
 	/**
 	 * Post comments stub.
 	 *
 	 * @var array
 	 */
-	private $post_comments_stub;
+	private array $post_comments_stub;
 
 	/**
 	 * Nesting level probabilities.
@@ -163,7 +163,7 @@ class Comment extends Item {
 		$wp_date  = $this->wp_date( self::MYSQL_TIME_FORMAT, $now );
 		$gmt_date = $this->gmt_date( self::MYSQL_TIME_FORMAT, $now );
 
-		// Here we have to list the fields in the same order as in wp_comments table.
+		// Here we have to list the fields in the same order as in the wp_comments table.
 		// Otherwise, csv file won't be created properly.
 		$this->stub = [
 			'comment_post_ID'      => 0,
@@ -268,7 +268,7 @@ class Comment extends Item {
 	}
 
 	/**
-	 * Add comment to post and return comment parent.
+	 * Add comment to the post and return comment parent.
 	 *
 	 * @param object $post Post.
 	 *

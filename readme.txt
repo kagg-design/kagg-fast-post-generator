@@ -1,10 +1,10 @@
 === KAGG Generator ===
 Contributors: kaggdesign
 Tags: generate posts, generate pages, development, bulk generate
-Requires at least: 5.3
-Tested up to: 6.8
-Stable tag: 2.1.0
-Requires PHP: 7.2
+Requires at least: 6.0
+Tested up to: 6.9
+Stable tag: 2.2.0
+Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ The plugin generates posts/pages. Useful to generate millions of records in the 
 
 == Description ==
 
-In WordPress development, sometimes it is needed to generate extensive databases with hundreds of thousands of posts/pages. Existing plugins can generate test content very slowly, with the usual rate of 1,000 posts per hour.
+In WordPress development, sometimes it is necessary to generate extensive databases with hundreds of thousands of posts/pages. Existing plugins can generate test content very slowly, with the usual rate of 1,000 posts per hour.
 
 The Fast Post Generator plugin can generate millions of posts/pages in minutes, which is 20,000 times faster than similar plugins.
 
@@ -26,7 +26,7 @@ The Fast Post Generator plugin can generate millions of posts/pages in minutes, 
 
 == Installation ==
 
-1. Upload `kagg-fast-post-generator` folder to the `/wp-content/plugins/` directory.
+1. Upload the `kagg-fast-post-generator` folder to the `/wp-content/plugins/` directory.
 2. Activate the plugin through the 'Plugins' menu in WordPress.
 
 == Frequently Asked Questions ==
@@ -39,17 +39,21 @@ Yes, you can!
 
 == Changelog ==
 
+= 2.2.0 =
+* The minimum required PHP version is now 7.4.
+* The minimum required WordPress version is now 6.0.
+
 = 2.1.0 =
 * Fixed "Function _load_textdomain_just_in_time was called incorrectly" notice.
 * Tested with WordPress 6.8.
 
 = 2.0.1 =
-* Fixed error on deleting a temporary table.
+* Fixed the error on deleting a temporary table.
 
 = 2.0.0 =
 * Dropped support for PHP 7.0. The minimum required PHP version is now 7.2.
 * Fixed kagg_generator_comment_max_nesting_level filter name.
-* Fixed inability to create a temporary table when it exists after previous operations.
+* Fixed the inability to create a temporary table when it exists after previous operations.
 * Fixed deprecation errors with PHP 8.4.
 * Tested with WordPress 6.7.
 * Tested with PHP 8.4.
@@ -60,7 +64,7 @@ Yes, you can!
 = 1.10.0 =
 * Tested with WordPress 6.5.
 * Tested with PHP 8.3.
-* Fixed fatal error with WP 6.3+.
+* Fixed a fatal error with WP 6.3+.
 * Fixed deprecation errors with PHP 8.
 
 = 1.9.0 =
@@ -74,7 +78,7 @@ Yes, you can!
 * Improved plugin behavior in admin.
 * Fixed: Item generation time now is properly distributed within the default period.
 * Added comments from not logged-in users.
-* Added filter for item's initial time shift.
+* Added filter for an item's initial time shift.
 * Added filter for comment's random posts count.
 * Added filter for comment's random IPs count.
 * Added filter for comment's maximum nesting level.
@@ -83,18 +87,18 @@ Yes, you can!
 * Added filter for random user's count.
 * Added filter for logged-in user's percentage.
 * Added filter for paragraphs in the post.
-* Added filter for words in title.
+* Added filter for words in the title.
 
 = 1.6.0 =
 * Tested with WordPress 6.1.
-* Fixed fatal error with WP 6.1 and SHORTINIT.
+* Fixed a fatal error with WP 6.1 and SHORTINIT.
 
 = 1.5.0 =
 * Added generation of SQL files.
 
 = 1.4.0 =
 * Added generation of comments, with hierarchy.
-* Improved posts' generation, now with random date and author.
+* Improved posts' generation, now with a random date and author.
 * Added generation of users.
 
 = 1.3.1 =
@@ -102,10 +106,10 @@ Yes, you can!
 * The minimal WordPress version is now 5.3.
 
 = 1.2.0 =
-* Added ability to work on Linux servers.
+* Added the ability to work on Linux servers.
 
 = 1.1.0 =
-* Added writing of all post fields initially created by WP Core for a post.
+* Added writing of all post-fields initially created by WP Core for a post.
 
 = 1.0.0 =
 * Initial release.
