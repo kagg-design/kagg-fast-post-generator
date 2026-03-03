@@ -1,13 +1,15 @@
-name: CI
-
+name: KAGG Fast Post Generator CI
 on: [ push, pull_request ]
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  run:
+  cs_and_tests:
     strategy:
       matrix:
         os: [ ubuntu-latest ]
-        php-version: [ '7.2' ]
+        php-version: [ '7.4', '8.0', '8.1', '8.2', '8.3', '8.4', '8.5' ]
 
     runs-on: ${{ matrix.os }}
 
