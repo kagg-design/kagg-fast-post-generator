@@ -74,7 +74,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: php_versions
     env:
-      KAGG_TEST_WORDPRESS_DIR: ${{ runner.temp }}/wordpress
       KAGG_TEST_DB_HOST: 127.0.0.1:3306
       KAGG_TEST_DB_NAME: kagg_tests
       KAGG_TEST_DB_USER: root
@@ -116,15 +115,15 @@ jobs:
         run: |
           wp core download --version=7.1.4 --path="$RUNNER_TEMP/wordpress"
       - name: Run WordPress PHPUnit integration tests on MySQL
+        env:
+          KAGG_TEST_WORDPRESS_DIR: ${{ runner.temp }}/wordpress
         run: composer integration
 
   sqlite:
     name: SQLite and WordPress 7.1.4
     runs-on: ubuntu-latest
     env:
-      KAGG_TEST_WORDPRESS_DIR: ${{ runner.temp }}/wordpress
       KAGG_TEST_DB_ENGINE: sqlite
-      KAGG_TEST_SQLITE_PATH: ${{ runner.temp }}/wordpress/database.sqlite
     steps:
       - uses: actions/checkout@v7
         with:
@@ -143,4 +142,7 @@ jobs:
           unzip -q "$RUNNER_TEMP/sqlite.zip" -d "$RUNNER_TEMP/wordpress/wp-content/plugins"
           cp "$RUNNER_TEMP/wordpress/wp-content/plugins/sqlite-database-integration/db.copy" "$RUNNER_TEMP/wordpress/wp-content/db.php"
       - name: Run WordPress PHPUnit integration tests on SQLite
+        env:
+          KAGG_TEST_WORDPRESS_DIR: ${{ runner.temp }}/wordpress
+          KAGG_TEST_SQLITE_PATH: ${{ runner.temp }}/wordpress/database.sqlite
         run: composer integration
