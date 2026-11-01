@@ -134,6 +134,7 @@ class SQLiteTest extends GeneratorTestCase {
 	 * @return void
 	 * @throws ReflectionException
 	 * @noinspection SqlResolve
+	 * @noinspection NotOptimalIfConditionsInspection
 	 */
 	public function test_failed_second_batch_rolls_back_the_entire_chunk(): void {
 		global $wpdb;
@@ -146,7 +147,7 @@ class SQLiteTest extends GeneratorTestCase {
 		$before  = (int) $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->posts" );
 		$inserts = 0;
 		$fail    = static function ( string $query ) use ( &$inserts, $wpdb ): string {
-			if ( 2 === ++$inserts && 0 === strpos( $query, "INSERT INTO `$wpdb->posts`" ) ) {
+			if ( 0 === strpos( $query, "INSERT INTO `$wpdb->posts`" ) && 2 === ++$inserts ) {
 				return 'INSERT INTO kagg_missing_table VALUES (1)';
 			}
 
