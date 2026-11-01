@@ -1219,6 +1219,7 @@ class Lorem {
 	 *
 	 * @return int
 	 * @noinspection RandomApiMigrationInspection
+	 * @noinspection UnnecessaryCastingInspection
 	 */
 	protected static function randomize_nb_elements( int $nb_elements ): int {
 

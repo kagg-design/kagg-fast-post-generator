@@ -3,9 +3,8 @@
 	<description>A custom set of code standard rules to check for WordPress plugins.</description>
 
 	<!-- What to scan -->
-	<file>.</file>
-	<!-- Exclude all dirs except needed -->
-	<exclude-pattern>^(?!.*/kagg-fast-post-generator).*</exclude-pattern>
+	<file>plugin.php</file>
+	<file>src/php</file>
 	<exclude-pattern>*/\.git/*</exclude-pattern>
 	<exclude-pattern>*/\.github/*</exclude-pattern>
 	<exclude-pattern>*/\.idea/*</exclude-pattern>
@@ -33,6 +32,7 @@
 	<rule ref="WordPress">
 		<exclude name="Generic.CodeAnalysis.UnusedFunctionParameter.Found"/>
 		<exclude name="Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed"/>
+		<exclude name="Squiz.Commenting.FunctionComment.EmptyThrows"/>
 		<exclude name="Universal.Arrays.DisallowShortArraySyntax.Found"/>
 		<exclude name="Universal.Operators.DisallowShortTernary.Found"/>
 		<!-- Rules to follow PSR4 -->

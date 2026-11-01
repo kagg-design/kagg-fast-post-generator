@@ -4,8 +4,12 @@
 /.DS_Store
 /.distignore
 /.editorconfig
+/.gitattributes
 /.gitignore
 /.phpcs.cache
+/.phpunit.result.cache
+/phpunit.xml
+/phpunit.integration.xml
 /CHANGELOG.md
 /README.md
 /Thumbs.db
@@ -18,5 +22,7 @@
 # Directories
 /.git
 /.github
+/.githooks
 /.idea
 /.wordpress-org
+/tests

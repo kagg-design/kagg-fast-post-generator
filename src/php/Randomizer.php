@@ -41,7 +41,7 @@ class Randomizer {
 	private int $index = 0;
 
 	/**
-	 * CLass constructor.
+	 * Class constructor.
 	 *
 	 * @param array $elements Elements to randomize.
 	 */

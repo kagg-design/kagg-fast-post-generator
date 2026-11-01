@@ -73,11 +73,32 @@ class Comment extends Item {
 	protected string $marker_field = 'comment_author_url';
 
 	/**
-	 * Randomizer class instance for post_ids.
+	 * Posts ordered by publication time, including the oldest available post.
 	 *
-	 * @var Randomizer
+	 * @var object[]
 	 */
-	private Randomizer $post_id_randomizer;
+	private array $posts;
+
+	/**
+	 * Number of posts available at the current comment time.
+	 *
+	 * @var int
+	 */
+	private int $available_posts = 0;
+
+	/**
+	 * UTC timestamp of the previous comment.
+	 *
+	 * @var int
+	 */
+	private int $comment_time;
+
+	/**
+	 * Start of this chunk's time window.
+	 *
+	 * @var int
+	 */
+	private int $chunk_start;
 
 	/**
 	 * Randomizer class instance for users.
@@ -191,14 +212,21 @@ class Comment extends Item {
 	protected function prepare_generate(): void {
 		global $wpdb;
 
-		$this->post_id_randomizer         = new Randomizer( $this->prepare_posts() );
+		$this->posts                      = $this->prepare_posts();
 		$this->user_randomizer            = new Randomizer( $this->prepare_users() );
 		$this->logged_out_user_randomizer = new Randomizer( $this->prepare_logged_out_users() );
 		$this->ip_randomizer              = new Randomizer( $this->prepare_ips() );
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$this->comment_ID = (int) $wpdb->get_var(
-			"SELECT comment_ID FROM $wpdb->comments ORDER BY comment_ID DESC LIMIT 1"
+		$last_comment       = $wpdb->get_row(
+			"SELECT comment_ID, comment_date, comment_date_gmt FROM $wpdb->comments ORDER BY comment_ID DESC LIMIT 1"
+		);
+		$this->comment_ID   = (int) ( $last_comment->comment_ID ?? 0 );
+		$this->chunk_start  = time() - $this->initial_time_shift;
+		$this->comment_time = max(
+			$this->chunk_start,
+			$this->comment_time,
+			$last_comment ? min( time(), $this->get_timestamp( $last_comment->comment_date, $last_comment->comment_date_gmt ) ) : 0
 		);
 
 		$this->post_comments_stub    = [];
@@ -230,23 +258,19 @@ class Comment extends Item {
 			$user = $this->logged_out_user_randomizer->get()[0];
 		}
 
-		$post = $this->post_id_randomizer->get()[0];
+		// Use disjoint time slots so a new chunk cannot go backwards, even in SQL export mode.
+		$minimum            = max( $this->comment_time, $this->chunk_start );
+		$this->chunk_start += $this->max_time_shift;
+		$maximum            = max( $minimum, min( time(), $this->chunk_start ) );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
+		$this->comment_time = mt_rand( $minimum, $maximum );
 
-		if ( isset( $post->max_time_shift ) ) {
-			$max_time_shift = $post->max_time_shift;
-		} else {
-			$date                 = self::ZERO_MYSQL_TIME === $post->post_date ? 0 : strtotime( $post->post_date );
-			$date_gmt             = self::ZERO_MYSQL_TIME === $post->post_date_gmt ? 0 : strtotime( $post->post_date_gmt );
-			$max_date             = max( $date, $date_gmt );
-			$now                  = time();
-			$max_time_shift       = $now - $max_date;
-			$post_count           = max( 1, $this->post_id_randomizer->count() );
-			$comments_per_post    = $this->number / $post_count;
-			$max_time_shift       = max( 0, $max_time_shift ) / $comments_per_post;
-			$post->max_time_shift = $max_time_shift;
+		$count = count( $this->posts );
+		while ( $this->available_posts < $count && $this->posts[ $this->available_posts ]->timestamp <= $this->comment_time ) {
+			++$this->available_posts;
 		}
-
-		$this->add_time_shift_to_post( $post, (int) $max_time_shift );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
+		$post = $this->posts[ mt_rand( 0, $this->available_posts - 1 ) ];
 
 		$parent = $this->add_comment_to_post( $post );
 
@@ -258,8 +282,8 @@ class Comment extends Item {
 		$comment['comment_author']       = $user->display_name;
 		$comment['comment_author_email'] = $user->user_email;
 		$comment['comment_author_IP']    = $this->ip_randomizer->get()[0];
-		$comment['comment_date']         = $post->post_date;
-		$comment['comment_date_gmt']     = $post->post_date_gmt;
+		$comment['comment_date']         = $this->wp_date( self::MYSQL_TIME_FORMAT, $this->comment_time );
+		$comment['comment_date_gmt']     = $this->gmt_date( self::MYSQL_TIME_FORMAT, $this->comment_time );
 		$comment['comment_content']      = $content;
 		$comment['comment_parent']       = $parent;
 		$comment['user_id']              = $user->ID;
@@ -327,12 +351,24 @@ class Comment extends Item {
 	}
 
 	/**
-	 * Prepare posts' ids.
+	 * Prepare posts in publication order. Scheduled posts cannot receive comments yet.
 	 *
-	 * @return string[]
+	 * @return object[]
 	 */
 	private function prepare_posts(): array {
 		global $wpdb;
+
+		$now = time();
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$oldest = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT ID, post_date, post_date_gmt FROM $wpdb->posts
+				WHERE post_type = 'post' AND post_date <= %s AND post_date_gmt <= %s
+				ORDER BY post_date, ID LIMIT 1",
+				$this->wp_date( self::MYSQL_TIME_FORMAT, $now ),
+				$this->gmt_date( self::MYSQL_TIME_FORMAT, $now )
+			)
+		);
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$posts = $wpdb->get_results(
@@ -340,20 +376,64 @@ class Comment extends Item {
 				"SELECT p.ID, post_date, post_date_gmt
 						FROM $wpdb->posts AS p
          				INNER JOIN
-						(SELECT ID FROM $wpdb->posts WHERE post_type = 'post' ORDER BY RAND() LIMIT %d) AS t
+						(SELECT ID FROM $wpdb->posts WHERE post_type = 'post'
+						AND post_date <= %s AND post_date_gmt <= %s ORDER BY RAND() LIMIT %d) AS t
                         ON p.ID = t.ID;",
+				$this->wp_date( self::MYSQL_TIME_FORMAT, $now ),
+				$this->gmt_date( self::MYSQL_TIME_FORMAT, $now ),
 				$this->random_posts_count
 			)
 		);
 
-		// If no posts, generate comments as not attached to any post.
-		return $posts ?: [
-			(object) [
-				'ID'            => '0',
-				'post_date'     => self::ZERO_MYSQL_TIME,
-				'post_date_gmt' => self::ZERO_MYSQL_TIME,
-			],
-		];
+		if ( $oldest ) {
+			// Keep the start of the timeline independent of each chunk's random sample.
+			array_unshift( $posts, $oldest );
+			$this->comment_time = $this->get_timestamp( $oldest->post_date, $oldest->post_date_gmt );
+		} else {
+			$this->comment_time = 0;
+			// If no posts, generate comments as not attached to any post.
+			$posts = [
+				(object) [
+					'ID'            => '0',
+					'post_date'     => self::ZERO_MYSQL_TIME,
+					'post_date_gmt' => self::ZERO_MYSQL_TIME,
+				],
+			];
+		}
+
+		$unique_posts = [];
+		foreach ( $posts as $post ) {
+			$post->timestamp           = $this->get_timestamp( $post->post_date, $post->post_date_gmt );
+			$unique_posts[ $post->ID ] = $post;
+		}
+		$unique_posts = array_slice( $unique_posts, 0, $this->random_posts_count );
+		usort(
+			$unique_posts,
+			static function ( object $first, object $second ): int {
+				return $first->timestamp <=> $second->timestamp;
+			}
+		);
+
+		return $unique_posts;
+	}
+
+	/**
+	 * Read a UTC timestamp, falling back to the site's timezone for missing GMT dates.
+	 *
+	 * @param string $date     Local date.
+	 * @param string $date_gmt GMT date.
+	 *
+	 * @return int
+	 */
+	private function get_timestamp( string $date, string $date_gmt ): int {
+		if ( self::ZERO_MYSQL_TIME === $date_gmt ) {
+			if ( self::ZERO_MYSQL_TIME === $date ) {
+				return 0;
+			}
+			$date_gmt = get_gmt_from_date( $date );
+		}
+
+		return (int) strtotime( $date_gmt . ' UTC' );
 	}
 
 	/**

@@ -1,7 +1,10 @@
 vendor/
-!composer.lock
 *.lock
+!composer.lock
 .DS_Store
 .idea/
 .phpcs.cache
 Thumbs.db
+
+.phpunit.result.cache
+tests/integration/_config/params.local.php
