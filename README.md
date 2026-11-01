@@ -28,6 +28,24 @@ cd kagg-fast-post-generator
 composer install --no-dev
 ```
 
+## Development checks
+
+Install development tools with `composer install`. The lockfile resolves tools for
+PHP 7.4 and later. Run `composer validate --strict`, `composer audit`, `composer phpcs`,
+`composer test:changelog`, and `node --check assets/js/admin.js` before review.
+
+Edit release notes in `readme.txt`, then run `composer changelog` to merge every
+listed version into `changelog.txt`. Run `composer changelog:check` to verify it.
+The shell entrypoint `.github/scripts/update-changelog.sh` accepts `--check` too.
+Keep the current major version's full history in the readme; older releases remain
+in the generated archive. The generator preserves historical two-component versions.
+
+For a disposable WordPress installation with a user and a published post, run
+`wp --path=/path/to/wordpress --skip-plugins --skip-themes eval-file tests/wordpress.php`.
+This checks plugin loading and all four item generators without inserting their rows.
+CI checks all stable PHP versions from 7.4 through 8.5 on pull requests and the
+minimum and latest versions on branch pushes and manual runs.
+
 ## License
 
 The WordPress Plugin KAGG Fast Post Generator is licensed under the GPL v2 or later.

@@ -1,32 +1,113 @@
 name: KAGG Fast Post Generator CI
-on: [ push, pull_request ]
+
+on:
+  workflow_dispatch:
+  push:
+    paths: &ci-paths
+      - '**/*.php'
+      - 'composer.*'
+      - 'phpcs.xml'
+      - 'assets/**'
+      - 'tests/**'
+      - '.github/**'
+      - '.distignore'
+      - '.gitattributes'
+      - 'readme.txt'
+      - 'changelog.txt'
+  pull_request:
+    paths: *ci-paths
+
+permissions:
+  contents: read
+
 concurrency:
-  group: ${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  cs_and_tests:
-    strategy:
-      matrix:
-        os: [ ubuntu-latest ]
-        php-version: [ '7.4', '8.0', '8.1', '8.2', '8.3', '8.4', '8.5' ]
-
-    runs-on: ${{ matrix.os }}
-
-    name: PHP ${{ matrix.php-version }} on ${{ matrix.os }}
-
+  lint:
+    name: PHP coding standards and release notes
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: json, mbstring
+          coverage: none
+      - uses: ramsey/composer-install@v4
+      - run: composer validate --strict
+      - run: composer audit
+      - run: composer phpcs
+      - run: composer changelog:check
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+  js:
+    name: JavaScript syntax
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - run: node --check assets/js/admin.js
+
+  php_versions:
+    name: Resolve stable PHP matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.resolve.outputs.matrix }}
+    env:
+      FULL_PHP_MATRIX: ${{ github.event_name == 'pull_request' }}
+    steps:
+      - id: resolve
+        run: |
+          if [ "$FULL_PHP_MATRIX" = "true" ]; then
+            echo 'matrix=["7.4","8.0","8.1","8.2","8.3","8.4","8.5"]' >> "$GITHUB_OUTPUT"
+          else
+            echo 'matrix=["7.4","8.5"]' >> "$GITHUB_OUTPUT"
+          fi
+
+  php:
+    name: PHP ${{ matrix.php-version }} and WordPress 7.1.4
+    runs-on: ubuntu-latest
+    needs: php_versions
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ${{ fromJSON(needs.php_versions.outputs.matrix) }}
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: kagg_tests
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
-          extensions: json, mysqli, mbstring, zip
-
-      - name: Install dependencies with caching
-        uses: ramsey/composer-install@v3
-
-      - name: Run code sniffer
-        run: composer phpcs
+          extensions: json, mysqli, mbstring
+          tools: wp-cli
+          coverage: none
+      - uses: ramsey/composer-install@v4
+      - name: Lint PHP and check changelog merging
+        run: |
+          find plugin.php src tests .github/scripts -name '*.php' -print0 | xargs -0 -n1 php -l
+          composer test:changelog
+      - name: Install isolated WordPress site
+        run: |
+          wp core download --version=7.1.4 --path="$RUNNER_TEMP/wordpress"
+          wp config create --path="$RUNNER_TEMP/wordpress" --dbname=kagg_tests --dbuser=root --dbpass=root --dbhost=127.0.0.1:3306
+          wp core install --path="$RUNNER_TEMP/wordpress" --url=http://localhost --title=Tests --admin_user=admin --admin_password=local-test-password --admin_email=test@example.org --skip-email
+      - name: Check plugin loading and all four generators
+        run: wp --path="$RUNNER_TEMP/wordpress" --skip-plugins --skip-themes eval-file "$GITHUB_WORKSPACE/tests/wordpress.php"

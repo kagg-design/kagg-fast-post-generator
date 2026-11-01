@@ -10,7 +10,7 @@
  * Plugin Name:       KAGG Generator
  * Plugin URI:        https://wordpress.org/plugins/kagg-fast-post-generator/
  * Description:       Generates posts/pages. Useful to generate millions of records in the wp_posts table.
- * Version:           2.2.0
+ * Version:           2.3.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            KAGG Design
@@ -31,7 +31,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Plugin version.
  */
-const KAGG_GENERATOR_VERSION = '2.2.0';
+const KAGG_GENERATOR_VERSION = '2.3.0';
 
 /**
  * Path to the plugin dir.

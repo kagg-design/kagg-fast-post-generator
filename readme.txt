@@ -2,8 +2,8 @@
 Contributors: kaggdesign
 Tags: generate posts, generate pages, development, bulk generate
 Requires at least: 6.0
-Tested up to: 6.9
-Stable tag: 2.2.0
+Tested up to: 7.1.4
+Stable tag: 2.3.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -39,6 +39,9 @@ Yes, you can!
 
 == Changelog ==
 
+= 2.3.0 =
+* Tested with WordPress 7.1.4.
+
 = 2.2.0 =
 * The minimum required PHP version is now 7.4.
 * The minimum required WordPress version is now 6.0.
@@ -58,58 +61,4 @@ Yes, you can!
 * Tested with WordPress 6.7.
 * Tested with PHP 8.4.
 
-= 1.11.0 =
-* Added admin notice about the unusable system temp directory.
-
-= 1.10.0 =
-* Tested with WordPress 6.5.
-* Tested with PHP 8.3.
-* Fixed a fatal error with WP 6.3+.
-* Fixed deprecation errors with PHP 8.
-
-= 1.9.0 =
-* Dropped support for PHP 5.6. The minimum required PHP version is now 7.0.
-* Tested with WordPress 6.3.
-
-= 1.8.0 =
-* Tested with WordPress 6.2.
-
-= 1.7.0 =
-* Improved plugin behavior in admin.
-* Fixed: Item generation time now is properly distributed within the default period.
-* Added comments from not logged-in users.
-* Added filter for an item's initial time shift.
-* Added filter for comment's random posts count.
-* Added filter for comment's random IPs count.
-* Added filter for comment's maximum nesting level.
-* Added filter for comment's nesting percentage.
-* Added filter for comment's max sentences.
-* Added filter for random user's count.
-* Added filter for logged-in user's percentage.
-* Added filter for paragraphs in the post.
-* Added filter for words in the title.
-
-= 1.6.0 =
-* Tested with WordPress 6.1.
-* Fixed a fatal error with WP 6.1 and SHORTINIT.
-
-= 1.5.0 =
-* Added generation of SQL files.
-
-= 1.4.0 =
-* Added generation of comments, with hierarchy.
-* Improved posts' generation, now with a random date and author.
-* Added generation of users.
-
-= 1.3.1 =
-* Tested with WordPress 6.0.
-* The minimal WordPress version is now 5.3.
-
-= 1.2.0 =
-* Added the ability to work on Linux servers.
-
-= 1.1.0 =
-* Added writing of all post-fields initially created by WP Core for a post.
-
-= 1.0.0 =
-* Initial release.
+[See changelog for all versions](https://plugins.svn.wordpress.org/kagg-fast-post-generator/trunk/changelog.txt).

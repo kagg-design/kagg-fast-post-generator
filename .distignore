@@ -4,6 +4,7 @@
 /.DS_Store
 /.distignore
 /.editorconfig
+/.gitattributes
 /.gitignore
 /.phpcs.cache
 /CHANGELOG.md
@@ -18,5 +19,7 @@
 # Directories
 /.git
 /.github
+/.githooks
 /.idea
 /.wordpress-org
+/tests

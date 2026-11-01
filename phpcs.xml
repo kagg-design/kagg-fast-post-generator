@@ -3,9 +3,8 @@
 	<description>A custom set of code standard rules to check for WordPress plugins.</description>
 
 	<!-- What to scan -->
-	<file>.</file>
-	<!-- Exclude all dirs except needed -->
-	<exclude-pattern>^(?!.*/kagg-fast-post-generator).*</exclude-pattern>
+	<file>plugin.php</file>
+	<file>src/php</file>
 	<exclude-pattern>*/\.git/*</exclude-pattern>
 	<exclude-pattern>*/\.github/*</exclude-pattern>
 	<exclude-pattern>*/\.idea/*</exclude-pattern>
