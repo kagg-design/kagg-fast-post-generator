@@ -34,7 +34,7 @@ composer install --no-dev
 
 Install development tools with `composer install`. The lockfile resolves tools for
 PHP 7.4 and later. Run `composer validate --strict`, `composer audit`, `composer phpcs`,
-`composer test:changelog`, and `node --check assets/js/admin.js` before review.
+`composer unit`, and `node --check assets/js/admin.js` before review.
 
 Edit release notes in `readme.txt`, then run `composer changelog` to merge every
 listed version into `changelog.txt`. Run `composer changelog:check` to verify it.
@@ -42,19 +42,36 @@ The shell entrypoint `.github/scripts/update-changelog.sh` accepts `--check` too
 Keep the current major version's full history in the readme; older releases remain
 in the generated archive. The generator preserves historical two-component versions.
 
-For a disposable WordPress installation with a user and a published post, run
-`wp --path=/path/to/wordpress --skip-plugins --skip-themes eval-file tests/wordpress.php`.
-This checks plugin loading and all four item generators without inserting their rows.
-CI checks all stable PHP versions from 7.4 through 8.5 on pull requests and the
-minimum and latest versions on branch pushes and manual runs.
+Tests follow the same layout as cyr2lat: `tests/unit` contains plain PHPUnit tests,
+and `tests/integration` uses the standard WordPress PHPUnit suite from
+`wp-phpunit/wp-phpunit`. PHPUnit 9.6 keeps the development tools compatible with PHP 7.4.
 
-Run `wp --path=/path/to/disposable/wordpress --skip-plugins --skip-themes eval-file tests/database.php`
-to verify database imports, comment counts and deletion. This test inserts and
-deletes generated records, so use a disposable site. On SQLite it also checks
-SQL export, text escaping and rollback when a later insert batch fails.
-CI runs the database checks on MySQL and SQLite Database Integration 3.1.1.
-The checks also cover comment chronology across chunk sizes and timezones,
-including imported rows, SQL exports, replies, and post publication dates.
+Run `composer unit` (or `composer test`) without WordPress or a database. This covers
+changelog merging and item registration. Run `composer integration` for plugin loading,
+all four generators, imports, deletion, AJAX handlers and comment chronology.
+`composer test:all` runs both suites. Use `composer integration -- --filter CommentDatesTest`
+to select a class or test. The PHPUnit configurations can also be used directly in PhpStorm.
+
+For integration tests, create a dedicated empty database and download WordPress core
+7.1.4. Copy `tests/integration/_config/params.example.php` to `params.local.php` in the
+same directory and set the core path and test database credentials. Alternatively set
+`KAGG_TEST_PARAMS` to your private parameters file, or configure `KAGG_TEST_WORDPRESS_DIR`
+and `KAGG_TEST_DB_HOST`, `KAGG_TEST_DB_NAME`, `KAGG_TEST_DB_USER`, `KAGG_TEST_DB_PASSWORD`.
+`WP_PHPUNIT__TESTS_CONFIG` can select an external WordPress test configuration;
+`WP_TESTS_DIR` can select an external test library.
+
+The WordPress test suite installs its own tables and **erases existing test tables**.
+Use a database dedicated to this plugin, never a working site or another project's
+test database. Import/deletion tests use disposable tables because the plugin commits
+transactions and replaces tables; cleanup runs after each PHPUnit test.
+
+CI runs both suites on PHP 7.4 through 8.5 for pull requests, and on the minimum and
+latest PHP versions for pushes and manual runs. It also runs integration tests with
+SQLite Database Integration 3.1.1, including native SQL export, text escaping and
+rollback of failed batches. Comment tests cover three timezones and three chunk sizes.
+To run SQLite locally, install that database drop-in in the downloaded WordPress core,
+enable `pdo_sqlite`, set `DB_ENGINE` to `sqlite` and `DB_PATH` to a dedicated SQLite file
+in your params file (or set `KAGG_TEST_DB_ENGINE=sqlite` and `KAGG_TEST_SQLITE_PATH`).
 
 SQLite also supports downloading a native SQLite SQL file. Its import speed differs
 from the MySQL `LOAD DATA` path; reduce the generation chunk size if requests time out.
