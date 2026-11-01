@@ -11,6 +11,8 @@ The Fast Post Generator plugin can generate millions of posts/pages in minutes, 
 ## Features
 
 * The plugin generates posts/pages. Useful to generate millions of records in the wp_posts table.
+* Supports MySQL/MariaDB and WordPress SQLite Database Integration. MySQL uses
+  `LOAD DATA`; SQLite uses batched inserts in a transaction for each generation chunk.
 
 In WordPress development, sometimes it is needed to generate extensive databases with hundreds of thousands of posts/pages. Existing plugins can generate test content very slowly, with the usual rate of 1,000 posts per hour.
 
@@ -45,6 +47,15 @@ For a disposable WordPress installation with a user and a published post, run
 This checks plugin loading and all four item generators without inserting their rows.
 CI checks all stable PHP versions from 7.4 through 8.5 on pull requests and the
 minimum and latest versions on branch pushes and manual runs.
+
+Run `wp --path=/path/to/disposable/wordpress --skip-plugins --skip-themes eval-file tests/database.php`
+to verify database imports, comment counts and deletion. This test inserts and
+deletes generated records, so use a disposable site. On SQLite it also checks
+SQL export, text escaping and rollback when a later insert batch fails.
+CI runs the database checks on MySQL and SQLite Database Integration 3.1.1.
+
+SQLite also supports downloading a native SQLite SQL file. Its import speed differs
+from the MySQL `LOAD DATA` path; reduce the generation chunk size if requests time out.
 
 ## License
 

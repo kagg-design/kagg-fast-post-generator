@@ -97,6 +97,7 @@ jobs:
         with:
           php-version: ${{ matrix.php-version }}
           extensions: json, mysqli, mbstring
+          ini-values: mysqli.allow_local_infile=1
           tools: wp-cli
           coverage: none
       - uses: ramsey/composer-install@v4
@@ -111,3 +112,32 @@ jobs:
           wp core install --path="$RUNNER_TEMP/wordpress" --url=http://localhost --title=Tests --admin_user=admin --admin_password=local-test-password --admin_email=test@example.org --skip-email
       - name: Check plugin loading and all four generators
         run: wp --path="$RUNNER_TEMP/wordpress" --skip-plugins --skip-themes eval-file "$GITHUB_WORKSPACE/tests/wordpress.php"
+      - name: Check MySQL imports and deletion
+        run: wp --path="$RUNNER_TEMP/wordpress" --skip-plugins --skip-themes eval-file "$GITHUB_WORKSPACE/tests/database.php"
+
+  sqlite:
+    name: SQLite and WordPress 7.1.4
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: json, pdo_sqlite, mbstring
+          tools: wp-cli
+          coverage: none
+      - uses: ramsey/composer-install@v4
+      - name: Install isolated SQLite WordPress site
+        run: |
+          wp core download --version=7.1.4 --path="$RUNNER_TEMP/wordpress"
+          wp config create --path="$RUNNER_TEMP/wordpress" --dbname=kagg_tests --dbuser=unused --skip-check
+          wp config set DB_ENGINE sqlite --path="$RUNNER_TEMP/wordpress"
+          wp config set DB_PATH "$RUNNER_TEMP/wordpress/database.sqlite" --path="$RUNNER_TEMP/wordpress"
+          curl --fail --location https://downloads.wordpress.org/plugin/sqlite-database-integration.3.1.1.zip --output "$RUNNER_TEMP/sqlite.zip"
+          unzip -q "$RUNNER_TEMP/sqlite.zip" -d "$RUNNER_TEMP/wordpress/wp-content/plugins"
+          cp "$RUNNER_TEMP/wordpress/wp-content/plugins/sqlite-database-integration/db.copy" "$RUNNER_TEMP/wordpress/wp-content/db.php"
+          wp core install --path="$RUNNER_TEMP/wordpress" --url=http://localhost --title=Tests --admin_user=admin --admin_password=local-test-password --admin_email=test@example.org --skip-email
+      - name: Check SQLite imports, export, rollback, counts and deletion
+        run: wp --path="$RUNNER_TEMP/wordpress" --skip-plugins --skip-themes eval-file "$GITHUB_WORKSPACE/tests/database.php"

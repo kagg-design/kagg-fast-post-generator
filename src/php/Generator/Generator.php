@@ -5,11 +5,15 @@
  * @package kagg/generator
  */
 
+// phpcs:ignore Generic.Commenting.DocComment.MissingShort
+/** @noinspection PhpUndefinedClassInspection */
+
 namespace KAGG\Generator\Generator;
 
 use JsonException;
 use KAGG\Generator\Settings;
 use RuntimeException;
+use WP_SQLite_DB;
 
 /**
  * Class Generator.
@@ -78,6 +82,18 @@ class Generator {
 	}
 
 	/**
+	 * Whether WordPress uses the SQLite database integration.
+	 *
+	 * @return bool
+	 * @noinspection PhpUndefinedConstantInspection
+	 */
+	public function is_sqlite(): bool {
+		global $wpdb;
+
+		return ( defined( 'DB_ENGINE' ) && 'sqlite' === DB_ENGINE ) || $wpdb instanceof WP_SQLite_DB;
+	}
+
+	/**
 	 * Determine if we should use LOCAL in the MySQL statement LOAD DATA [LOCAL] INFILE.
 	 *
 	 * @return bool
@@ -85,6 +101,10 @@ class Generator {
 	 */
 	public function use_local_infile(): bool {
 		global $wpdb;
+
+		if ( $this->is_sqlite() ) {
+			return false;
+		}
 
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$result = $wpdb->get_row(
@@ -128,10 +148,10 @@ class Generator {
 
 		$generation_id          = $this->get_input( $data, Settings::GENERATION_ID );
 		$settings               = $this->get_settings( $data );
-		$this->use_local_infile = $this->use_local_infile();
 		$number                 = (int) $settings['number'];
 		$chunk_size             = (int) $settings['chunk_size'];
 		$this->download_sql     = isset( $settings['sql'] );
+		$this->use_local_infile = ! $this->download_sql && $this->use_local_infile();
 		$count                  = min( $number - $index, $chunk_size );
 		$step                   = (int) floor( $index / $chunk_size ) + 1;
 		$steps                  = (int) ceil( $number / $chunk_size );
@@ -241,21 +261,25 @@ class Generator {
 		$this->http_headers();
 
 		// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped, Squiz.WhiteSpace.LanguageConstructSpacing.IncorrectSingle
-		echo(
-			"/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;\n" .
-			"/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;\n" .
-			"/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;\n" .
-			"/*!50503 SET NAMES utf8mb4 */;\n" .
-			"/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;\n" .
-			"/*!40103 SET TIME_ZONE='+00:00' */;\n" .
-			"/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;\n" .
-			"/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;\n" .
-			"/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;\n" .
-			"/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;\n" .
-			"\n" .
-			"LOCK TABLES `$table` WRITE;\n" .
-			"/*!40000 ALTER TABLE `$table` DISABLE KEYS */;\n"
-		);
+		if ( $this->is_sqlite() ) {
+			echo "BEGIN TRANSACTION;\n";
+		} else {
+			echo(
+				"/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;\n" .
+				"/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;\n" .
+				"/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;\n" .
+				"/*!50503 SET NAMES utf8mb4 */;\n" .
+				"/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;\n" .
+				"/*!40103 SET TIME_ZONE='+00:00' */;\n" .
+				"/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;\n" .
+				"/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;\n" .
+				"/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;\n" .
+				"/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;\n" .
+				"\n" .
+				"LOCK TABLES `$table` WRITE;\n" .
+				"/*!40000 ALTER TABLE `$table` DISABLE KEYS */;\n"
+			);
+		}
 
 		foreach ( $temp_filenames as $temp_filename ) {
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile
@@ -264,19 +288,23 @@ class Generator {
 			unlink( $temp_filename );
 		}
 
-		echo(
-			"/*!40000 ALTER TABLE `$table` ENABLE KEYS */;\n" .
-			"UNLOCK TABLES;\n" .
-			"\n" .
-			"/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;\n" .
-			"/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;\n" .
-			"/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;\n" .
-			"/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;\n" .
-			"/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;\n" .
-			"/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;\n" .
-			"/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;\n" .
-			"/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;\n"
-		);
+		if ( $this->is_sqlite() ) {
+			echo "COMMIT;\n";
+		} else {
+			echo(
+				"/*!40000 ALTER TABLE `$table` ENABLE KEYS */;\n" .
+				"UNLOCK TABLES;\n" .
+				"\n" .
+				"/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;\n" .
+				"/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;\n" .
+				"/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;\n" .
+				"/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;\n" .
+				"/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;\n" .
+				"/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;\n" .
+				"/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;\n" .
+				"/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;\n"
+			);
+		}
 		// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped, Squiz.WhiteSpace.LanguageConstructSpacing.IncorrectSingle
 
 		delete_user_meta( $user_id, $generation_id );
@@ -357,10 +385,9 @@ class Generator {
 	 *
 	 * @return false|int
 	 * @noinspection PhpUnusedParameterInspection.
-	 * @noinspection PhpRedundantOptionalArgumentInspection
 	 */
 	private function write_item_csv( $f, bool $last_item ) {
-		return fputcsv( $f, $this->item_handler->generate(), '|', '"', '\\' );
+		return fputcsv( $f, $this->item_handler->generate(), '|', '"', $this->is_sqlite() ? '' : '\\' );
 	}
 
 	/**
@@ -378,7 +405,8 @@ class Generator {
 
 		foreach ( $fields as &$field ) {
 			if ( is_string( $field ) ) {
-				$field = "'" . $wpdb->_real_escape( $field ) . "'";
+				$escaped = $this->is_sqlite() ? str_replace( "'", "''", $field ) : $wpdb->_real_escape( $field );
+				$field   = "'" . $escaped . "'";
 			}
 		}
 
@@ -441,6 +469,11 @@ class Generator {
 			return;
 		}
 
+		if ( $this->is_sqlite() ) {
+			$this->store_items_sql( $temp_filename );
+			return;
+		}
+
 		$filename = str_replace( '\\', '/', $temp_filename );
 
 		$fields = implode( ', ', $this->item_handler->get_fields() );
@@ -467,6 +500,90 @@ class Generator {
 		}
 
 		$this->revert_local_infile();
+	}
+
+	/**
+	 * Import CSV in bounded INSERT batches, with one transaction per generation chunk.
+	 *
+	 * @param string $temp_filename Temporary filename.
+	 *
+	 * @return void
+	 * @throws RuntimeException When reading or importing a chunk fails.
+	 */
+	private function store_items_sql( string $temp_filename ): void {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+		$file = fopen( $temp_filename, 'rb' );
+		if ( false === $file ) {
+			throw new RuntimeException( esc_html__( 'Cannot read the temporary CSV file.', 'kagg-generator' ) );
+		}
+
+		$fields       = $this->item_handler->get_fields();
+		$placeholders = '(' . implode( ', ', array_fill( 0, count( $fields ), '%s' ) ) . ')';
+		$rows         = [];
+
+		try {
+			$this->query( 'START TRANSACTION' );
+			$row = fgetcsv( $file, 0, '|', '"', '' );
+			// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- One placeholder for each generated field.
+			while ( false !== $row ) {
+				$rows[] = $wpdb->prepare( $placeholders, $row );
+				if ( 100 === count( $rows ) ) {
+					$this->insert_rows( $rows );
+					$rows = [];
+				}
+				$row = fgetcsv( $file, 0, '|', '"', '' );
+			}
+			// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
+			if ( ! feof( $file ) ) {
+				throw new RuntimeException( esc_html__( 'Cannot read the temporary CSV file.', 'kagg-generator' ) );
+			}
+			if ( $rows ) {
+				$this->insert_rows( $rows );
+			}
+			$this->query( 'COMMIT' );
+		} catch ( RuntimeException $exception ) {
+			// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->query( 'ROLLBACK' );
+			// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			throw $exception;
+		} finally {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+			fclose( $file );
+		}
+	}
+
+	/**
+	 * Insert a batch of prepared value lists.
+	 *
+	 * @param string[] $rows Prepared rows.
+	 *
+	 * @return void
+	 * @throws RuntimeException When the insert fails.
+	 */
+	private function insert_rows( array $rows ): void {
+		$table  = $this->item_handler->get_table();
+		$fields = '`' . implode( '`, `', $this->item_handler->get_fields() ) . '`';
+		$this->query( "INSERT INTO `$table` ($fields) VALUES " . implode( ',', $rows ) );
+	}
+
+	/**
+	 * Execute an import statement and preserve its error before rollback.
+	 *
+	 * @param string $sql SQL statement with prepared values.
+	 *
+	 * @return void
+	 * @throws RuntimeException When the query fails.
+	 */
+	private function query( string $sql ): void {
+		global $wpdb;
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
+		if ( false === $wpdb->query( $sql ) ) {
+			throw new RuntimeException( esc_html( $wpdb->last_error ) );
+		}
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
 	}
 
 	/**

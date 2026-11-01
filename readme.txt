@@ -19,6 +19,8 @@ The Fast Post Generator plugin can generate millions of posts/pages in minutes, 
 = Features =
 
 * The plugin generates posts/pages with random content.
+* Supports MySQL/MariaDB and WordPress SQLite Database Integration.
+* Uses fast LOAD DATA imports on MySQL and batched inserts on SQLite.
 
 == Plugin Support ==
 
@@ -40,6 +42,7 @@ Yes, you can!
 == Changelog ==
 
 = 2.3.0 =
+* Added support for SQLite databases.
 * Tested with WordPress 7.1.4.
 
 = 2.2.0 =

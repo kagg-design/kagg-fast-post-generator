@@ -571,11 +571,24 @@ class Settings {
 	 * Update comment counts after generation of comments.
 	 *
 	 * @return void
+	 * @noinspection SqlWithoutWhere
 	 */
 	public function update_comment_counts(): void {
 		global $wpdb;
 
 		$this->generator->run_checks( self::UPDATE_COMMENT_COUNTS_ACTION );
+
+		if ( $this->generator->is_sqlite() ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$result = $wpdb->query(
+				"UPDATE $wpdb->posts SET comment_count =
+					(SELECT COUNT(*) FROM $wpdb->comments WHERE comment_post_ID = $wpdb->posts.ID)"
+			);
+			if ( false === $result ) {
+				wp_send_json_error( esc_html( $wpdb->last_error ) );
+			}
+			wp_send_json_success( esc_html__( 'Comment counts updated.', 'kagg-generator' ) );
+		}
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->query(
@@ -688,13 +701,19 @@ class Settings {
 			'COMMIT',
 		];
 
+		if ( $this->generator->is_sqlite() ) {
+			$queries = [ $wpdb->prepare( "DELETE FROM $table WHERE $marker_field LIKE %s", $marker ) ];
+		}
+
 		ob_start();
+		$database_error = '';
 
 		foreach ( $queries as $query ) {
 			$result = $wpdb->query( $query );
 
 			if ( false === $result ) {
-				$result = $wpdb->query( 'ROLLBACK' );
+				$database_error = $wpdb->last_error;
+				$wpdb->query( 'ROLLBACK' );
 				break;
 			}
 		}
@@ -710,7 +729,7 @@ class Settings {
 				// translators: 1: Error message.
 					esc_html__( 'Error deleting generated items of type %1$s: %2$s.', 'kagg-generator' ),
 					$item_handler->get_type(),
-					$error_message . $wpdb->last_error
+					$error_message . $database_error
 				)
 			);
 		}
