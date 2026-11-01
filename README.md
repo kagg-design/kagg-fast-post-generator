@@ -53,6 +53,8 @@ to verify database imports, comment counts and deletion. This test inserts and
 deletes generated records, so use a disposable site. On SQLite it also checks
 SQL export, text escaping and rollback when a later insert batch fails.
 CI runs the database checks on MySQL and SQLite Database Integration 3.1.1.
+The checks also cover comment chronology across chunk sizes and timezones,
+including imported rows, SQL exports, replies, and post publication dates.
 
 SQLite also supports downloading a native SQLite SQL file. Its import speed differs
 from the MySQL `LOAD DATA` path; reduce the generation chunk size if requests time out.

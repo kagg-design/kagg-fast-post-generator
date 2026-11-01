@@ -43,6 +43,7 @@ Yes, you can!
 
 = 2.3.0 =
 * Added support for SQLite databases.
+* Fixed generated comment dates to follow comment ID order across generation chunks.
 * Tested with WordPress 7.1.4.
 
 = 2.2.0 =

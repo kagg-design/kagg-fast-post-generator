@@ -77,6 +77,7 @@ function kagg_test_check( bool $condition, string $message ): void {
 
 global $wpdb;
 wp_set_current_user( (int) $wpdb->get_var( "SELECT MIN(ID) FROM $wpdb->users" ) );
+require __DIR__ . '/comment-dates.php';
 $generator = new KAGG\Generator\Generator\Generator();
 $settings  = new KAGG\Generator\Settings();
 $file      = tempnam( sys_get_temp_dir(), 'kagg-test-' );
