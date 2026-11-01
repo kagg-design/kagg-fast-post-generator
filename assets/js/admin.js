@@ -95,6 +95,7 @@ jQuery( document ).ready( function( $ ) {
 		let $form = $( '#downloadForm' );
 
 		if ( $form.length === 0 ) {
+			/* language=HTML */
 			$form = $( '<form>' ).attr( {
 				id: 'downloadForm',
 				method: 'POST',

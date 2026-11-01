@@ -100,6 +100,8 @@ abstract class Item {
 	 *
 	 * @param int $number Number of items to generate.
 	 * @param int $index  Current index.
+	 *
+	 * @noinspection UnnecessaryCastingInspection
 	 */
 	public function __construct( int $number = 1, int $index = 0 ) {
 		global $wpdb;

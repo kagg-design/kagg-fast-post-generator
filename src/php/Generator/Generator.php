@@ -85,7 +85,6 @@ class Generator {
 	 * Whether WordPress uses the SQLite database integration.
 	 *
 	 * @return bool
-	 * @noinspection PhpUndefinedConstantInspection
 	 */
 	public function is_sqlite(): bool {
 		global $wpdb;

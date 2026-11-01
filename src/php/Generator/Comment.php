@@ -364,7 +364,7 @@ class Comment extends Item {
 			$wpdb->prepare(
 				"SELECT ID, post_date, post_date_gmt FROM $wpdb->posts
 				WHERE post_type = 'post' AND post_date <= %s AND post_date_gmt <= %s
-				ORDER BY post_date ASC, ID ASC LIMIT 1",
+				ORDER BY post_date, ID LIMIT 1",
 				$this->wp_date( self::MYSQL_TIME_FORMAT, $now ),
 				$this->gmt_date( self::MYSQL_TIME_FORMAT, $now )
 			)
