@@ -52,7 +52,7 @@ all four generators, imports, deletion, AJAX handlers and comment chronology.
 `composer test:all` runs both suites. Use `composer integration -- --filter CommentDatesTest`
 to select a class or test. The PHPUnit configurations can also be used directly in PhpStorm.
 
-For integration tests, create a dedicated empty database and download WordPress core 7.2. Copy
+For integration tests, create a dedicated empty database and download WordPress core 7.2 RC2. Copy
 `tests/integration/_config/params.example.php` to `params.local.php` in the same directory
 and set the core path and test database credentials. Alternatively set
 `KAGG_TEST_PARAMS` to your private parameters file, or configure `KAGG_TEST_WORDPRESS_DIR`
@@ -65,8 +65,8 @@ Use a database dedicated to this plugin, never a working site or another project
 test database. Import/deletion tests use disposable tables because the plugin commits
 transactions and replaces tables; cleanup runs after each PHPUnit test.
 
-CI tests WordPress 7.2 on PHP 7.4 through 8.5 for pull requests and on the minimum
-and latest PHP versions for pushes and manual runs. It also runs integration tests
+CI tests WordPress 7.2 RC2 until WordPress 7.2 is released. It covers PHP 7.4 through 8.5
+for pull requests and the minimum and latest PHP versions for pushes and manual runs. It also runs integration tests
 with SQLite Database Integration 3.1.1, including native SQL export, text escaping and
 rollback of failed batches. Comment tests cover three timezones and three chunk sizes.
 To run SQLite locally, install that database drop-in in the downloaded WordPress core,

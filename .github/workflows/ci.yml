@@ -25,6 +25,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+env:
+  # Use the latest available 7.2 build until the final release is published.
+  WORDPRESS_VERSION: '7.2-RC2'
+
 jobs:
   lint:
     name: PHP coding standards and release notes
@@ -113,7 +117,7 @@ jobs:
           composer unit
       - name: Download WordPress core for the PHPUnit suite
         run: |
-          wp core download --version=7.2 --path="$RUNNER_TEMP/wordpress"
+          wp core download --version="$WORDPRESS_VERSION" --path="$RUNNER_TEMP/wordpress"
       - name: Run WordPress PHPUnit integration tests on MySQL
         env:
           KAGG_TEST_WORDPRESS_DIR: ${{ runner.temp }}/wordpress
@@ -137,7 +141,7 @@ jobs:
       - uses: ramsey/composer-install@v4
       - name: Install isolated SQLite WordPress site
         run: |
-          wp core download --version=7.2 --path="$RUNNER_TEMP/wordpress"
+          wp core download --version="$WORDPRESS_VERSION" --path="$RUNNER_TEMP/wordpress"
           curl --fail --location https://downloads.wordpress.org/plugin/sqlite-database-integration.3.1.1.zip --output "$RUNNER_TEMP/sqlite.zip"
           unzip -q "$RUNNER_TEMP/sqlite.zip" -d "$RUNNER_TEMP/wordpress/wp-content/plugins"
           cp "$RUNNER_TEMP/wordpress/wp-content/plugins/sqlite-database-integration/db.copy" "$RUNNER_TEMP/wordpress/wp-content/db.php"
