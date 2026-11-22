@@ -1,3 +1,6 @@
+= 2.4.0 =
+* Tested with WordPress 7.2.
+
 = 2.3.0 =
 * Added support for SQLite databases.
 * Fixed generated comment dates to follow comment ID order across generation chunks.
