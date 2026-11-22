@@ -52,8 +52,7 @@ all four generators, imports, deletion, AJAX handlers and comment chronology.
 `composer test:all` runs both suites. Use `composer integration -- --filter CommentDatesTest`
 to select a class or test. The PHPUnit configurations can also be used directly in PhpStorm.
 
-For integration tests, create a dedicated empty database and download WordPress core
-7.2. Copy
+For integration tests, create a dedicated empty database and download WordPress core 7.2. Copy
 `tests/integration/_config/params.example.php` to `params.local.php` in the same directory
 and set the core path and test database credentials. Alternatively set
 `KAGG_TEST_PARAMS` to your private parameters file, or configure `KAGG_TEST_WORDPRESS_DIR`
