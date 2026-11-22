@@ -70,7 +70,7 @@ jobs:
           fi
 
   php:
-    name: PHP ${{ matrix.php-version }} and WordPress 7.1.4
+    name: PHP ${{ matrix.php-version }} and WordPress ${{ matrix.wordpress-version }}
     runs-on: ubuntu-latest
     needs: php_versions
     env:
@@ -82,6 +82,7 @@ jobs:
       fail-fast: false
       matrix:
         php-version: ${{ fromJSON(needs.php_versions.outputs.matrix) }}
+        wordpress-version: ['7.1.5', '7.2-RC2']
     services:
       mysql:
         image: mysql:8.0
@@ -113,14 +114,18 @@ jobs:
           composer unit
       - name: Download WordPress core for the PHPUnit suite
         run: |
-          wp core download --version=7.1.4 --path="$RUNNER_TEMP/wordpress"
+          wp core download --version=${{ matrix.wordpress-version }} --path="$RUNNER_TEMP/wordpress"
       - name: Run WordPress PHPUnit integration tests on MySQL
         env:
           KAGG_TEST_WORDPRESS_DIR: ${{ runner.temp }}/wordpress
         run: composer integration
 
   sqlite:
-    name: SQLite and WordPress 7.1.4
+    name: SQLite and WordPress ${{ matrix.wordpress-version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        wordpress-version: ['7.1.5', '7.2-RC2']
     runs-on: ubuntu-latest
     env:
       KAGG_TEST_DB_ENGINE: sqlite
@@ -137,7 +142,7 @@ jobs:
       - uses: ramsey/composer-install@v4
       - name: Install isolated SQLite WordPress site
         run: |
-          wp core download --version=7.1.4 --path="$RUNNER_TEMP/wordpress"
+          wp core download --version=${{ matrix.wordpress-version }} --path="$RUNNER_TEMP/wordpress"
           curl --fail --location https://downloads.wordpress.org/plugin/sqlite-database-integration.3.1.1.zip --output "$RUNNER_TEMP/sqlite.zip"
           unzip -q "$RUNNER_TEMP/sqlite.zip" -d "$RUNNER_TEMP/wordpress/wp-content/plugins"
           cp "$RUNNER_TEMP/wordpress/wp-content/plugins/sqlite-database-integration/db.copy" "$RUNNER_TEMP/wordpress/wp-content/db.php"
