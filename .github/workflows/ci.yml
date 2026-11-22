@@ -108,7 +108,6 @@ jobs:
           php-version: ${{ matrix.php-version }}
           extensions: json, dom, mysqli, mbstring, xml, xmlwriter
           ini-values: mysqli.allow_local_infile=1
-          tools: wp-cli
           coverage: none
       - uses: ramsey/composer-install@v4
       - name: Lint PHP and check changelog merging
@@ -117,7 +116,8 @@ jobs:
           composer unit
       - name: Download WordPress core for the PHPUnit suite
         run: |
-          wp core download --version="$WORDPRESS_VERSION" --path="$RUNNER_TEMP/wordpress"
+          curl --fail --location --retry 3 "https://wordpress.org/wordpress-${WORDPRESS_VERSION}.zip" --output "$RUNNER_TEMP/wordpress.zip"
+          unzip -q "$RUNNER_TEMP/wordpress.zip" -d "$RUNNER_TEMP"
       - name: Run WordPress PHPUnit integration tests on MySQL
         env:
           KAGG_TEST_WORDPRESS_DIR: ${{ runner.temp }}/wordpress
@@ -136,12 +136,12 @@ jobs:
         with:
           php-version: '8.5'
           extensions: json, dom, pdo_sqlite, mbstring, xml, xmlwriter
-          tools: wp-cli
           coverage: none
       - uses: ramsey/composer-install@v4
       - name: Install isolated SQLite WordPress site
         run: |
-          wp core download --version="$WORDPRESS_VERSION" --path="$RUNNER_TEMP/wordpress"
+          curl --fail --location --retry 3 "https://wordpress.org/wordpress-${WORDPRESS_VERSION}.zip" --output "$RUNNER_TEMP/wordpress.zip"
+          unzip -q "$RUNNER_TEMP/wordpress.zip" -d "$RUNNER_TEMP"
           curl --fail --location https://downloads.wordpress.org/plugin/sqlite-database-integration.3.1.1.zip --output "$RUNNER_TEMP/sqlite.zip"
           unzip -q "$RUNNER_TEMP/sqlite.zip" -d "$RUNNER_TEMP/wordpress/wp-content/plugins"
           cp "$RUNNER_TEMP/wordpress/wp-content/plugins/sqlite-database-integration/db.copy" "$RUNNER_TEMP/wordpress/wp-content/db.php"
