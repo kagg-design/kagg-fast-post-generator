@@ -42,7 +42,7 @@ Yes, you can!
 == Changelog ==
 
 = 2.4.0 =
-* Tested with WordPress 7.2 RC2.
+* Tested with WordPress 7.2.
 
 = 2.3.0 =
 * Added support for SQLite databases.
